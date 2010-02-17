@@ -69,11 +69,11 @@ end
 # Send a mail to the kde commits
 def kde_commits(commit_id,message)
     warning = ''
-    from = `git log #{commit_id} -n 1 --pretty='format:%an <%ae>'`
-
-    if not validate_email_domain(from) then
+    emailAddy = `git log #{commit_id} -n 1 --pretty='format:%ae'`
+    if not validate_email_domain(emailAddy) then
         warning = "[BAD EMAIL] "
     end
+    from = `git log #{commit_id} -n 1 --pretty='format:%an <%ae>'`
     subject = `git log #{commit_id} -n 1 --pretty='format:%h'` + ' ' + `git log #{commit_id} -n1 --pretty='format:%s'`[0,50]
     subject = "#{warning}#{subject}"
     send_email(from, "kde-commits@kde.org", "#{subject}\nX-Commit-Directories: (0) #{SVN_LOCATION}", "#{message}")
