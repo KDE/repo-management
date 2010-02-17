@@ -1,0 +1,12 @@
+Two directories are going to be created 'stage' and 'target'. The basic idea
+of all this is that stage updates from the remote server and then pushes the 
+latest changes to the target repo. Target then runs its post-update hook.
+That post-update hook could be anything, included is an example that integrates
+into KDE.
+
+Instructions
+*Run addrepo.rb while in a directory that you want to clone the repos. 
+*Edit the post-update hook
+*Then run cronjobbie from a cron job frequently, like */3 minutes.
+
+- Ian Monroe

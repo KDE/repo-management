@@ -1,0 +1,14 @@
+#!/usr/bin/ruby
+
+redirect = ">/dev/null 2>&1"
+if ARGV[0] == '--loud' then
+   redirect = String.new
+end
+
+Dir.chdir('stage')
+Dir.glob('*').each { |dir|
+   Dir.chdir("/home/amarok/git_commitfilter/stage/#{dir}/")
+   `git pull #{redirect}`
+   `git push --tags target #{redirect}`
+   `git push target #{redirect}`
+}
