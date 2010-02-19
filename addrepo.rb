@@ -22,6 +22,6 @@ Dir.chdir(NAME)
 Dir.chdir("#{BASE}/target")
 `git clone --bare #{BASE}/stage/#{NAME} #{NAME}.git`
 Dir.chdir(BASE)
-FileUtils.cp("#{File.dirname(__FILE__)}/post-update.sample", "#{BASE}/target/#{NAME}.git/hooks/post-update")
+FileUtils.cp("#{File.dirname(__FILE__)}/update.sample", "#{BASE}/target/#{NAME}.git/hooks/update")
 
-puts "Edit #{BASE}/target/#{NAME}.git/hooks/post-update"
+puts "Edit #{BASE}/target/#{NAME}.git/hooks/update"

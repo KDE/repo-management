@@ -74,7 +74,7 @@ def kde_commits(commit_id,message)
         warning = "[BAD EMAIL] "
     end
     from = `git log #{commit_id} -n 1 --pretty='format:%an <%ae>'`
-    subject = `git log #{commit_id} -n 1 --pretty='format:%h'` + ' ' + `git log #{commit_id} -n1 --pretty='format:%s'`[0,50]
+    subject = `git log #{commit_id} -n 1 --pretty='format:%h'` + ': ' + `git log #{commit_id} -n1 --pretty='format:%s'`[0,50]
     subject = "#{warning}#{subject}"
     send_email(from, "kde-commits@kde.org", "#{subject}\nX-Commit-Directories: (0) #{SVN_LOCATION}", "#{message}")
 end
