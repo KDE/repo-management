@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# A hook script that sends commit notifications.
+# Called by git-receive-pack with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, make this file executable by "chmod +x update".
+# copyright this dude http://blog.mwolson.org/tech/a_month_and_a_half_of_git.html
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+#if [ -z "$GIT_DIR" ]; then
+#        echo "Don't run this script from the command line." >&2
+#        echo " (if you want, you could supply GIT_DIR then run" >&2
+#        echo "  $0 <ref> <oldrev> <newrev>)" >&2
+#        exit 1
+#fi
+
+#if [ -z "$refname" ] || [ -z "$oldrev" ] || [ -z "$newrev" ]; then
+#        echo "Usage: $0 <ref> <oldrev> <newrev>" >&2
+#        exit 1
+#fi
+
+project=`cd ../..; basename \`pwd\``
+reponame=`cd ..; basename \`pwd\``
+
+# Send email
+for commit_id in $(git rev-list ${oldrev}..${newrev} | tac) ; do
+###EDIT:
+    ~/git_commitfilter/email-git ${commit_id} Phonon trunk/kdesupport/phonon/
+done
+#CIA script
+       refname=$1
+       oldhead=$2
+       newhead=$3
+       for merged in $(git rev-list ${oldhead}..${newhead} | tac) ; do
+###EDIT:
+               ~/git_commitfilter/ciabot_multi.sh ${refname} ${merged} kde/phonon http://gitorious.org/phonon/phonon
+       done
+
+
+# --- Finished
+exit 0
+
