@@ -25,20 +25,26 @@ newrev="$3"
 
 project=`cd ../..; basename \`pwd\``
 reponame=`cd ..; basename \`pwd\``
+mgmtdir="/home/git/repo-management"
 
 # Send email
-for commit_id in $(git rev-list ${oldrev}..${newrev} | tac) ; do
-###EDIT:
-    ~/git_commitfilter/email-git ${commit_id} Phonon trunk/kdesupport/phonon/
-done
+commitfilterdir=$mgmtdir/commitfilter/$project/$basename
+if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]
+  then
+    echo    $bindir/email-git ${commit_id} `cat $commitfilterdir/filtername` `cat $commitfilterdir/svnpath`
+    #for commit_id in $(git rev-list ${oldrev}..${newrev} | tac) ; do
+    #    $bindir/email-git ${commit_id} `cat $commitfilterdir/filtername` `cat $commitfilterdir/svnpath`
+    #done
+fi
 #CIA script
        refname=$1
        oldhead=$2
        newhead=$3
-       for merged in $(git rev-list ${oldhead}..${newhead} | tac) ; do
-###EDIT:
-               ~/git_commitfilter/ciabot_multi.sh ${refname} ${merged} kde/phonon http://gitorious.org/phonon/phonon
-       done
+       echo $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} kde/phonon http://gitorious.org/phonon/phonon
+       exit 0
+       #for merged in $(git rev-list ${oldhead}..${newhead} | tac) ; do
+       #        $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} kde/phonon http://gitorious.org/phonon/phonon
+       #done
 
 
 # --- Finished
