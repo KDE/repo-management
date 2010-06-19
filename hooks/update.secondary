@@ -31,7 +31,7 @@ mgmtdir="/home/git/repo-management"
 commitfilterdir=$mgmtdir/commitfilter/$project/$reponame
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]
   then
-    echo    $bindir/email-git ${commit_id} `cat $commitfilterdir/filtername` `cat $commitfilterdir/svnpath`
+    echo    $mgmtdir/bin/email-git ${commit_id} `cat $commitfilterdir/filtername` `cat $commitfilterdir/svnpath`
     #for commit_id in $(git rev-list ${oldrev}..${newrev} | tac) ; do
     #    $bindir/email-git ${commit_id} `cat $commitfilterdir/filtername` `cat $commitfilterdir/svnpath`
     #done
