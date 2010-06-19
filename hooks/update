@@ -28,7 +28,7 @@ reponame=`cd ..; basename \`pwd\``
 mgmtdir="/home/git/repo-management"
 
 # Send email
-commitfilterdir=$mgmtdir/commitfilter/$project/$basename
+commitfilterdir=$mgmtdir/commitfilter/$project/$reponame
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]
   then
     echo    $bindir/email-git ${commit_id} `cat $commitfilterdir/filtername` `cat $commitfilterdir/svnpath`
