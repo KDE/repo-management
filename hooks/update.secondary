@@ -43,11 +43,9 @@ if [ -f $ciadir/projectname ] && [ -f $ciadir/urlprefix ]
        refname=$1
        oldhead=$2
        newhead=$3
-       echo $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} `cat $ciadir/projectname` `cat $ciadir/urlprefix`
-       exit 0
-       #for merged in $(git rev-list ${oldhead}..${newhead} | tac) ; do
-       #        $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} `cat $ciadir/projectname` `cat $ciadir/urlprefix`
-       #done
+       for merged in $(git rev-list ${oldhead}..${newhead} | tac) ; do
+               $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} `cat $ciadir/projectname` `cat $ciadir/urlprefix`
+       done
 fi
 
 # --- Finished
