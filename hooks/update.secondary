@@ -23,8 +23,8 @@ newrev="$3"
 #        exit 1
 #fi
 
-project=`cd ../..; basename \`pwd\``
-reponame=`cd ..; basename \`pwd\``
+project=`cd ..; basename \`pwd\``
+reponame=`basename \`pwd\``
 mgmtdir="/home/git/repo-management"
 
 # Send email
