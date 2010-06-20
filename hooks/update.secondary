@@ -23,16 +23,16 @@ if [ -z "$refname" ] || [ -z "$oldrev" ] || [ -z "$newrev" ]; then
         exit 1
 fi
 
-project=`cd ..; basename \`pwd\``
-reponame=`basename \`pwd\``
+project=$(cd ..; basename $(pwd))
+reponame=$(basename $(pwd))
 mgmtdir="/home/git/repo-management"
 
 # Send email
 commitfilterdir=$mgmtdir/commitfilter/$project/$reponame
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]
   then
-    for commit_id in $(git rev-list ${oldrev}..${newrev} | tac) ; do
-        $mgmtdir/bin/email-git ${commit_id} `cat $commitfilterdir/filtername` `cat $commitfilterdir/svnpath`
+    for commit_id in $(git rev-list --reverse ${oldrev}..${newrev}) ; do
+        $mgmtdir/bin/email-git ${commit_id} $(cat $commitfilterdir/filtername) $(cat $commitfilterdir/svnpath)
     done
 fi
 
@@ -43,8 +43,8 @@ if [ -f $ciadir/projectname ] && [ -f $ciadir/urlprefix ]
        refname=$1
        oldhead=$2
        newhead=$3
-       for merged in $(git rev-list ${oldhead}..${newhead} | tac) ; do
-               $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} `cat $ciadir/projectname` `cat $ciadir/urlprefix`
+       for merged in $(git rev-list --reverse ${oldhead}..${newhead}) ; do
+               $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(cat $ciadir/projectname) $(cat $ciadir/urlprefix)
        done
 fi
 
