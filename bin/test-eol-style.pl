@@ -111,6 +111,7 @@ if ($signal or $cd)
     warn "$0: pipe from `@_' failed $cd: exit=$exit signal=$signal\n";
 }
 
+print STDERR "EOL style check passed\n";
 exit $eolerror;
 
 sub usage
