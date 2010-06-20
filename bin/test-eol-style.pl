@@ -57,26 +57,50 @@ if ($author =~ m/scripty/) {
 # Set the Git work tree so that Git knows where to begin to look for the repo
 $ENV{GIT_WORK_TREE} = $ENV{GL_REPO};
 
-# Get the diff of the commits and start looking
-my $last_filename = "";
-open(IN, "-|") || exec $gitbin, 'show', $newsha;
-while(<IN>) {
-    if (/^\+\+\+ b(\S+)/) {
-      $last_filename = $1;
-      next;
+# Get a list of changed commits
+my $shadiff = $oldsha eq '0' x 40 ? $newsha : "$oldsha..$newsha";
+my $currentsha = "";
+my $eolerror = 0;
+open(SHALIST, "-|") || exec $gitbin, 'rev-list', $shadiff;
+
+# Iterate over the commits we are being pushed
+while( <SHALIST> ) {
+    if( /(\S+)/ ) {
+        $currentsha = $1;
     }
 
-    next if ($_ !~ /^\+/);
+    my $last_filename = "";
+    my $violationdetect = 0;
+    
+    # Get the diff of this commit...
+    open(IN, "-|") || exec $gitbin, 'show', $currentsha;
+    while(<IN>) {
+        if (/^\+\+\+ b(\S+)/) {
+            $last_filename = $1;
+            $violationdetect = 0;
+            next;
+        }
 
-    if (/(?:\r\n|\n\r|\r)$/) {
-        print STDERR "= Commit $newsha - $last_filename\n";
-        print STDERR "= EOL style violation detected.\n";
-        print STDERR "= Please ensure you are using unix line endings.\n";
+        # Don't complain about the same file twice...
+        if ( $violationdetect == 1 ) {
+            next;
+        }
 
-        exit 1;
+        next if ($_ !~ /^\+/);
+
+        if (/(?:\r\n|\n\r|\r)$/) {
+            print STDERR "===\n";
+            print STDERR "= Commit $currentsha - $last_filename\n";
+            print STDERR "= EOL style violation detected.\n";
+            print STDERR "= Please ensure you are using unix line endings.\n";
+
+            $violationdetect = 1;
+            $eolerror = 1;
+        }
     }
+    close(IN);
 }
-close(IN);
+close(SHALIST);
 
 my $result = $?;
 my $exit   = $result >> 8;
@@ -87,7 +111,7 @@ if ($signal or $cd)
     warn "$0: pipe from `@_' failed $cd: exit=$exit signal=$signal\n";
 }
 
-exit 0;
+exit $eolerror;
 
 sub usage
 {
