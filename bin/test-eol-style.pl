@@ -55,13 +55,13 @@ if ($author =~ m/scripty/) {
 }
 
 # Set the Git work tree so that Git knows where to begin to look for the repo
-$ENV{GIT_WORK_TREE} = $ENV{GL_REPO}
+$ENV{GIT_WORK_TREE} = $ENV{GL_REPO};
 
 # Get the diff of the commits and start looking
 my $last_filename = "";
 open(IN, "-|") || exec $gitbin, 'diff', $oldsha, $newsha;
 while(<IN>) {
-    if (/^\+\+\+ b\/(\S+)/) {
+    if (/^\+\+\+ b(\S+)/) {
       $last_filename = $1;
       next;
     }
@@ -69,8 +69,9 @@ while(<IN>) {
     next if ($_ !~ /^\+/);
 
     if (/(?:\r\n|\n\r|\r)$/) {
-        print STDERR "=== $last_filename\n";
-        print STDERR "eol style violation detected.\n";
+        print STDERR "= $last_filename\n";
+        print STDERR "= EOL style violation detected.\n";
+        print STDERR "= Please ensure you are using unix line endings.\n";
 
         exit 1;
     }
