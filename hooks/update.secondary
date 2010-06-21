@@ -24,7 +24,7 @@ if [ -z "$refname" ] || [ -z "$oldrev" ] || [ -z "$newrev" ]; then
 fi
 
 # Check EOL style
-/home/git/repo-management/bin/test-eol-style.pl $refname $oldhead $newhead
+/home/git/repo-management/bin/test-eol-style.pl $refname $oldrev $newrev
 if [ $? -ne 0 ]; then
     exit 1
 fi
