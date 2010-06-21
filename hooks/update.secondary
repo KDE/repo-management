@@ -34,7 +34,7 @@ reponame=$(basename $(pwd))
 mgmtdir="/home/git/repo-management"
 shadiff=$newrev
 
-if [ $oldrev -ne 0 ]; then
+if [ "${$oldrev}" -ne 0 ]; then
     shadiff="${oldrev}..${newrev}"
 fi
 
