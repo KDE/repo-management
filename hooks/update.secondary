@@ -10,7 +10,7 @@ refname="$1"
 oldrev="$2"
 newrev="$3"
 
- --- Safety check
+# Safety check
 if [ -z "$GIT_DIR" ]; then
         echo "Don't run this script from the command line." >&2
         echo " (if you want, you could supply GIT_DIR then run" >&2
