@@ -54,9 +54,6 @@ if ($author =~ m/scripty/) {
   exit 0;
 }
 
-# Set the Git work tree so that Git knows where to begin to look for the repo
-$ENV{GIT_WORK_TREE} = $ENV{GL_REPO};
-
 # Get a list of changed commits
 my $shadiff = $oldsha eq '0' x 40 ? $newsha : "$oldsha..$newsha";
 my $currentsha = "";
