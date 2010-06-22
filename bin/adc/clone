@@ -32,6 +32,7 @@ git clone --bare -l $GL_REPO_BASE_ABS/$from.git $GL_REPO_BASE_ABS/$to.git
 cd $GL_REPO_BASE_ABS/$to.git
 echo $GL_USER > gl-creater
 cp -R $GL_REPO_BASE_ABS/$from.git/hooks/* $GL_REPO_BASE_ABS/$to.git/hooks
+touch git-daemon-export-ok
 
 if [ -n "$GL_WILDREPOS_DEFPERMS" ]; then
   echo "$GL_WILDREPOS_DEFPERMS" > gl-perms
