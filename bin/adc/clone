@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Adapted from the "fork" admin-defined command from Gitolite.
+# Modified to ensure the base path remains constant
+
+from=$1
+to=$2
+
+. $(dirname $0)/adc.common-functions
+
+get_rights_and_owner $from
+[ -z "$perm_read" ] && die "no read permissions on $from"
+
+get_rights_and_owner $to
+[ -z "$perm_create" ] && die "no create permissions on $to"
+
+# clone $from to $to
+git clone --bare -l $GL_REPO_BASE_ABS/$from.git $GL_REPO_BASE_ABS/$to.git
+[ $? -ne 0 ] && exit 1
+
+# fix up creator, and hooks
+cd $GL_REPO_BASE_ABS/$to.git
+echo $GL_USER > gl-creater
+cp -R $GL_REPO_BASE_ABS/$from.git/hooks/* $GL_REPO_BASE_ABS/$to.git/hooks
+
+if [ -n "$GL_WILDREPOS_DEFPERMS" ]; then
+  echo "$GL_WILDREPOS_DEFPERMS" > gl-perms
+fi
+
