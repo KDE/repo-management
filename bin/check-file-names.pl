@@ -44,7 +44,7 @@ my $gitbin = "/usr/bin/git";
 my $ref          = shift;
 my $oldsha       = shift;
 my $newsha       = shift;
-my $cfg_filename = "/home/git/repo-management/blockedfiles.cfg";
+my $cfg_filename = "/home/git/repo-management/config/blockedfiles.cfg";
 
 ######################################################################
 # Import the configuration...
