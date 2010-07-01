@@ -29,6 +29,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# WARNING!!!!
+# New refs (tags and branches) have 40x0 as the oldrev.
+# This causes git rev-list to die -- which is okay (and worked around here)
+# But, do not attempt to fix by only passing in the newrev -- it will list
+# (and send emails for) *ALL* past commits!
 if [ $oldrev == "0000000000000000000000000000000000000000" ]; then
     echo "New ref or first commit; skipping Commitfilter/Bugzilla/CIA.vc"
     exit 0
