@@ -29,14 +29,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+if [ $oldrev == "0000000000000000000000000000000000000000" ]; then
+    echo "New ref or first commit; skipping Commitfilter/Bugzilla/CIA.vc"
+    exit 0
+fi
+
 project=$(cd ..; basename $(pwd))
 reponame=$(basename $(pwd))
 mgmtdir="/home/git/repo-management"
-shadiff=$newrev
-
-if [ $oldrev != "0000000000000000000000000000000000000000" ]; then
-    shadiff="${oldrev}..${newrev}"
-fi
+shadiff="${oldrev}..${newrev}"
 
 # Send email
 commitfilterdir=$mgmtdir/commitfilter/$project/$reponame
