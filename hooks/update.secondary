@@ -23,10 +23,19 @@ if [ -z "$refname" ] || [ -z "$oldrev" ] || [ -z "$newrev" ]; then
         exit 1
 fi
 
+project=$(cd ..; basename $(pwd))
+reponame=$(basename $(pwd))
+mgmtdir="/home/git/repo-management"
+
 # Check EOL style
-/home/git/repo-management/bin/test-eol-style.pl $refname $oldrev $newrev
-if [ $? -ne 0 ]; then
-    exit 1
+eoldir=$mgmtdir/repo-configs/eol/$project/$reponame
+if [ ! -f $eoldir/skip-eol ]
+  then
+    /home/git/repo-management/bin/test-eol-style.pl $refname $oldrev $newrev
+    if [ $? -ne 0 ]
+      then
+        exit 1
+    fi
 fi
 
 # WARNING!!!!
@@ -45,7 +54,7 @@ mgmtdir="/home/git/repo-management"
 shadiff="${oldrev}..${newrev}"
 
 # Send email
-commitfilterdir=$mgmtdir/commitfilter/$project/$reponame
+commitfilterdir=$mgmtdir/repo-configs/commitfilter/$project/$reponame
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]
   then
     echo "Triggering Commitfilter and Bugzilla updates..."
@@ -55,7 +64,7 @@ if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]
 fi
 
 #CIA script
-ciadir=$mgmtdir/cia/$project/$reponame
+ciadir=$mgmtdir/repo-configs/cia/$project/$reponame
 if [ -f $ciadir/projectname ] && [ -f $ciadir/urlprefix ]
   then
        echo "Sending CIA.vc update..."
