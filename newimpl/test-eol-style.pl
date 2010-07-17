@@ -55,6 +55,7 @@ if ($author =~ m/scripty/) {
 # Prepare to search for violations
 my $last_filename = "";
 my $violationdetect = 0;
+my $eolerror = 0;
     
 # Get the diff of this commit...
 open(IN, "-|") || exec $gitbin, 'show', $commitid;
