@@ -40,6 +40,8 @@ mgmtdir="/home/git/repo-management"
 eoldir=$mgmtdir/repo-configs/eol/$project/$reponame
 if [ ! -f $eoldir/skip-eol ]; then
     for commit_id in $revlist ; do
+        echo $commit_id;
+        echo $(pwd);
         $mgmtdir/bin/test-eol-style.pl ${commit_id}
         if [ $? -ne 0 ]; then
             exit 1
