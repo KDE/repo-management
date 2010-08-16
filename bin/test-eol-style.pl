@@ -37,11 +37,9 @@ my $gitbin = "/usr/bin/git";
 ######################################################################
 # Initial setup/command-line handling.
 
-&usage unless @ARGV == 3;
+&usage unless @ARGV == 1;
 
-my $ref    = shift;
-my $oldsha = shift;
-my $newsha = shift;
+my $commitid = shift;
 
 ######################################################################
 # Harvest data using git...
@@ -54,50 +52,38 @@ if ($author =~ m/scripty/) {
   exit 0;
 }
 
-# Get a list of changed commits
-my $shadiff = $oldsha eq '0' x 40 ? $newsha : "$oldsha..$newsha";
-my $currentsha = "";
+# Prepare to search for violations
+my $last_filename = "";
+my $violationdetect = 0;
 my $eolerror = 0;
-open(SHALIST, "-|") || exec $gitbin, 'rev-list', $shadiff;
-
-# Iterate over the commits we are being pushed
-while( <SHALIST> ) {
-    if( /(\S+)/ ) {
-        $currentsha = $1;
-    }
-
-    my $last_filename = "";
-    my $violationdetect = 0;
     
-    # Get the diff of this commit...
-    open(IN, "-|") || exec $gitbin, 'show', $currentsha;
-    while(<IN>) {
-        if (/^\+\+\+ b(\S+)/) {
-            $last_filename = $1;
-            $violationdetect = 0;
-            next;
-        }
-
-        # Don't complain about the same file twice...
-        if ( $violationdetect == 1 ) {
-            next;
-        }
-
-        next if ($_ !~ /^\+/);
-
-        if (/(?:\r\n|\n\r|\r)$/) {
-            print STDERR "===\n";
-            print STDERR "= Commit $currentsha - $last_filename\n";
-            print STDERR "= EOL style violation detected.\n";
-            print STDERR "= Please ensure you are using unix line endings.\n";
-
-            $violationdetect = 1;
-            $eolerror = 1;
-        }
+# Get the diff of this commit...
+open(IN, "-|") || exec $gitbin, 'diff', 'master';
+while(<IN>) {
+    if (/^\+\+\+ b(\S+)/) {
+        $last_filename = $1;
+        $violationdetect = 0;
+        next;
     }
-    close(IN);
+
+    # Don't complain about the same file twice...
+    if ( $violationdetect == 1 ) {
+        next;
+    }
+
+    next if ($_ !~ /^\+/);
+
+    if (/(?:\r\n|\n\r|\r)$/) {
+        print STDERR "===\n";
+        print STDERR "= Commit $commitid - $last_filename\n";
+        print STDERR "= EOL style violation detected.\n";
+        print STDERR "= Please ensure you are using unix line endings.\n";
+
+        $violationdetect = 1;
+        $eolerror = 1;
+    }
 }
-close(SHALIST);
+close(IN);
 
 my $result = $?;
 my $exit   = $result >> 8;
@@ -108,15 +94,10 @@ if ($signal or $cd)
     warn "$0: pipe from `@_' failed $cd: exit=$exit signal=$signal\n";
 }
 
-if( $eolerror == 0 )
-{
-    print STDERR "EOL style check passed\n";
-}
-
 exit $eolerror;
 
 sub usage
 {
   warn "@_\n" if @_;
-  die "usage: $0 ref oldsha newsha\n";
+  die "usage: $0 commit\n";
 }
