@@ -58,7 +58,7 @@ my $violationdetect = 0;
 my $eolerror = 0;
     
 # Get the diff of this commit...
-open(IN, "-|") || exec $gitbin, 'diff', 'master';
+open(IN, "-|") || exec $gitbin, 'show', $commitid;
 while(<IN>) {
     if (/^\+\+\+ b(\S+)/) {
         $last_filename = $1;
