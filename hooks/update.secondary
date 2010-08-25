@@ -50,6 +50,7 @@ fi
 # Send email
 commitfilterdir=$mgmtdir/repo-configs/commitfilter/$project/$reponame
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
+    echo "Triggering Commitfilter and Bugzilla updates..."
     for commit_id in $revlist ; do
         $mgmtdir/bin/email-git ${commit_id} $(cat $commitfilterdir/filtername) $(cat $commitfilterdir/svnpath)
     done
@@ -58,9 +59,10 @@ fi
 # Update CIA
 ciadir=$mgmtdir/repo-configs/cia/$project/$reponame
 if [ -f $ciadir/projectname ] && [ -f $ciadir/urlprefix ]; then
-       for merged in $revlist ; do
-           $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(cat $ciadir/projectname) $(cat $ciadir/urlprefix)
-       done
+    echo "Sending CIA.vc update..."
+    for merged in $revlist ; do
+        $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(cat $ciadir/projectname) $(cat $ciadir/urlprefix)
+    done
 fi
 
 # --- Finished
