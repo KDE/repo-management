@@ -28,9 +28,12 @@ fi
 git clone --bare -l $GL_REPO_BASE_ABS/$from.git $GL_REPO_BASE_ABS/$to.git
 [ $? -ne 0 ] && exit 1
 
-# fix up creator, and hooks
+# fix up creator, gitweb owner, and hooks
 cd $GL_REPO_BASE_ABS/$to.git
 echo $GL_USER > gl-creater
+git config gitweb.owner "$GL_USER"
+( cd $HOME;perl -le 'do ".gitolite.rc"; print $GL_WILDREPOS_DEFPERMS' ) |
+    SSH_ORIGINAL_COMMAND="setperms $to" $GL_BINDIR/gl-auth-command $GL_USER
 cp -R $GL_REPO_BASE_ABS/$from.git/hooks/* $GL_REPO_BASE_ABS/$to.git/hooks
 touch git-daemon-export-ok
 
@@ -38,3 +41,6 @@ if [ -n "$GL_WILDREPOS_DEFPERMS" ]; then
   echo "$GL_WILDREPOS_DEFPERMS" > gl-perms
 fi
 
+# run gitolite's post-init hook if you can (hook code expects GL_REPO to be set)
+export GL_REPO; GL_REPO="$to"
+[ -x hooks/gl-post-init ] && hooks/gl-post-init
