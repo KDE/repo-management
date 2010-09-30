@@ -24,7 +24,7 @@ if [[ ${fromarray[0]} != ${toarray[0]} ]]; then
     die "Cannot clone a repo from one project to another."
 fi
 
-echo "Cloning, please be patient..." >&2
+echo "Cloning, please be patient..."
 
 # clone $from to $to
 git clone --bare -l $GL_REPO_BASE_ABS/$from.git $GL_REPO_BASE_ABS/$to.git
