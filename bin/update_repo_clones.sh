@@ -21,9 +21,11 @@ for line in `cat ~/projects.list`; do
     if [ -e $bname ]
       then
         cd $bname
-        git fetch
+        git fetch --all --tags --prune
       else
         git clone --bare git://anongit.kde.org/$line $bname
+        cd $bname
+        echo "fetch = +refs/heads/*:refs/heads/*" >> config
     fi
 done
 cd /repositories
