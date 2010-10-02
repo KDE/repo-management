@@ -28,5 +28,14 @@ for line in `cat ~/projects.list`; do
         echo "fetch = +refs/heads/*:refs/heads/*" >> config
     fi
 done
+cd /home/git/metadata-tree
+for file in `find -name "description"`; do
+    diff $file /home/git/default-description > /dev/null
+    result=$?
+    if [ $result -eq 0 ]
+      then
+        rm $file
+    fi
+done
 cd /repositories
 rsync -avz /home/git/metadata-tree/* .
