@@ -7,9 +7,9 @@ if [ -s ~/diffout ]
         echo "Removing repository $line"
         rm -rf $line
     done
-    cp /etc/kdegit/projects-to-projects.list ~/projects-to-projects.list
     rm ~/diffout
 fi
+cp /etc/kdegit/projects-to-projects.list ~/projects-to-projects.list
 for line in `cat ~/projects-to-projects.list`; do
     cd /repositories
     dname=`dirname $line`
