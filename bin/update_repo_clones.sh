@@ -1,5 +1,5 @@
 #/bin/sh
-diff ~/projects.list /etc/kdegit/projects.list | grep "<" | cut -c 3- > ~/diffout
+diff ~/projects-to-projects.list /etc/kdegit/projects-to-projects.list | grep "<" | cut -c 3- > ~/diffout
 if [ -s ~/diffout ]
   then
     cd /repositories
@@ -7,10 +7,10 @@ if [ -s ~/diffout ]
         echo "Removing repository $line"
         rm -rf $line
     done
-    cp /etc/kdegit/projects.list ~/projects.list
+    cp /etc/kdegit/projects-to-projects.list ~/projects-to-projects.list
     rm ~/diffout
 fi
-for line in `cat ~/projects.list`; do
+for line in `cat ~/projects-to-projects.list`; do
     cd /repositories
     dname=`dirname $line`
     gitname=".git"
