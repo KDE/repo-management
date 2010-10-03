@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export RSYNC_CONNECT_PROG='ssh -l git projects.kde.org nc6 localhost 873'
+cd ~git
 rm projects-repos-build.tmp
 for dir in `cat projects-to-projects.list`
   do
