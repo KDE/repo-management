@@ -34,8 +34,7 @@ for file in `find -name "description"`; do
     result=$?
     if [ $result -eq 0 ]
       then
-        rm $file
+        truncate --size=0 $file
     fi
 done
-cd /repositories
-rsync -avz /home/git/metadata-tree/* .
+rsync -avz . /repositories/
