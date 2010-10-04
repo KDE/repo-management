@@ -35,7 +35,7 @@ to="cia@cia.vc"
 sendmail="/usr/sbin/sendmail ${to}"
 
 # Changeset URL
-url="$4/commit/@@sha1@@"
+url="$4@@sha1@@"
 
 # You shouldn't be touching anything else.
 if [[ $# = 0 ]] ; then
