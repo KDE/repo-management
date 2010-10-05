@@ -11,12 +11,6 @@ to=$2
 from=${from//\.git/}
 to=${to//\.git/}
 
-get_rights_and_owner $from
-[ -z "$perm_read" ] && die "no read permissions on $from"
-
-get_rights_and_owner $to
-[ -z "$perm_create" ] && die "no create permissions on $to"
-
 oldIFS=$IFS
 IFS="/"
 fromarray=( $from )
@@ -37,6 +31,12 @@ elif [[ ${fromarray[0]} == "scratch" ]]; then
 elif [[ ${fromarray[0]} == "clones" ]]; then
     to="clones/$from.git/$GL_USER/$to"
 fi
+
+get_rights_and_owner $from
+[ -z "$perm_read" ] && die "no read permissions on $from"
+
+get_rights_and_owner $to
+[ -z "$perm_create" ] && die "no create permissions on $to"
 
 echo "Cloning, please be patient..."
 
