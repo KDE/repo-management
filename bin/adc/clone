@@ -29,7 +29,7 @@ elif [[ ${fromarray[0]} == "scratch" ]]; then
     fi
     to="scratch/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "clones" ]]; then
-    to="clones/$from.git/$GL_USER/$to"
+    to="clones/${fromarray[1]}/$GL_USER/$to"
 fi
 
 get_rights_and_owner $from
