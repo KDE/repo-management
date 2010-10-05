@@ -8,6 +8,9 @@ to=$2
 
 . $(dirname $0)/adc.common-functions
 
+from=${from//\.git/}
+to=${to//\.git/}
+
 get_rights_and_owner $from
 [ -z "$perm_read" ] && die "no read permissions on $from"
 
@@ -20,27 +23,20 @@ fromarray=( $from )
 toarray=( $to )
 IFS=$oldIFS
 
-if [[ ${fromarray[0]} == "scratch" ]]; then
-    if [[ ${toarray[0]} != "scratch" ]]; then
-        die "Cannot clone from scratch to some other area."
-    fi
-elif [[ ${toarray[0]} == "scratch" ]]; then
-    die "Cannot clone to scratch from some other area."
-elif [[ ${fromarray[0]} == "clones" ]]; then
-    if [[ ${toarray[0]} != "clones" ]]; then
-        die "Cannot clone from clones to another area."
-    elif [[ ${fromarray[1]} != ${toarray[1]} ]]; then
-        die "Cannot clone between projects."
-    fi
-elif [[ ${fromarray[0]} != "clones" ]]; then
-    if [[ ${toarray[0]} != "clones" ]]; then
-        die "Must clone into the clones namespace."
-    elif [[ ${fromarray[0]} != ${toarray[1]} ]]; then
-        die "Cannot clone between projects."
-    fi
+if [ ${#toarray[@]} -gt 1 ]; then
+    die "The destination takes a single parameter -- the name. The location is chosen automatically."
 fi
 
-# Congratulations. You made it.
+if [ ${#fromarray[@]} -eq 1 ]; then
+    to="clones/$from.git/$GL_USER/$to"
+elif [[ ${fromarray[0]} == "scratch" ]]; then
+    if [ ${#fromarray[@]} -ne 3 ]; then
+        die "Incorrect source location."
+    fi
+    to="scratch/$GL_USER/$to"
+elif [[ ${fromarray[0]} == "clones" ]]; then
+    to="clones/$from.git/$GL_USER/$to"
+fi
 
 echo "Cloning, please be patient..."
 
