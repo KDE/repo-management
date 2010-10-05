@@ -36,8 +36,15 @@ project=$(cd ..; basename $(pwd))
 reponame=$(basename $(pwd))
 mgmtdir="/home/git/repo-management"
 
+# HACK: Undo this when the transition described in bug 253278 is complete.
+if [ $project == "repositories" ]; then
+    repopath="$reponame";
+else
+    repopath="$project/$reponame"
+fi
+
 # Check EOL style
-eoldir=$mgmtdir/repo-configs/eol/$project/$reponame
+eoldir=$mgmtdir/repo-configs/eol/$repopath
 if [ ! -f $eoldir/skip-eol ]; then
     for commit_id in $revlist ; do
         $mgmtdir/bin/test-eol-style.pl ${commit_id}
@@ -48,7 +55,7 @@ if [ ! -f $eoldir/skip-eol ]; then
 fi
 
 # Send email
-commitfilterdir=$mgmtdir/repo-configs/commitfilter/$project/$reponame
+commitfilterdir=$mgmtdir/repo-configs/commitfilter/$repopath
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
     echo "Triggering Commitfilter and Bugzilla updates..."
     for commit_id in $revlist ; do
@@ -57,7 +64,7 @@ if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
 fi
 
 # Update CIA
-ciadir=$mgmtdir/repo-configs/cia/$project/$reponame
+ciadir=$mgmtdir/repo-configs/cia/$repopath
 if [ -f $ciadir/projectname ] && [ -f $ciadir/urlprefix ]; then
     echo "Sending CIA.vc update..."
     for merged in $revlist ; do
