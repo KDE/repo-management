@@ -11,18 +11,33 @@ to=$2
 get_rights_and_owner $from
 [ -z "$perm_read" ] && die "no read permissions on $from"
 
-get_rights_and_owner $to
-[ -z "$perm_create" ] && die "no create permissions on $to"
-
 oldIFS=$IFS
 IFS="/"
 fromarray=( $from )
 toarray=( $to )
 IFS=$oldIFS
 
-if [[ ${fromarray[0]} != ${toarray[0]} ]]; then
-    die "Cannot clone a repo from one project to another."
+if [[ ${fromarray[0]} == "scratch" ]]; then
+    if [[ ${toarray[0]} != "scratch" ]]; then
+        die "Cannot clone from scratch to some other area."
+    fi
+elif [[ ${toarray[0]} == "scratch" ]]; then
+    die "Cannot clone to scratch from some other area."
+elif [[ ${fromarray[0]} == "clones" ]]; then
+    if [[ ${toarray[0]} != "clones" ]]; then
+        die "Cannot clone from clones to another area."
+    elif [[ ${fromarray[1]} != ${toarray[1]} ]]; then
+        die "Cannot clone between projects."
+    fi
+elif [[ ${fromarray[0]} != "clones" ]]; then
+    if [[ ${toarray[0]} != "clones" ]]; then
+        die "Must clone into the clones namespace."
+    elif [[ ${fromarray[0]} != ${toarray[1]} ]]; then
+        die "Cannot clone between projects."
+    fi
 fi
+
+# Congratulations. You made it.
 
 echo "Cloning, please be patient..."
 
