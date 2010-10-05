@@ -37,8 +37,8 @@ reponame=$(basename $(pwd))
 mgmtdir="/home/git/repo-management"
 
 # HACK: Undo this when the transition described in bug 253278 is complete.
-if [ $project == "repositories" ]; then
-    repopath="$reponame";
+if [ "$project" == "repositories" ]; then
+    repopath="$reponame"
 else
     repopath="$project/$reponame"
 fi
