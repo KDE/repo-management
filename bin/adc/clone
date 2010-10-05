@@ -11,6 +11,9 @@ to=$2
 get_rights_and_owner $from
 [ -z "$perm_read" ] && die "no read permissions on $from"
 
+get_rights_and_owner $to
+[ -z "$perm_create" ] && die "no create permissions on $to"
+
 oldIFS=$IFS
 IFS="/"
 fromarray=( $from )
