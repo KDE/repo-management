@@ -14,7 +14,7 @@ fromarray=( $from )
 toarray=( $to )
 IFS=$oldIFS
 
-from=${from//\.git/}
+filteredfrom=${from//\.git/}
 to=${to//\.git/}
 
 if [ ${#toarray[@]} -gt 1 ]; then
@@ -22,7 +22,7 @@ if [ ${#toarray[@]} -gt 1 ]; then
 fi
 
 if [ ${#fromarray[@]} -eq 1 ]; then
-    to="clones/$from.git/$GL_USER/$to"
+    to="clones/$filteredfrom.git/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "scratch" ]]; then
     if [ ${#fromarray[@]} -ne 3 ]; then
         die "Incorrect source location."
