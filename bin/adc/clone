@@ -8,14 +8,14 @@ to=$2
 
 . $(dirname $0)/adc.common-functions
 
-from=${from//\.git/}
-to=${to//\.git/}
-
 oldIFS=$IFS
 IFS="/"
 fromarray=( $from )
 toarray=( $to )
 IFS=$oldIFS
+
+from=${from//\.git/}
+to=${to//\.git/}
 
 if [ ${#toarray[@]} -gt 1 ]; then
     die "The destination takes a single parameter -- the name. The location is chosen automatically."
