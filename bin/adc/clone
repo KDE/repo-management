@@ -43,8 +43,10 @@ get_rights_and_owner $from
 echo "Cloning, please be patient..."
 
 # clone $from to $to
-git clone --bare -l $GL_REPO_BASE_ABS/$from.git $GL_REPO_BASE_ABS/$to.git
+git clone --bare -l $GL_REPO_BASE_ABS/$from.git $GL_REPO_BASE_ABS/$to.git > /dev/null
 [ $? -ne 0 ] && exit 1
+
+echo "New clone of $from.git created at $to.git"
 
 # fix up creator, gitweb owner, and hooks
 cd $GL_REPO_BASE_ABS/$to.git
