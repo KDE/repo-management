@@ -64,7 +64,7 @@ elif [ $parentpath == "/srv/kdegit/repositories" ]; then
 fi
 
 if [ ! -z $url ]; then
-    echo "This commit will be available for viewing at $url"
+    echo "In a few minutes this commit will be available for viewing at $url"
 fi
 
 # Check EOL style
