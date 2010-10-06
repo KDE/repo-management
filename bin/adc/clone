@@ -27,6 +27,7 @@ elif [[ ${fromarray[0]} == "scratch" ]]; then
     if [ ${#fromarray[@]} -ne 3 ]; then
         die "Incorrect source location."
     fi
+    from="scratch/${fromarray[1]}/${fromarray[2]//\.git/}"
     to="scratch/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "clones" ]]; then
     to="clones/${fromarray[1]}/$GL_USER/$to"
