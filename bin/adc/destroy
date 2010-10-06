@@ -18,6 +18,6 @@ rm -rf $delete.git
 
 cd $HOME
 PROJECTS_LIST=$(perl -e 'do ".gitolite.rc"; print $PROJECTS_LIST')
-perl -ni -e "print unless /^$delete$/" $PROJECTS_LIST
+perl -ni -e "print unless /^\Q$delete\E$/" $PROJECTS_LIST
 
 echo "Done"
