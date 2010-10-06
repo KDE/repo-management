@@ -46,7 +46,7 @@ revlist=$(git rev-parse --not --all | grep -v $oldrev | git rev-list --reverse -
 
 if [ ! -f kde-repo-uid ]; then
     currrepoid=$(pwd | sha1sum | cut -c -8)
-    cat $currrepoid > kde-repo-uid
+    $(cat $currrepoid > kde-repo-uid)
 fi
 
 # Setup essential variables
