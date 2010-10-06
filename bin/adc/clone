@@ -22,6 +22,7 @@ if [ ${#toarray[@]} -gt 1 ]; then
 fi
 
 if [ ${#fromarray[@]} -eq 1 ]; then
+    from=$filteredfrom.git
     to="clones/$filteredfrom.git/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "scratch" ]]; then
     if [ ${#fromarray[@]} -ne 3 ]; then
