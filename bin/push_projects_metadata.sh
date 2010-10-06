@@ -8,6 +8,7 @@ for dir in `cat projects-to-projects.list`
     echo "$dir/git-daemon-export-ok" >> projects-repos-build.tmp
     echo "$dir/description" >> projects-repos-build.tmp
     echo "$dir/kde-cloned-from" >> projects-repos-build.tmp
+    echo "$dir/kde-repo-uid" >> projects-repos-build.tmp
     echo "$dir/gl-creater" >> projects-repos-build.tmp
     echo "$dir/gl-owner" >> projects-repos-build.tmp
     echo "$dir/gl-perms" >> projects-repos-build.tmp

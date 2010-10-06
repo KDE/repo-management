@@ -64,7 +64,7 @@ if [ -n "$GL_WILDREPOS_DEFPERMS" ]; then
   echo "$GL_WILDREPOS_DEFPERMS" > gl-perms
 fi
 
-echo $from > kde-cloned-from
+echo "$from.git" > kde-cloned-from
 
 # run gitolite's post-init hook if you can (hook code expects GL_REPO to be set)
 export GL_REPO; GL_REPO="$to"
