@@ -52,7 +52,9 @@ seconddir=$(cd ..; cd ..; basename $(pwd))
 thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
 urlpath=
 url=
-if [ "$seconddir" == "scratch" ] || [ "$thirddir" == "clones" ]; then
+if [ $parentdir == "sysadmin" ]; then
+    #do nothing; sysadmin repos private, for now
+elif [ $seconddir == "scratch" ] || [ $thirddir == "clones" ]; then
     urlpath=${currdir#/srv/kdegit/repositories/}
     url="http://gitweb.kde.org/$urlpath/commit/$newrev"
 elif [ $parentpath == "/srv/kdegit/repositories" ]; then
