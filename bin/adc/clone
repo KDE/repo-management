@@ -33,6 +33,9 @@ elif [[ ${fromarray[0]} == "scratch" ]]; then
 elif [[ ${fromarray[0]} == "clones" ]]; then
     from="clones/${fromarray[1]}/${fromarray[2]}/${fromarray[3]//\.git/}"
     to="clones/${fromarray[1]}/$GL_USER/$to"
+elif [[ ${fromarray[0]} == "websites" ]]; then
+    from="websites/${fromarray[1]//\.git/}"
+    to="clones/websites/${fromarray[1]//\.git/}.git/$GL_USER/$to"
 else
     die "Not valid source/destination locations"
 fi
