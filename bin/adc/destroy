@@ -11,7 +11,7 @@ get_rights_and_owner $delete
 # alternative 1 -- only creator can delete
 [ "$owner" = "$GL_USER" ] || die "$delete is not yours to delete!"
 
-echo "Destroying repository ${GL_REPO_BASE_ABS#/srv/kdegit/repositories/}/$delete..."
+echo "Destroying repository $delete..."
 
 cd $GL_REPO_BASE_ABS
 rm -rf $delete.git
