@@ -23,6 +23,19 @@ if [ -z "$refname" ] || [ -z "$oldrev" ] || [ -z "$newrev" ]; then
         exit 1
 fi
 
+for f in $HOME/.gitolite.down $PWD/.gitolite.down
+  do
+    if [ -f $f ]
+      then
+        echo >&2
+        echo '*** Sorry, the repositories are down for maintenance' >&2
+        echo '*** Please try again in a short while' >&2
+        echo >&2
+        cat $f >&2
+        exit 1
+    fi
+done
+
 # Prepare the list of revisions to check, etc
 revdiff="$newrev"
 if [ $oldrev != "0000000000000000000000000000000000000000" ]; then
