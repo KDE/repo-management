@@ -18,7 +18,7 @@ filteredfrom=${from//\.git/}
 to=${to//\.git/}
 
 if [ ${#toarray[@]} -gt 1 ]; then
-    die "The destination takes a single parameter -- the name. The location is chosen automatically."
+    die "The destination takes a single path element -- the name. The location is chosen automatically."
 fi
 
 if [ ${#fromarray[@]} -eq 1 ]; then
@@ -30,6 +30,7 @@ elif [[ ${fromarray[0]} == "scratch" ]]; then
     from="scratch/${fromarray[1]}/${fromarray[2]//\.git/}"
     to="scratch/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "clones" ]]; then
+    from="clones/${fromarray[1]}/${fromarray[2]}/${fromarray[3]//\.git/}"
     to="clones/${fromarray[1]}/$GL_USER/$to"
 else
     die "Not valid source/destination locations"
