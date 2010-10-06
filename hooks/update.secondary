@@ -52,7 +52,7 @@ seconddir=$(cd ..; cd ..; basename $(pwd))
 thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
 urlpath=
 url=
-if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin" ]; then
+if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     #do nothing; sysadmin repos private, for now
     url=
 elif [ $seconddir == "scratch" -o $thirddir == "clones" ]; then
