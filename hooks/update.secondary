@@ -43,6 +43,27 @@ else
     repopath="$project/$reponame"
 fi
 
+# not using project/reponame from above as I'm not sure if they might go away once the move is all settled
+currpath=$(basename $(pwd))
+currdir=$(pwd)
+parentpath=$(cd ..; pwd)
+parentdir=$(cd ..; basename $(pwd))
+seconddir=$(cd ..; cd ..; basename $(pwd))
+thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
+urlpath=
+url=
+if [ "$seconddir" == "scratch" ] || [ "$thirddir" == "clones" ]; then
+    urlpath=${currdir#/srv/kdegit/repositories/}
+    url="http://gitweb.kde.org/$urlpath/commit/$newrev"
+elif [ $parentpath == "/srv/kdegit/repositories" ]; then
+    urlpath=${currdir//\.git/}
+    url="http://projects.kde.org/projects/$urlpath/revisions/$newrev"
+fi
+
+if [ ! -z $url ]; then
+    echo "This commit will be available for viewing at $url"
+fi
+
 # Check EOL style
 eoldir=$mgmtdir/repo-configs/eol/$repopath
 if [ ! -f $eoldir/skip-eol ]; then
