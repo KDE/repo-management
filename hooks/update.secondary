@@ -60,7 +60,7 @@ elif [ $seconddir == "scratch" -o $thirddir == "clones" ]; then
     url="http://gitweb.kde.org/$urlpath/commit/$newrev"
 elif [ $parentpath == "/srv/kdegit/repositories" ]; then
     urlpath=${currdir//\.git/}
-    url="http://projects.kde.org/projects/$urlpath/revisions/$newrev"
+    url="http://projects.kde.org/projects/$urlpath/repository/revisions/$newrev"
 fi
 
 if [ ! -z $url ]; then
