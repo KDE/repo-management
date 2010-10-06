@@ -30,13 +30,12 @@ elif [[ ${fromarray[0]} == "scratch" ]]; then
     to="scratch/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "clones" ]]; then
     to="clones/${fromarray[1]}/$GL_USER/$to"
+else
+    die "Not valid source/destination locations"
 fi
 
 get_rights_and_owner $from
 [ -z "$perm_read" ] && die "no read permissions on $from"
-
-get_rights_and_owner $to
-[ -z "$perm_create" ] && die "no create permissions on $to"
 
 echo "Cloning, please be patient..."
 
