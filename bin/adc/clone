@@ -22,7 +22,7 @@ if [ ${#toarray[@]} -gt 1 ]; then
 fi
 
 if [ ${#fromarray[@]} -eq 1 ]; then
-    from=$filteredfrom.git
+    from=$filteredfrom
     to="clones/$filteredfrom.git/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "scratch" ]]; then
     if [ ${#fromarray[@]} -ne 3 ]; then
@@ -38,7 +38,7 @@ else
 fi
 
 get_rights_and_owner $from
-[ -z "$perm_read" ] && die "no read permissions on $from"
+[ -z "$perm_read" ] && die "no read permissions on $from.git"
 
 echo "Cloning, please be patient..."
 
