@@ -44,8 +44,8 @@ else
 fi
 
 # not using project/reponame from above as I'm not sure if they might go away once the move is all settled
-currpath=$(basename $(pwd))
-currdir=$(pwd)
+currpath=$(pwd)
+currdir=$(basename $(pwd))
 parentpath=$(cd ..; pwd)
 parentdir=$(cd ..; basename $(pwd))
 seconddir=$(cd ..; cd ..; basename $(pwd))
@@ -56,7 +56,7 @@ if [ $parentdir == "sysadmin" ]; then
     #do nothing; sysadmin repos private, for now
     url=
 elif [ $seconddir == "scratch" -o $thirddir == "clones" ]; then
-    urlpath=${currdir#/srv/kdegit/repositories/}
+    urlpath=${currpath#/srv/kdegit/repositories/}
     url="http://gitweb.kde.org/$urlpath/commit/$newrev"
 elif [ $parentpath == "/srv/kdegit/repositories" ]; then
     urlpath=${currdir//\.git/}
