@@ -54,6 +54,7 @@ urlpath=
 url=
 if [ $parentdir == "sysadmin" ]; then
     #do nothing; sysadmin repos private, for now
+    url=
 elif [ $seconddir == "scratch" -o $thirddir == "clones" ]; then
     urlpath=${currdir#/srv/kdegit/repositories/}
     url="http://gitweb.kde.org/$urlpath/commit/$newrev"
