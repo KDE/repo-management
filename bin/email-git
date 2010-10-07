@@ -28,6 +28,7 @@ require 'resolv'
 COMMIT_ID = ARGV[0]
 PROJECT = ARGV[1]
 SVN_LOCATION = ARGV[2]
+DESTINATION_EMAIL = ARGV[3]
 
 
 #============================== Functions ==============================#
@@ -76,7 +77,7 @@ def kde_commits(commit_id,message)
     from = `git log #{commit_id} -n 1 --pretty='format:%an <%ae>'`
     subject = `git log #{commit_id} -n 1 --pretty='format:%h'` + ': ' + `git log #{commit_id} -n1 --pretty='format:%s'`[0,50]
     subject = "#{warning}#{subject}"
-    send_email(from, "kde-commits@kde.org", "#{subject}\nX-Commit-Directories: (0) #{SVN_LOCATION}", "#{message}")
+    send_email(from, "[#{DESTINATION_EMAIL}]", "#{subject}\nX-Commit-Directories: (0) #{SVN_LOCATION}", "#{message}")
 end
 
 # The license checker of a file
