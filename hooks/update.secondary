@@ -75,9 +75,9 @@ if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     url=
 elif [ $seconddir == "scratch" -o $thirddir == "clones" ]; then
     urlpath=${currpath#/srv/kdegit/repositories/}
-    url="http://commits.kde.org/g/$repouid/$newrev"
+    url="http://commits.kde.org/$repouid/$newrev"
 elif [ $parentpath == "/srv/kdegit/repositories" ]; then
-    url="http://commits.kde.org/r/$newrev"
+    url="http://commits.kde.org/$newrev"
 fi
 
 if [ ! -z $url ]; then

@@ -29,8 +29,8 @@ helpers do
 
 end
 
-get %r{/r/([a-zA-Z0-9]+)} do |changeset|
-  url = findRedmineUrl(changeset)
+get %r{/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)} do |repoid, changeset|
+  url = findGitwebUrl(repoid, changeset)
   if url.nil?
     redirect "http://projects.kde.org/"
   else
@@ -38,8 +38,8 @@ get %r{/r/([a-zA-Z0-9]+)} do |changeset|
   end
 end
 
-get %r{/g/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)} do |repoid, changeset|
-  url = findGitwebUrl(repoid, changeset)
+get %r{/([a-zA-Z0-9]+)} do |changeset|
+  url = findRedmineUrl(changeset)
   if url.nil?
     redirect "http://projects.kde.org/"
   else
