@@ -38,7 +38,7 @@ get %r{/r/([a-zA-Z0-9]+)} do |changeset|
   end
 end
 
-get %r{/g/([a-zA-Z0-9]+)([a-zA-Z0-9]{8})} do |repoid, changeset|
+get %r{/g/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)} do |repoid, changeset|
   url = findGitwebUrl(repoid, changeset)
   if url.nil?
     redirect "http://projects.kde.org/"
