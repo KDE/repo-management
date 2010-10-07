@@ -45,9 +45,9 @@ fi
 revlist=$(git rev-parse --not --all | grep -v $oldrev | git rev-list --reverse --stdin $revdiff)
 
 # Generate short unique ID for each repo that can be used for a shortened commit viewing URL
+repouid=$(pwd | sha1sum | cut -c -8)
 if [ ! -f kde-repo-uid ]; then
-    currrepoid=$(pwd | sha1sum | cut -c -8)
-    $(echo $currrepoid > kde-repo-uid)
+    $(echo $repouid > kde-repo-uid)
 fi
 
 # Setup essential variables
@@ -75,7 +75,7 @@ if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     url=
 elif [ $seconddir == "scratch" -o $thirddir == "clones" ]; then
     urlpath=${currpath#/srv/kdegit/repositories/}
-    url="http://gitweb.kde.org/$urlpath/commit/$newrev"
+    url="http://commits.kde.org/g/$repouid/$newrev"
 elif [ $parentpath == "/srv/kdegit/repositories" ]; then
     url="http://commits.kde.org/r/$newrev"
 fi
