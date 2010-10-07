@@ -5,5 +5,5 @@ for repouid in $( find /home/git/metadata-tree -name "kde-repo-uid" ); do
     uid=$(cat $repouid)
     dir=$(dirname $repouid)
     dir=${dir#/home/git/metadata-tree}
-    ln -sf /repositories$dir $uid
+    echo $dir > $uid
 done
