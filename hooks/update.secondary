@@ -5,7 +5,7 @@
 #
 # To enable this hook, make this file executable by "chmod +x update".
 # copyright this dude http://blog.mwolson.org/tech/a_month_and_a_half_of_git.html
-# --- Command line
+
 refname="$1"
 oldrev="$2"
 newrev="$3"
@@ -43,6 +43,12 @@ if [ $oldrev != "0000000000000000000000000000000000000000" ]; then
 fi
 
 revlist=$(git rev-parse --not --all | grep -v $oldrev | git rev-list --reverse --stdin $revdiff)
+
+# Generate short unique ID for each repo that can be used for a shortened commit viewing URL
+if [ ! -f kde-repo-uid ]; then
+    currrepoid=$(pwd | sha1sum | cut -c -8)
+    $(echo $currrepoid > kde-repo-uid)
+fi
 
 # Setup essential variables
 project=$(cd ..; basename $(pwd))
