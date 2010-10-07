@@ -69,7 +69,6 @@ parentpath=$(cd ..; pwd)
 parentdir=$(cd ..; basename $(pwd))
 seconddir=$(cd ..; cd ..; basename $(pwd))
 thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
-urlpath=
 url=
 if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     #do nothing; sysadmin repos private, for now
@@ -78,8 +77,7 @@ elif [ $seconddir == "scratch" -o $thirddir == "clones" ]; then
     urlpath=${currpath#/srv/kdegit/repositories/}
     url="http://gitweb.kde.org/$urlpath/commit/$newrev"
 elif [ $parentpath == "/srv/kdegit/repositories" ]; then
-    urlpath=${currdir//\.git/}
-    url="http://projects.kde.org/projects/$urlpath/repository/revisions/$newrev"
+    url="http://commits.kde.org/r/$newrev"
 fi
 
 if [ ! -z $url ]; then
