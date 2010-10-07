@@ -15,10 +15,31 @@ helpers do
     end
     return nil
   end
+
+  def findGitwebUrl(repoid, changeset)
+    if not File.exists?("/home/git/repo-uid-mappings/#{repoid}")
+      return nil
+    end
+    path = File.read("/home/git/repo-uid-mappings/#{repoid}").chomp
+    if not File.exists?("/repositories/#{path}")
+      return nil
+    end
+    return "http://gitweb.kde.org/#{path}/commit/#{changeset}"
+  end
+
 end
 
 get %r{/r/([a-zA-Z0-9]+)} do |changeset|
   url = findRedmineUrl(changeset)
+  if url.nil?
+    redirect "http://projects.kde.org/"
+  else
+    redirect url
+  end
+end
+
+get %r{/g/([a-zA-Z0-9]+)([a-zA-Z0-9]{8})} do |repoid, changeset|
+  url = findGitwebUrl(repoid, changeset)
   if url.nil?
     redirect "http://projects.kde.org/"
   else
