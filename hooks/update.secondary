@@ -51,15 +51,16 @@ if [ ! -f kde-repo-uid ]; then
 fi
 
 # Setup essential variables
-project=$(cd ..; basename $(pwd))
+subdir=$(cd ..; basename $(pwd))
 reponame=$(basename $(pwd))
 mgmtdir="/home/git/repo-management"
 
-# HACK: Undo this when the transition described in bug 253278 is complete.
-if [ "$project" == "repositories" ]; then
+# HACK: Hardcoding the /repositories/ dirname here is crap - this is baggage
+# from the bug 253278 transition.
+if [ "$subdir" == "repositories" ]; then
     repopath="$reponame"
 else
-    repopath="$project/$reponame"
+    repopath="$subdir/$reponame"
 fi
 
 # not using project/reponame from above as I'm not sure if they might go away once the move is all settled
