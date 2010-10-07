@@ -74,11 +74,9 @@ url=
 if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     #do nothing; sysadmin repos private, for now
     url=
-    dest="sysadmin@kde.org"
 elif [ $seconddir == "scratch" -o $thirddir == "clones" -o $parentpath == "/srv/kdegit/repositories" ]; then
     urlpath=${currpath#/srv/kdegit/repositories/}
     url="http://commits.kde.org/$repouid/$newrev"
-    dest="kde-commits@kde.org"
 fi
 
 if [ ! -z $url ]; then
@@ -102,7 +100,7 @@ commitfilterdir=$mgmtdir/repo-configs/commitfilter/$repopath
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
     echo "Triggering Commitfilter and Bugzilla updates..."
     for commit_id in $revlist ; do
-        $mgmtdir/bin/email-git ${commit_id} $(cat $commitfilterdir/filtername) $(cat $commitfilterdir/svnpath) ${dest}
+        $mgmtdir/bin/email-git ${commit_id} $(cat $commitfilterdir/filtername) $(cat $commitfilterdir/svnpath)
     done
 fi
 
