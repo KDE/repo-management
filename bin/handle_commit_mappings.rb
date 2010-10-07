@@ -30,17 +30,13 @@ helpers do
       return nil
     end
     path = File.read("/home/git/repo-uid-mappings/#{repoid}").chomp
-    puts path
     if not File.exists?("/repositories/#{path}")
       return nil
     end
     execstring = "select identifier, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{changeset}';"
     res = $pg.exec(execstring)
-    puts res
     if not res[0].nil?
       reppath = "/repositories/" + path
-      puts reppath
-      puts res[0][1]
       if reppath == res[0][1]
         return "http://projects.kde.org/projects/#{res[0][0]}/repository/revisions/#{changeset}"
       end
