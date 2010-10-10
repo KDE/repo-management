@@ -6,6 +6,8 @@
 from=$1
 to=$2
 
+if [ -z "$from" -o -z "$to" ] && die "This command takes two parameters (from and to)!"
+
 . $(dirname $0)/adc.common-functions
 
 oldIFS=$IFS
