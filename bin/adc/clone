@@ -6,7 +6,7 @@
 from=$1
 to=$2
 
-if [ -z "$from" -o -z "$to" ] && die "This command takes two parameters (from and to)!"
+[ -z "$from" -o -z "$to" ] && die "This command takes two parameters (from and to)!"
 
 . $(dirname $0)/adc.common-functions
 
