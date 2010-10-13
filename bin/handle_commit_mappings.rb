@@ -37,9 +37,9 @@ helpers do
     res = $pg.exec(execstring)
     if not res[0].nil?
       reppath = "/repositories/" + path
-      reppath.chop! if reppath[reppath.size-1] == '/'
+      reppath.chop! if reppath[reppath.length-1] == 47 or reppath[reppath.length-1] == '/'
       dbpath = res[0][1]
-      dbpath.chop! if dbpath[dbpath.size-1] == '/'
+      dbpath.chop! if dbpath[dbpath.length-1] == 47 or dbpath[dbpath.length-1] == '/'
       if reppath == dbpath
         return "http://projects.kde.org/projects/#{res[0][0]}/repository/revisions/#{changeset}"
       end
