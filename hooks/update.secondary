@@ -84,11 +84,12 @@ if [ ! -z $url ]; then
     echo "$url"
 fi
 
-# Check EOL style
+# Audit the incoming commits
 eoldir=$mgmtdir/repo-configs/eol/$repopath
 if [ ! -f $eoldir/skip-eol ]; then
+    echo "Auditing commits, please wait...."
     for commit_id in $revlist ; do
-        $mgmtdir/bin/test-eol-style.pl ${commit_id}
+        $mgmtdir/bin/audit-commit.pl ${commit_id}
         if [ $? -ne 0 ]; then
             exit 1
         fi
