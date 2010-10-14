@@ -102,19 +102,19 @@ fi
 
 # Update CIA
 ciadir=$mgmtdir/repo-configs/cia/$repopath
-skipcia=0
-if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" -o $seconddir == "scratch" -o $thirddir == "clones" ]; then
-    skipcia=1
-fi
+#skipcia=0
+#if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" -o $seconddir == "scratch" -o $thirddir == "clones" ]; then
+#    skipcia=1
+#fi
 
-if [ "$skipcia" -eq "0" ]; then
+#if [ "$skipcia" -eq "0" ]; then
     if [ ! -f $ciadir/skip-cia ]; then
         echo "Sending CIA.vc update..."
         for merged in $revlist ; do
             $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$currdir" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
         done
     fi
-fi
+#fi
 
 # --- Finished
 exit 0
