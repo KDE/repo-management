@@ -51,32 +51,24 @@ if [ ! -f kde-repo-uid ]; then
 fi
 
 # Setup essential variables
-subdir=$(cd ..; basename $(pwd))
-reponame=$(basename $(pwd))
 mgmtdir="/home/git/repo-management"
-
-# HACK: Hardcoding the /repositories/ dirname here is crap - this is baggage
-# from the bug 253278 transition.
-if [ "$subdir" == "repositories" ]; then
-    repopath="$reponame"
-else
-    repopath="$subdir/$reponame"
-fi
-
-# not using project/reponame from above as I'm not sure if they might go away once the move is all settled
 currpath=$(pwd)
 currdir=$(basename $(pwd))
 parentpath=$(cd ..; pwd)
 parentdir=$(cd ..; basename $(pwd))
 seconddir=$(cd ..; cd ..; basename $(pwd))
 thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
+
 url=
+skipcia=0
 if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     #do nothing; sysadmin repos private, for now
     url=
+    skipcia=1
 elif [ $seconddir == "scratch" -o $thirddir == "clones" -o $parentpath == "/srv/kdegit/repositories" ]; then
     urlpath=${currpath#/srv/kdegit/repositories/}
     url="http://commits.kde.org/$repouid/$newrev"
+    skipcia=1
 fi
 
 if [ ! -z $url ]; then
@@ -85,7 +77,7 @@ if [ ! -z $url ]; then
 fi
 
 # Audit the incoming commits
-eoldir=$mgmtdir/repo-configs/eol/$repopath
+eoldir=$mgmtdir/repo-configs/eol/$currpath
 if [ ! -f $eoldir/skip-eol ]; then
     echo "Auditing commits, please wait...."
     for commit_id in $revlist ; do
@@ -97,7 +89,7 @@ if [ ! -f $eoldir/skip-eol ]; then
 fi
 
 # Send email
-commitfilterdir=$mgmtdir/repo-configs/commitfilter/$repopath
+commitfilterdir=$mgmtdir/repo-configs/commitfilter/$currpath
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
     echo "Triggering Commitfilter and Bugzilla updates..."
     for commit_id in $revlist ; do
@@ -106,12 +98,14 @@ if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
 fi
 
 # Update CIA
-ciadir=$mgmtdir/repo-configs/cia/$repopath
-if [ ! -f $ciadir/skip-cia ]; then
-    echo "Sending CIA.vc update..."
-    for merged in $revlist ; do
-        $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$reponame" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
-    done
+ciadir=$mgmtdir/repo-configs/cia/$currpath
+if [ "$skipcia" -eq "0" ]; then
+    if [ ! -f $ciadir/skip-cia ]; then
+        echo "Sending CIA.vc update..."
+        for merged in $revlist ; do
+            $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$currdir" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
+        done
+    fi
 fi
 
 # --- Finished
