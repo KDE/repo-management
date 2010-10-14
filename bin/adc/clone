@@ -8,6 +8,8 @@ to=$2
 
 . $(dirname $0)/adc.common-functions
 
+[ -z "$from" -o -z "$to" ] && die "This command takes two parameters (from and to)!"
+
 oldIFS=$IFS
 IFS="/"
 fromarray=( $from )
