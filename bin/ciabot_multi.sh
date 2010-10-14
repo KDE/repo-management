@@ -21,14 +21,14 @@
 #       done
 #
 
-# The project as known to CIA
-project="$3"
+# Project identifier (git repo name sans trailing .git)
+module="$3"
 
 # Set to true if you want the full log to be sent
 noisy=true
 
 # Addresses for the e-mail
-from="amarok-devel@kde.org"
+from="sysadmin@kde.org"
 to="cia@cia.vc"
 
 # SMTP client to use
@@ -78,7 +78,8 @@ out="
     <url>http://dev.gentoo.org/~ferdy/stuff/ciabot.bash</url>
   </generator>
   <source>
-    <project>${project}</project>
+    <project>KDE</project>
+    <module>${module}</module>
     <branch>${refname}</branch>
   </source>
   <timestamp>${ts}</timestamp>
