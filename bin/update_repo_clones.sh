@@ -18,11 +18,12 @@ for line in `cat ~/projects-to-projects.list`; do
     bname_nogit=${bname%$gitname}
     mkdir -p $dname
     cd $dname
-    if [ -e $bname ]
+    if [ -e $bname -a -e $bname/HEAD ]
       then
         cd $bname
         git fetch --all --tags --prune
       else
+        rm -rf $bname
         git clone --bare git://anongit.kde.org/$line $bname
         cd $bname
         echo "fetch = +refs/heads/*:refs/heads/*" >> config
