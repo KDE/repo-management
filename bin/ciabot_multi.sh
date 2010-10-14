@@ -17,7 +17,7 @@
 #       oldhead=$2
 #       newhead=$3
 #       for merged in $(git rev-list ${oldhead}..${newhead} | tac) ; do
-#               /path/to/ciabot.bash ${refname} ${merged} [cia project name] [gitorious url prefix]
+#               /path/to/ciabot.bash ${refname} ${merged} [module name] [url prefix]
 #       done
 #
 
@@ -100,7 +100,7 @@ ${logmessage}
 </message>"
 
 ${sendmail} << EOM
-Message-ID: <${merged:0:12}.${author}@${project}>
+Message-ID: <${merged:0:12}.${author}@${module}>
 From: ${from}
 To: ${to}
 Content-type: text/xml
