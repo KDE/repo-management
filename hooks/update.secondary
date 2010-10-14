@@ -106,10 +106,13 @@ if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
 fi
 
 # Update CIA
-echo "Sending CIA.vc update..."
-for merged in $revlist ; do
-    $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$reponame" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
-done
+ciadir=$mgmtdir/repo-configs/cia/$repopath
+if [ ! -f $ciadir/skip-cia ]; then
+    echo "Sending CIA.vc update..."
+    for merged in $revlist ; do
+        $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$reponame" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
+    done
+fi
 
 # --- Finished
 exit 0
