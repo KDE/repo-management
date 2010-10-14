@@ -29,7 +29,7 @@ noisy=true
 
 # Addresses for the e-mail
 from="sysadmin@kde.org"
-to="cia@cia.vc"
+to="sho@eikehein.com"
 
 # SMTP client to use
 sendmail="/usr/sbin/sendmail ${to}"
