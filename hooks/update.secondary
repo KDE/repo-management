@@ -80,7 +80,8 @@ fi
 # Is this the first push?
 headlist=$(ls $GIT_DIR/refs/heads)
 if [ "$headlist" == "" ]; then
-    echo "Skipping post-push hooks due to first push. If this is not the first push, please contact sysadmin"
+    echo "Skipping post-push hooks for the initial push to an empty repository."
+    echo "(If this is not the initial push, please inform the sysadmin team.)"
     exit 0
 fi
 
