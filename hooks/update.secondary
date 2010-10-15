@@ -65,6 +65,18 @@ else
     repopath="$parentdir/$currdir"
 fi
 
+# Audit the incoming commits
+eoldir=$mgmtdir/repo-configs/eol/$repopath
+if [ ! -f $eoldir/skip-eol ]; then
+    echo "Auditing commits, please wait...."
+    for commit_id in $revlist ; do
+        $mgmtdir/bin/audit-commit.pl ${commit_id}
+        if [ $? -ne 0 ]; then
+            exit 1
+        fi
+    done
+fi
+
 url=
 if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     #do nothing; sysadmin repos private, for now
@@ -77,18 +89,6 @@ fi
 if [ ! -z $url ]; then
     echo "In a few minutes this commit will be available for viewing at:"
     echo "$url"
-fi
-
-# Audit the incoming commits
-eoldir=$mgmtdir/repo-configs/eol/$repopath
-if [ ! -f $eoldir/skip-eol ]; then
-    echo "Auditing commits, please wait...."
-    for commit_id in $revlist ; do
-        $mgmtdir/bin/audit-commit.pl ${commit_id}
-        if [ $? -ne 0 ]; then
-            exit 1
-        fi
-    done
 fi
 
 # Send email
