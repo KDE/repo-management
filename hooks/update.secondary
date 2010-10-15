@@ -6,8 +6,6 @@
 # To enable this hook, make this file executable by "chmod +x update".
 # copyright this dude http://blog.mwolson.org/tech/a_month_and_a_half_of_git.html
 
-#test
-
 refname="$1"
 oldrev="$2"
 newrev="$3"
