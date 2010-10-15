@@ -128,6 +128,10 @@ if( $commitmail =~ /^(\S+)@(\S+)$/ )
 
     # Update failure status
     if( $detailfailed == 1 ) { $auditfail = 1; }
+} else {
+    # Reg-Exp doesn't match, something is wrong
+    $detailfailed = 1;
+    $auditfail = 1;
 }
 
 # Time to make any complaints...
