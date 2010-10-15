@@ -105,11 +105,11 @@ if [ ! -z $url ]; then
 fi
 
 # Send email
-commitfilterdir=$mgmtdir/repo-configs/commitfilter/$repopath
-if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
+emaildir=$mgmtdir/repo-configs/email/$repopath
+if [ -f $emaildir/filtername ] && [ -f $emaildir/svnpath ]; then
     echo "Processing commit message keywords and sending emails ..."
     for commit_id in $revlist ; do
-        $mgmtdir/bin/email-git ${commit_id} $(cat $commitfilterdir/filtername) $(cat $commitfilterdir/svnpath)
+        $mgmtdir/bin/email-git ${commit_id} $(cat $emaildir/filtername) $(cat $emaildir/svnpath)
     done
 fi
 
