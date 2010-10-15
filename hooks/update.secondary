@@ -28,8 +28,8 @@ for f in $HOME/.gitolite.down $PWD/.gitolite.down
     if [ -f $f ]
       then
         echo >&2
-        echo '*** Sorry, the repositories are down for maintenance' >&2
-        echo '*** Please try again in a short while' >&2
+        echo '*** Sorry, the repositories are down for maintenance.' >&2
+        echo '*** Please try again in a short while.' >&2
         echo >&2
         cat $f >&2
         exit 1
@@ -68,7 +68,7 @@ fi
 # Audit the incoming commits
 eoldir=$mgmtdir/repo-configs/eol/$repopath
 if [ ! -f $eoldir/skip-eol ]; then
-    echo "Auditing commits, please wait...."
+    echo "Auditing commits, please wait ..."
     for commit_id in $revlist ; do
         $mgmtdir/bin/audit-commit.pl ${commit_id}
         if [ $? -ne 0 ]; then
@@ -94,7 +94,7 @@ fi
 # Send email
 commitfilterdir=$mgmtdir/repo-configs/commitfilter/$repopath
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
-    echo "Triggering Commitfilter and Bugzilla updates..."
+    echo "Triggering Commitfilter and Bugzilla updates ..."
     for commit_id in $revlist ; do
         $mgmtdir/bin/email-git ${commit_id} $(cat $commitfilterdir/filtername) $(cat $commitfilterdir/svnpath)
     done
@@ -109,7 +109,7 @@ fi
 
 if [ "$skipcia" -eq "0" ]; then
     if [ ! -f $ciadir/skip-cia ]; then
-        echo "Sending CIA.vc update..."
+        echo "Sending CIA.vc update ..."
         for merged in $revlist ; do
             $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$currdir" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
         done
