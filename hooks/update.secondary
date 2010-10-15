@@ -107,7 +107,7 @@ fi
 # Send email
 commitfilterdir=$mgmtdir/repo-configs/commitfilter/$repopath
 if [ -f $commitfilterdir/filtername ] && [ -f $commitfilterdir/svnpath ]; then
-    echo "Triggering Commitfilter and Bugzilla updates ..."
+    echo "Processing commit message keywords and sending emails ..."
     for commit_id in $revlist ; do
         $mgmtdir/bin/email-git ${commit_id} $(cat $commitfilterdir/filtername) $(cat $commitfilterdir/svnpath)
     done
@@ -122,7 +122,7 @@ fi
 
 if [ "$skipcia" -eq "0" ]; then
     if [ ! -f $ciadir/skip-cia ]; then
-        echo "Sending CIA.vc update ..."
+        echo "Submitting CIA.vc update ..."
         for merged in $revlist ; do
             $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$currdir" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
         done
