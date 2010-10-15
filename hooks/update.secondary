@@ -77,6 +77,13 @@ if [ ! -f $eoldir/skip-eol ]; then
     done
 fi
 
+# Is this the first push?
+headlist=$(ls $GIT_DIR/refs/heads)
+if [ "$headlist" == "" ]; then
+    echo "Skipping post-push hooks due to first push. If this is not the first push, please contact sysadmin"
+    exit 0
+fi
+
 url=
 if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     #do nothing; sysadmin repos private, for now
