@@ -98,7 +98,7 @@ if [ ! -z $url ]; then
     revcount=$(echo $revlist | wc -w)
     if [ "$revcount" -eq "1" ]; then
         echo "In a few minutes this commit will be available for viewing at:"
-    elif
+    else
         echo "In a few minutes the last commit in the series will be available for viewing at:"
     fi
     echo "$url"
