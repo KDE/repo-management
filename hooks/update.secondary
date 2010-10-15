@@ -66,8 +66,8 @@ else
 fi
 
 # Audit the incoming commits
-eoldir=$mgmtdir/repo-configs/eol/$repopath
-if [ ! -f $eoldir/skip-eol ]; then
+auditdir=$mgmtdir/repo-configs/audit/$repopath
+if [ ! -f $auditdir/skip-audit ]; then
     echo "Auditing commits, please wait ..."
     for commit_id in $revlist ; do
         $mgmtdir/bin/audit-commit.pl ${commit_id}
