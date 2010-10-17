@@ -25,9 +25,10 @@
 
 require 'resolv'
 
-COMMIT_ID = ARGV[0]
-PROJECT = ARGV[1]
-SVN_LOCATION = ARGV[2]
+BRANCH = ARGV[0]
+COMMIT_ID = ARGV[1]
+PROJECT = ARGV[2]
+SVN_LOCATION = ARGV[3]
 
 
 #============================== Functions ==============================#
@@ -275,11 +276,15 @@ def findfile(mess, rev)
     return mess
 end
 
+def addbranch(mess)
+    return mess.sub(/\A(commit\s[a-z0-9]+\n)(.*)/m, "\\1branch #{BRANCH}\n\\2")
+end
+
 # Analyse the commit message in general each line
 # Find diff, ccmail, bugs, etc...
 def analyze(rev)
     commitlines = `git show --encoding=UTF-8 #{rev}`.split("\n")
-    commitmessage = findfile(`git show --encoding=UTF-8 #{rev}`, rev)
+    commitmessage = addbranch(findfile(`git show --encoding=UTF-8 #{rev}`, rev))
     kde_commits(rev,commitmessage)
     commitlines.each do |line|
         tip, element = line.split(':')

@@ -109,7 +109,7 @@ emaildir=$mgmtdir/repo-configs/email/$repopath
 if [ -f $emaildir/filtername ] && [ -f $emaildir/svnpath ]; then
     echo "Processing commit message keywords and sending emails ..."
     for commit_id in $revlist ; do
-        $mgmtdir/bin/email-git ${commit_id} $(cat $emaildir/filtername) $(cat $emaildir/svnpath)
+        $mgmtdir/bin/email-git ${refname} ${commit_id} $(cat $emaildir/filtername) $(cat $emaildir/svnpath)
     done
 fi
 
