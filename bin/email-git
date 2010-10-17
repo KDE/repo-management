@@ -283,7 +283,7 @@ end
 # Analyse the commit message in general each line
 # Find diff, ccmail, bugs, etc...
 def analyze(rev)
-    commitlines = `git show --encoding=UTF-8 #{rev}`.split("\n")
+    commitlines = `git log -n1 --encoding=UTF-8 --format=format:%B #{rev}`.split("\n")
     commitmessage = addbranch(findfile(`git show --encoding=UTF-8 #{rev}`, rev))
     kde_commits(rev,commitmessage)
     commitlines.each do |line|
