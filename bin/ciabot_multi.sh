@@ -56,16 +56,20 @@ rev=$(git describe --tags ${merged} 2>/dev/null)
 
 rawcommit=$(git cat-file commit ${merged})
 
-#author=$(sed -n -e '/^author .*<\([^@]*\).*$/s--\1-p' \
-#	<<< "${rawcommit}")
-
-author=$(git log -n1 --pretty=format:%an ${merged})
-
 logmessage=$(sed -e '1,/^$/d' <<< "${rawcommit}")
 ${noisy} || logmessage=$(head -n 1 <<< "${logmessage}")
 logmessage=${logmessage//&/&amp;}
 logmessage=${logmessage//</&lt;}
 logmessage=${logmessage//>/&gt;}
+
+author=$(git log -n1 --pretty=format:%an ${merged})
+
+silent=$(echo "$logmessage" | egrep -q "(CVS|SVN|GIT)_SILENT")$?
+
+# Don't push silent commits made by scripty to CIA
+if [ "$author" = "Script Kiddy" -a "$silent" -eq 0 ]; then
+    exit 0
+fi
 
 ts=$(sed -n -e '/^author .*> \([0-9]\+\).*$/s--\1-p' \
 	<<< "${rawcommit}")
