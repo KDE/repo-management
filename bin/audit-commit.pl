@@ -58,10 +58,6 @@ if ($author =~ m/scripty/) {
   exit 0;
 }
 
-# Get configuration for file name restrictions....
-my @restrictednames;
-loadfileconfig();
-
 # Data about the commit
 my $commitname = "";
 my $commitmail = "";
@@ -71,13 +67,18 @@ my $auditfail = 0;
 my @eolfailed = ();
 my @namefailed = ();
 my $detailfailed = 0;
+my $internalerror = 0;
+
+# Get configuration for file name restrictions....
+my @restrictednames;
+loadfileconfig();
 
 # Temporary vars
 my $violationdetect = 0;
 my $currentfile = "";
     
 # Gather all the information
-open(IN, "-|") || exec $gitbin, 'show', $commitid;
+open(IN, "-|") || exec( $gitbin, 'show', $commitid ) or $internalerror = 1;
 while(<IN>) {
 
     # Search for the file name....
@@ -134,6 +135,9 @@ if( $commitmail =~ /^(\S+)@(\S+)$/ )
     $auditfail = 1;
 }
 
+# Did we have any internal errors?
+$auditfail = 1 unless $internalerror == 0;
+
 # Time to make any complaints...
 if( $auditfail != 0 )
 {
@@ -154,6 +158,11 @@ foreach my $filename( @namefailed )
 if( $detailfailed != 0 )
 {
     print STDERR "** Commit Author - invalid name or email\n";
+}
+
+if( $internalerror != 0 )
+{
+    print STDERR "** Internal Validation Error - please contact sysadmin\@kde.org\n";
 }
 
 if( $auditfail != 0 )
@@ -182,7 +191,7 @@ sub usage
 
 sub loadfileconfig
 {
-    open(CFG, "/home/git/repo-management/config/blockedfiles.cfg");
+    open(CFG, "/home/git/repo-management/config/blockedfiles.cfg") or $internalerror = 1;
     while( <CFG> ) 
     {
         # Read in the next line
