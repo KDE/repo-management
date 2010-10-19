@@ -62,7 +62,7 @@ logmessage=${logmessage//&/&amp;}
 logmessage=${logmessage//</&lt;}
 logmessage=${logmessage//>/&gt;}
 
-author=$(git log -n1 --pretty=format:%an ${merged})
+author=$(git log --encoding=UTF-8 -n1 --pretty=format:%an ${merged})
 
 silent=$(echo "$logmessage" | egrep -q "(CVS|SVN|GIT)_SILENT")$?
 
