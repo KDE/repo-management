@@ -58,6 +58,7 @@ parentpath=$(cd ..; pwd)
 parentdir=$(cd ..; basename $(pwd))
 seconddir=$(cd ..; cd ..; basename $(pwd))
 thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
+fourthdir=$(cd ..; cd ..; cd ..; cd ..; basename $(pwd))
 
 if [ "$parentdir" == "repositories" ]; then
     repopath="$currdir"
@@ -116,7 +117,7 @@ fi
 # Update CIA
 ciadir=$mgmtdir/repo-configs/cia/$repopath
 skipcia=0
-if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" -o $seconddir == "scratch" -o $thirddir == "clones" ]; then
+if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" -o $seconddir == "scratch" -o $thirddir == "clones" -o $fourthdir == "clones" ]; then
     skipcia=1
 fi
 
