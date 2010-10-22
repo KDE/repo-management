@@ -107,8 +107,10 @@ ${sendmail} << EOM
 Message-ID: <${merged:0:12}.${author}@${module}>
 From: ${from}
 To: ${to}
-Content-type: text/xml
 Subject: DeliverXML
+MIME-Version: 1.0
+Content-Type: text/xml; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 ${out}
 EOM
 
