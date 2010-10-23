@@ -33,15 +33,25 @@ helpers do
     if not File.exists?("/repositories/#{path}")
       return nil
     end
-    execstring = "select identifier, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{changeset}';"
+    execstring = "select projects.id, identifier, parent_id, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{changeset}';"
     res = $pg.exec(execstring)
     if not res[0].nil?
       reppath = "/repositories/" + path
       reppath.chop! if reppath[reppath.length-1] == 47 or reppath[reppath.length-1] == '/'
-      dbpath = res[0][1]
+      dbpath = res[0][3]
       dbpath.chop! if dbpath[dbpath.length-1] == 47 or dbpath[dbpath.length-1] == '/'
-      if reppath == dbpath
-        return "http://projects.kde.org/projects/#{res[0][0]}/repository/revisions/#{changeset}"
+      finpath = res[0][1]
+      if reppath == dbpath and not res[0][2].nil?
+        # Right repo; do walk
+        execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
+        res = $pg.exec(execstring)
+        until res[0][2].nil?
+          finpath = res[0][1] + '/' + finpath
+          execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
+          res = $pg.exec(execstring)
+        end
+        finpath = res[0][1] + "/" + finpath
+        return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{changeset}"
       end
     end
     return "http://gitweb.kde.org/#{path}/commit/#{changeset}"
