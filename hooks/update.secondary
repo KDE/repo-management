@@ -50,6 +50,10 @@ if [ ! -f kde-repo-uid ]; then
     $(echo $repouid > kde-repo-uid)
 fi
 
+if [ -f kde-repo-nick ]; then
+    repouid=$(cat kde-repo-nick)
+fi
+
 # Setup essential variables
 mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
