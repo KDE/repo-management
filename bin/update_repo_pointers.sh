@@ -7,3 +7,10 @@ for repouid in $( find /home/git/metadata-tree -name "kde-repo-uid" ); do
     dir=${dir#/home/git/metadata-tree/}
     echo $dir > $uid
 done
+for reponick in $( find /home/git/metadata-tree -name "kde-repo-nick" ); do
+    nick=$(cat $reponick)
+    dir=$(dirname $reponick)
+    dir=${dir#/home/git/metadata-tree/}
+    echo $dir > $nick
+done
+
