@@ -41,16 +41,18 @@ helpers do
       dbpath = res[0][3]
       dbpath.chop! if dbpath[dbpath.length-1] == 47 or dbpath[dbpath.length-1] == '/'
       finpath = res[0][1]
-      if reppath == dbpath and not res[0][2].nil?
-        # Right repo; do walk
-        execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
-        res = $pg.exec(execstring)
-        until res[0][2].nil?
-          finpath = res[0][1] + '/' + finpath
+      if reppath == dbpath
+        if not res[0][2].nil?
+          # Right repo; do walk
           execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
           res = $pg.exec(execstring)
+          until res[0][2].nil?
+            finpath = res[0][1] + '/' + finpath
+            execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
+            res = $pg.exec(execstring)
+          end
+          finpath = res[0][1] + "/" + finpath
         end
-        finpath = res[0][1] + "/" + finpath
         return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{changeset}"
       end
     end
