@@ -124,9 +124,6 @@ skipcia=0
 if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" -o $seconddir == "scratch" -o $thirddir == "clones" -o $fourthdir == "clones" ]; then
     skipcia=1
 fi
-if [ -f $mgmtdir/repo-configs/cia/$repopath/skip-cia ]; then
-    skipcia=1
-fi
 
 if [ "$skipcia" -eq "0" ]; then
     if [ ! -f $ciadir/skip-cia ]; then
