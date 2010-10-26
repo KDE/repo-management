@@ -111,11 +111,13 @@ fi
 
 # Send email
 emaildir=$mgmtdir/repo-configs/email/$repopath
-if [ -f $emaildir/filtername ] && [ -f $emaildir/svnpath ]; then
-    echo "Processing commit message keywords and sending emails ..."
-    for commit_id in $revlist ; do
-        $mgmtdir/bin/email-git ${refname##refs/heads/} ${commit_id} $(cat $emaildir/filtername) $(cat $emaildir/svnpath)
-    done
+if [ ! -f $emaildir/skip-email ]; then
+    if [ -f $emaildir/filtername ] && [ -f $emaildir/svnpath ]; then
+        echo "Processing commit message keywords and sending emails ..."
+        for commit_id in $revlist ; do
+            $mgmtdir/bin/email-git ${refname##refs/heads/} ${commit_id} $(cat $emaildir/filtername) $(cat $emaildir/svnpath)
+        done
+    fi
 fi
 
 # Update CIA
