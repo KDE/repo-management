@@ -28,7 +28,7 @@ opt $USE_LOCK_UNLOCK && {
 }
 
 opt $ARE_YOU_SURE && {
-    echo "Are you sure? (type 'yes' if you are)" >&2
+    echo "Are you sure? (type 'yes' if you are):" >&2
     read s
     [ $s = "yes" ] || die aborting...
 }
