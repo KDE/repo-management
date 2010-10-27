@@ -7,6 +7,11 @@
 # cd to repo base and make sure arg1 is a valid repo (also sets $repo)
 valid_owned_repo $1
 
+dir=$(dirname $repo)
+base=$(basename $repo)
+base=${base//\.git/}
+repo="$dir/$base"
+
 rm -f $repo.git/gl-rm-ok
 
 echo "$repo has been locked"
