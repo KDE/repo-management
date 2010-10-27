@@ -24,7 +24,7 @@ for line in `cat ~/projects-to-projects.list`; do
         git fetch --all --tags --prune
       else
         rm -rf $bname
-        git clone --bare git://anongit.kde.org/$line $bname
+        git clone --bare git://git.kde.org/$line $bname
         cd $bname
         echo "fetch = +refs/heads/*:refs/heads/*" >> config
     fi
