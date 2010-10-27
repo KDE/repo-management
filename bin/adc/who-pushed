@@ -14,6 +14,11 @@ sha=$2
 get_rights_and_owner $repo
 [ -z "$perm_read" ] && die "no read permissions on $repo"
 
+dir=$(dirname $repo)
+base=$(basename $repo)
+base=${base//\.git/}
+repo="$dir/$base"
+
 cd $GL_REPO_BASE_ABS/$repo.git
 
 logdir=$(dirname $GL_LOG)      # uncodumented env var ;-)
