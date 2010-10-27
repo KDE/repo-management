@@ -14,7 +14,15 @@ sha=$2
 get_rights_and_owner $repo
 [ -z "$perm_read" ] && die "no read permissions on $repo"
 
-repo=${repo//\.git/}
+if [[ $repo == */* ]]
+  then 
+    dir=$(dirname $repo)
+    base=$(basename $repo)
+    base=${base//\.git/}
+    repo="$dir/$base"
+  else
+    repo=${repo//\.git/}
+fi
 
 cd $GL_REPO_BASE_ABS/$repo.git
 
