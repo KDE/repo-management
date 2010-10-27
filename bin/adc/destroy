@@ -31,11 +31,12 @@ opt $ARE_YOU_SURE && {
 dir=$(dirname $repo)
 base=$(basename $repo)
 base=${base//\.git/}
-delete="$dir/$base"
+repo="$dir/$base"
 
-echo "Destroying repository $delete.git..."
+echo "Destroying repository $repo.git..."
 
-rm -rf $delete.git
+rm -rf $repo.git
+echo "$repo is now GONE!"
 
 cd $HOME
 PROJECTS_LIST=$(perl -e 'do ".gitolite.rc"; print $PROJECTS_LIST')
