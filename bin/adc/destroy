@@ -13,6 +13,11 @@
 # cd to repo base and make sure arg1 is a valid repo (also sets $repo)
 valid_owned_repo $1
 
+dir=$(dirname $repo)
+base=$(basename $repo)
+base=${base//\.git/}
+repo="$dir/$base"
+
 opt $USE_LOCK_UNLOCK && {
     if [ -f $repo.git/gl-rm-ok ]
     then
@@ -27,11 +32,6 @@ opt $ARE_YOU_SURE && {
     read s
     [ $s = "yes" ] || die aborting...
 }
-
-dir=$(dirname $repo)
-base=$(basename $repo)
-base=${base//\.git/}
-repo="$dir/$base"
 
 echo "Destroying repository $repo.git..."
 
