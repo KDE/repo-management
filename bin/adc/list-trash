@@ -13,4 +13,4 @@ do
 done | cut -c3-
 
 echo
-echo "Use the 'restore' command with one of these repository names to restore it"
+echo "Use the 'restore' command with one of these repository names for recovery"
