@@ -22,11 +22,13 @@ for line in `cat ~/projects-to-projects.list`; do
       then
         cd $bname
         git fetch --all --tags --prune
+        git update-server-info
       else
         rm -rf $bname
         git clone --bare git://git.kde.org/$line $bname
         cd $bname
         echo "fetch = +refs/heads/*:refs/heads/*" >> config
+        git update-server-info
     fi
 done
 cd /home/git/metadata-tree
