@@ -13,17 +13,12 @@
 # cd to repo base and make sure arg1 is a valid repo (also sets $repo)
 valid_owned_repo $1
 
-dir=$(dirname $repo)
-base=$(basename $repo)
-base=${base//\.git/}
-repo="$dir/$base"
-
 opt $USE_LOCK_UNLOCK && {
     if [ -f $repo.git/gl-rm-ok ]
     then
         :
     else
-        die "$repo is locked! To 'rm' this repository, first 'unlock' it."
+        die "$repo is locked! Please run the 'help' command for more info."
     fi
 }
 
@@ -33,7 +28,7 @@ opt $ARE_YOU_SURE && {
     [ $s = "yes" ] || die aborting...
 }
 
-echo "Destroying repository $repo.git..."
+echo "Destroying repository $repo..."
 
 rm -rf $repo.git
 echo "$repo is now GONE!"
