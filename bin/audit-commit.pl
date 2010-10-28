@@ -118,7 +118,7 @@ if( $commitmail =~ /^(\S+)@(\S+)$/ )
 {
     # Seperate the email domain out, and disallow localhost
     my $emaildomain = $2;
-    if( $emaildomain eq "localhost" || $emaildomain eq "localhost.localdomain" ) { $detailfailed = 1; }
+    if( $emaildomain eq "localhost" || $emaildomain eq "localhost.localdomain" || $emaildomain eq "(none)" ) { $detailfailed = 1; }
 
     # Check if the domain exists...
     my @domain = mx($emaildomain);
