@@ -50,7 +50,7 @@ my $commitid = shift;
 # Harvest data using git...
 
 ## Rely on Gitolite to have set the username properly
-my $author = $ENV{GL_USER};
+my $author = $ENV{'GL_USER'};
 
 ## WARNING: Allowing people to bypass this hook means no EOL, File Name or Commit Author Validity checks are done on any push by them!!
 # Make scripty commits faster
@@ -191,7 +191,8 @@ sub usage
 
 sub loadfileconfig
 {
-    open(CFG, "/home/git/repo-management/config/blockedfiles.cfg") or $internalerror = 1;
+    my $managementdir = $ENV{'mgmtdir'};
+    open(CFG, "$managementdir/config/blockedfiles.cfg") or $internalerror = 1;
     while( <CFG> ) 
     {
         # Read in the next line
