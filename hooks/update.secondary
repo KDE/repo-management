@@ -55,7 +55,7 @@ if [ -f kde-repo-nick ]; then
 fi
 
 # Setup essential variables
-mgmtdir="/home/git/repo-management"
+export mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
 currdir=$(basename $(pwd))
 parentpath=$(cd ..; pwd)
