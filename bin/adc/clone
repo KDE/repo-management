@@ -5,12 +5,11 @@
 
 . $(dirname $0)/adc.common-functions
 
-# get_rights_and_owner now also sets $repo; see comments in common functions
-get_rights_and_owner $1; from=$repo
-[ -z "$perm_read" ] && die "no read permissions on $from"
+get_rights_and_owner $1
+[ -z "$perm_read" ] && die "no read permissions on $repo"
 
-get_rights_and_owner $2; to=$repo
-[ -z "$perm_create" ] && die "no create permissions on $to"
+from=$repo
+to=$2
 
 [ -z "$from" -o -z "$to" ] && die "This command takes two parameters (from and to)!"
 
@@ -25,7 +24,7 @@ if [ ${#toarray[@]} -gt 1 ]; then
 fi
 
 if [ ${#fromarray[@]} -eq 1 ]; then
-    to="clones/$from.git/$GL_USER/$to"
+    to="clones/$from/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "scratch" ]]; then
     if [ ${#fromarray[@]} -ne 3 ]; then
         die "Incorrect source location."
@@ -37,21 +36,23 @@ elif [[ ${fromarray[0]} == "clones" ]]; then
     to="clones/${fromarray[1]}/$GL_USER/$to"
 elif [[ ${fromarray[0]} == "websites" ]]; then
     from="websites/${fromarray[1]}"
-    to="clones/websites/${fromarray[1]}.git/$GL_USER/$to"
+    to="clones/websites/${fromarray[1]}/$GL_USER/$to"
 else
     die "Not valid source/destination locations"
 fi
 
-get_rights_and_owner $from
-[ -z "$perm_read" ] && die "no read permissions on $from.git"
+get_rights_and_owner $to
+[ -z "$perm_create" ] && die "no create permissions on $repo"
 
 echo "Cloning, please be patient..."
+
+to=$repo
 
 # clone $from to $to
 git clone --bare -l $GL_REPO_BASE_ABS/$from.git $GL_REPO_BASE_ABS/$to.git > /dev/null
 [ $? -ne 0 ] && exit 1
 
-echo "New clone of $from.git created at $to.git"
+echo "New clone of $from created at $to"
 
 # fix up creator, gitweb owner, and hooks
 cd $GL_REPO_BASE_ABS/$to.git
@@ -66,7 +67,7 @@ if [ -n "$GL_WILDREPOS_DEFPERMS" ]; then
   echo "$GL_WILDREPOS_DEFPERMS" > gl-perms
 fi
 
-echo "$from.git" > kde-cloned-from
+echo "$from" > kde-cloned-from
 
 # run gitolite's post-init hook if you can (hook code expects GL_REPO to be set)
 export GL_REPO; GL_REPO="$to"
