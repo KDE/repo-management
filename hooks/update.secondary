@@ -100,7 +100,7 @@ fi
 
 if [ ! -f commiturl ]; then
     urlpath=${currpath#/srv/kdegit/repositories/}
-    urlpath=${currpath%.git}
+    urlpath=${urlpath%.git}
     cat > commiturl << EOF
 Pull (read-only): git://anongit.kde.org/$urlpath
 Pull (read-only): http://anongit.kde.org/$urlpath
