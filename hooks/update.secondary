@@ -95,8 +95,17 @@ if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     #do nothing; sysadmin repos private, for now
     url=
 elif [ $seconddir == "scratch" -o $thirddir == "clones" -o $parentpath == "/srv/kdegit/repositories" ]; then
-    urlpath=${currpath#/srv/kdegit/repositories/}
     url="http://commits.kde.org/$repouid/$newrev"
+fi
+
+if [ ! -f commiturl ]; then
+    urlpath=${currpath#/srv/kdegit/repositories/}
+    urlpath=${currpath%.git}
+    cat > commiturl << EOF
+Pull (read-only): git://anongit.kde.org/$urlpath
+Pull (read-only): http://anongit.kde.org/$urlpath
+Pull+Push (read+write): git@git.kde.org:$urlpath
+EOF
 fi
 
 if [ ! -z $url ]; then
