@@ -198,7 +198,7 @@ class GitHttp
       path = File.join(root, path)
       if File.exists?(path) # TODO: check is a valid git directory
         return path
-      elsif File.exists?(path + ".git")
+      elsif File.exists?(path + ".git") # KDE added for consistency with other protocols
         return path + ".git"
       end
       false
