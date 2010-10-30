@@ -82,12 +82,22 @@ if [ ! -f $auditdir/skip-audit ]; then
     done
 fi
 
-# Is this the first push?
-headlist=$(ls $GIT_DIR/refs/heads)
-if [ "$headlist" == "" ]; then
-    echo "Skipping post-push hooks for the initial push to an empty repository."
-    echo "(If this is not the initial push, please inform the sysadmin team.)"
-    exit 0
+# Are post-commit hooks disabled?
+if [ -f $currpath/kde-hooks-off ]
+    . $mgmtdir/bin/adc/adc.common-functions
+    get_rights_and_owner $repopath
+    if [ $perm_create == "no" ]
+        echo "Repository access DENIED by Sysadmin Policy"
+        echo "Repository post commit hooks are currently disabled"
+        echo "Please contact sysadmin@kde.org for further assistance"
+        exit 1
+    else
+        echo "***** NOTICE *****"
+        echo "** Post commit hooks are DISABLED"
+        echo "** Push access is restricted to repository admins"
+        echo "***** NOTICE *****"
+        exit 0
+    fi
 fi
 
 url=
