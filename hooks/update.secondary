@@ -86,7 +86,7 @@ fi
 if [ -f $currpath/kde-hooks-off ]; then
     . $mgmtdir/bin/adc/adc.common-functions
     get_rights_and_owner $repopath
-    if [ $perm_create == "no" ]; then
+    if [ "$perm_create" == "no" ]; then
         echo "Repository access DENIED by Sysadmin Policy"
         echo "Repository post commit hooks are currently disabled"
         echo "Please contact sysadmin@kde.org for further assistance"

@@ -2,17 +2,21 @@
 
 . $(dirname $0)/adc.common-functions
 
-get_rights_and_owner $1
-if [ $perm_create == "no" ]; then
+realrepo=$1
+get_rights_and_owner $realrepo1
+
+if [ "$perm_create" == "no" ]; then
     get_rights_and_owner "gitolite-admin.git"
 fi
 
-if [ $perm_create == "no" ]; then
+if [ "$perm_create" == "no" ]; then
     die "You have no permissions. Goodbye"
 fi
 
-if [ -f $repo.git/kde-hooks-off ]; then
-    rm $repo.git/kde-hooks-off
+cd $GL_REPO_BASE_ABS
+
+if [ -f $realrepo.git/kde-hooks-off ]; then
+    rm $realrepo.git/kde-hooks-off
     echo "Hooks are now enabled"
 else
     echo "Hooks are already enabled!"
