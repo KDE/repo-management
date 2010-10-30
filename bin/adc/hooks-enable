@@ -11,7 +11,7 @@ if [ $perm_create == "no" ]; then
     die "You have no permissions. Goodbye"
 fi
 
-if [ -f $repo.git/kde-hooks-off ]
+if [ -f $repo.git/kde-hooks-off ]; then
     rm $repo.git/kde-hooks-off
     echo "Hooks are now enabled"
 else
