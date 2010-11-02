@@ -52,8 +52,8 @@ end
 # email_addresses is an array of addresses
 def send_mail(email_addresses,commit_id,message)
 
-    from = `git log #{commit_id} -n 1 --pretty='format:%an <%ae>'`
-    subject = `git log #{commit_id} -n 1 --pretty='format:%h'` + ' ' + `git log #{commit_id} -n1 --pretty='format:%s'`[0,50]
+    from = `git log #{commit_id} --encoding=UTF-8 -n 1 --pretty='format:%an <%ae>'`
+    subject = `git log #{commit_id} --encoding=UTF-8 -n 1 --pretty='format:%h'` + ' ' + `git log #{commit_id} --encoding=UTF-8 -n1 --pretty='format:%s'`[0,50]
 
 
     # One mail send for each CCMAIL
@@ -73,12 +73,12 @@ end
 # Send a mail to the kde commits
 def kde_commits(commit_id,message,silent)
     warning = ''
-    emailAddy = `git log #{commit_id} -n 1 --pretty='format:%ae'`
+    emailAddy = `git log #{commit_id} --encoding=UTF-8 -n 1 --pretty='format:%ae'`
     if not validate_email_domain(emailAddy) then
         warning = "[BAD EMAIL] "
     end
-    from = `git log #{commit_id} -n 1 --pretty='format:%an <%ae>'`
-    subject = `git log #{commit_id} -n 1 --pretty='format:%h'` + ': ' + `git log #{commit_id} -n1 --pretty='format:%s'`[0,50]
+    from = `git log #{commit_id} --encoding=UTF-8 -n 1 --pretty='format:%an <%ae>'`
+    subject = `git log #{commit_id} --encoding=UTF-8 -n 1 --pretty='format:%h'` + ': ' + `git log #{commit_id} --encoding=UTF-8 -n1 --pretty='format:%s'`[0,50]
     subject = "#{warning}#{subject}"
 
     if (!(silent && from == "Script Kiddy <scripty@kde.org>")) then
