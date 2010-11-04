@@ -20,23 +20,8 @@
 # default help text
 cat <<EOF
 
-The following adc's (admin-defined commands) are available at this site.
-
-creating a "fork" of a repo:
-    the 'fork' adc forks a repo that you have read access to, to a repo that
-    you have create rights to
-
-deleting/trashing repos:
-    You can permanently remove a repo using 'rm'.  By default, repos are
-    protected ('lock'ed) from being 'rm'-ed.  You have to first 'unlock' a
-    repo before you can 'rm' it.
-
-    A different scheme of handling this is to use 'trash' to move the repo to
-    a "trashcan" area.  You can then 'list-trash' to see what you have, and
-    you can then 'restore' whichever repo you need to bring back.
-
-    More details can be found at:
-    http://github.com/sitaramc/gitolite/blob/pu/contrib/adc/repo-deletion.README
+Please see http://community.kde.org/Sysadmin/GitFAQ for information
+on using the KDE Git system.
 
 EOF
 
