@@ -15,21 +15,17 @@ for line in `cat ~/projects-to-projects.list`; do
     dname=`dirname $line`
     gitname=".git"
     bname=`basename $line`
-    bname_nogit=${bname%$gitname}
     mkdir -p $dname
     cd $dname
     if [ -e $bname -a -e $bname/HEAD ]
       then
         cd $bname
-        git fetch --all
-        git fetch --tags
-        git fetch --prune
+        git remote update
         git update-server-info
       else
         rm -rf $bname
-        git clone --bare git://git.kde.org/$line $bname
+        git clone --mirror git://git.kde.org/$line $bname
         cd $bname
-        echo "fetch = +refs/heads/*:refs/heads/*" >> config
         git update-server-info
     fi
 done
