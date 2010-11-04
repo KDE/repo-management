@@ -70,6 +70,16 @@ else
     repopath="$parentdir/$currdir"
 fi
 
+if [ ! -f commiturl ]; then
+    urlpath=${currpath#/srv/kdegit/repositories/}
+    urlpath=${urlpath%.git}
+    cat > cloneurl << EOF
+Pull (read-only): git://anongit.kde.org/$urlpath
+Pull (read-only): http://anongit.kde.org/$urlpath
+Pull+Push (read+write): git@git.kde.org:$urlpath
+EOF
+fi
+
 # Audit the incoming commits
 auditdir=$mgmtdir/repo-configs/audit/$repopath
 if [ ! -f $auditdir/skip-audit ]; then
@@ -106,16 +116,6 @@ if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
     url=
 elif [ $seconddir == "scratch" -o $thirddir == "clones" -o $parentpath == "/srv/kdegit/repositories" ]; then
     url="http://commits.kde.org/$repouid/$newrev"
-fi
-
-if [ ! -f commiturl ]; then
-    urlpath=${currpath#/srv/kdegit/repositories/}
-    urlpath=${urlpath%.git}
-    cat > cloneurl << EOF
-Pull (read-only): git://anongit.kde.org/$urlpath
-Pull (read-only): http://anongit.kde.org/$urlpath
-Pull+Push (read+write): git@git.kde.org:$urlpath
-EOF
 fi
 
 if [ ! -z $url ]; then
