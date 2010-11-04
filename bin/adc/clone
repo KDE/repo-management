@@ -69,6 +69,15 @@ fi
 
 echo "$from" > kde-cloned-from
 
+currpath=$(pwd)
+urlpath=${currpath#/srv/kdegit/repositories/}
+urlpath=${urlpath%.git}
+cat > cloneurl << EOF
+Pull (read-only): git://anongit.kde.org/$urlpath
+Pull (read-only): http://anongit.kde.org/$urlpath
+Pull+Push (read+write): git@git.kde.org:$urlpath
+EOF
+
 # run gitolite's post-init hook if you can (hook code expects GL_REPO to be set)
 export GL_REPO; GL_REPO="$to"
 [ -x hooks/gl-post-init ] && hooks/gl-post-init
