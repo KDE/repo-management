@@ -21,7 +21,9 @@ for line in `cat ~/projects-to-projects.list`; do
     if [ -e $bname -a -e $bname/HEAD ]
       then
         cd $bname
-        git fetch --all --tags --prune
+        git fetch --all
+        git fetch --tags
+        git fetch --prune
         git update-server-info
       else
         rm -rf $bname
