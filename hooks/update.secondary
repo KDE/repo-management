@@ -155,6 +155,8 @@ if [ "$skipcia" -eq "0" ]; then
     fi
 fi
 
+$mgmtdir/bin/immediate-gitweb-update.sh $urlpath
+
 # --- Finished
 exit 0
 
