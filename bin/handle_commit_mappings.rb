@@ -15,10 +15,17 @@
  * You should have received a copy of the GNU General Public License along with         *
  * this program.  If not, see <http://www.gnu.org/licenses/>.                           *
  ****************************************************************************************/
+
+ This script translates generated commit URLs to end URLs. It attempts to resolve in Redmine
+ first; if the commit is not found there, it will return a Gitweb URL. Note that since Gitweb
+ URLs are always valid (projects are always in there even if they're not in Redmine) it may
+ resolve to a Gitweb URL even before the box syncs a new commit from upstream, because it won't
+ yet be found in Redmine.
 =end
 require 'postgres'
 require 'sinatra'
 
+# Set up Postgres connection for Redmine. Read in password from a non-public file.
 postgresuser = "commitsscript"
 postgrespass = File.read("/home/git/commit_script_pgpass").chomp
 $pg = PGconn.connect("127.0.0.1", 5432, '', '', "redmine", postgresuser, postgrespass)
@@ -26,24 +33,40 @@ $pg = PGconn.connect("127.0.0.1", 5432, '', '', "redmine", postgresuser, postgre
 helpers do
 
   def findGitwebOrRedmineUrl(repoid, changeset)
+    # Every git repository should have a kde-repo-uid file that has a value computed from a hash
+    # of its path. In addition, there may be a kde-repo-nick file containing a more friendly name.
+    # This more friendly name is used when the URL is generated, if it exists. These are used to
+    # populate the files in /home/git/repo-uid-mappings, which map an identifier to the actual 
+    # directory, offset from /repositories, that contains the git directory. This path can then
+    # be used in the query in the Redmine DB or directly in the Gitweb URL.
     if not File.exists?("/home/git/repo-uid-mappings/#{repoid}")
+      # Something is wrong, bail
       return nil
     end
     path = File.read("/home/git/repo-uid-mappings/#{repoid}").chomp
     if not File.exists?("/repositories/#{path}")
+      # Can't find the repository specified by the UID, bail
       return nil
     end
+    # See if the commit exists in Redmine
     execstring = "select projects.id, identifier, parent_id, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{changeset}';"
     res = $pg.exec(execstring)
+    # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
+    # it only checks one DB path, because it assumes one result. Might have to check each DB path in
+    # turn until we find the one matching the repository path.
     if not res[0].nil?
+      # Create the path that we can use to walk the Redmine DB
       reppath = "/repositories/" + path
+      # Check the ASCII value too because for some reason it doesn't always work checking the char
       reppath.chop! if reppath[reppath.length-1] == 47 or reppath[reppath.length-1] == '/'
       dbpath = res[0][3]
       dbpath.chop! if dbpath[dbpath.length-1] == 47 or dbpath[dbpath.length-1] == '/'
+      # Create our initial final path based on the found identifier
       finpath = res[0][1]
       if reppath == dbpath
+        # Is there a parent?
         if not res[0][2].nil?
-          # Right repo; do walk
+          # Right repo; do recursive walk, adding on parent identifiers to the front of the final path
           execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
           res = $pg.exec(execstring)
           until res[0][2].nil?
@@ -61,6 +84,7 @@ helpers do
 
 end
 
+# Proper URL format? Find a URL, or redirect to Projects.
 get %r{/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)} do |repoid, changeset|
   url = findGitwebOrRedmineUrl(repoid, changeset)
   if url.nil?
@@ -70,6 +94,7 @@ get %r{/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)} do |repoid, changeset|
   end
 end
 
+# Anything else, redirect to Projects.
 get '*' do
   redirect "http://projects.kde.org/"
 end

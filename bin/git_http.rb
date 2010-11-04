@@ -1,4 +1,7 @@
 '''
+KDE NOTE: Search for "KDE" to see how this has been modified from the original
+Grack source.
+
 (The MIT License)
 
 Copyright (c) 2009 Scott Chacon <schacon@gmail.com>
