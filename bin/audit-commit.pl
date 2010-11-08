@@ -121,11 +121,14 @@ if( $commitmail =~ /^(\S+)@(\S+)$/ )
     if( $emaildomain eq "localhost" || $emaildomain eq "localhost.localdomain" || $emaildomain eq "(none)" ) { $detailfailed = 1; }
 
     # Check if the domain exists...
-    my @domain = mx($emaildomain);
-    my $recordcount = @domain;
+    my $resolver  = Net::DNS::Resolver->new;
+    my $query = $resolver->query($emaildomain, "MX");
+    if( !$query ) {
+      $query = $resolver->query($emaildomain, "A");
+    }
 
     # Fail if it doesn't exist
-    $detailfailed = 1 unless $recordcount != 0;
+    $detailfailed = 1 unless $query;
 
     # Update failure status
     if( $detailfailed == 1 ) { $auditfail = 1; }
