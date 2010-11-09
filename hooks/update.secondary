@@ -66,8 +66,7 @@ thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
 fourthdir=$(cd ..; cd ..; cd ..; cd ..; basename $(pwd))
 
 if [ ! -f commiturl ]; then
-    urlpath=${currpath#/srv/kdegit/repositories/}
-    urlpath=${urlpath%.git}
+    urlpath=${repopath%.git}
     cat > cloneurl << EOF
 Pull (read-only): git://anongit.kde.org/$urlpath
 Pull (read-only): http://anongit.kde.org/$urlpath
