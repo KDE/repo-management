@@ -57,18 +57,13 @@ fi
 # Setup essential variables
 export mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
+repopath=${currpath#/srv/kdegit/repositories/}
 currdir=$(basename $(pwd))
 parentpath=$(cd ..; pwd)
 parentdir=$(cd ..; basename $(pwd))
 seconddir=$(cd ..; cd ..; basename $(pwd))
 thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
 fourthdir=$(cd ..; cd ..; cd ..; cd ..; basename $(pwd))
-
-if [ "$parentdir" == "repositories" ]; then
-    repopath="$currdir"
-else
-    repopath="$parentdir/$currdir"
-fi
 
 if [ ! -f commiturl ]; then
     urlpath=${currpath#/srv/kdegit/repositories/}
