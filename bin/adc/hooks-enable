@@ -3,7 +3,7 @@
 . $(dirname $0)/adc.common-functions
 
 realrepo=$1
-get_rights_and_owner $realrepo1
+get_rights_and_owner $realrepo
 
 if [ "$perm_create" == "no" ]; then
     get_rights_and_owner "gitolite-admin.git"
