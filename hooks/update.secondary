@@ -76,6 +76,7 @@ fi
 
 # Audit the incoming commits
 auditdir=$mgmtdir/repo-configs/audit/$repopath
+echo "$auditdir"
 if [ ! -f $auditdir/skip-audit ]; then
     echo "Auditing commits, please wait ..."
     for commit_id in $revlist ; do
