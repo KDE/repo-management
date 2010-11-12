@@ -41,8 +41,6 @@ else
     die "Not valid source/destination locations"
 fi
 
-echo "$to"
-
 get_rights_and_owner $to
 [ -z "$perm_create" ] && die "no create permissions on $repo"
 
