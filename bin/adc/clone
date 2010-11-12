@@ -42,7 +42,6 @@ else
 fi
 
 get_rights_and_owner $to
-[ -z "$perm_create" ] && die "no create permissions on $repo"
 
 echo "Cloning, please be patient..."
 
@@ -59,7 +58,7 @@ cd $GL_REPO_BASE_ABS/$to.git
 echo $GL_USER > gl-creater
 git config gitweb.owner "$GL_USER"
 ( cd $HOME;perl -le 'do ".gitolite.rc"; print $GL_WILDREPOS_DEFPERMS' ) |
-    SSH_ORIGINAL_COMMAND="setperms $to" $GL_BINDIR/gl-auth-command $GL_USER
+    SSH_ORIGINAL_COMMAND="setperms $to" $GL_BINDIR/gl-auth-command $GL_USER > /dev/null
 cp -R $GL_REPO_BASE_ABS/$from.git/hooks/* $GL_REPO_BASE_ABS/$to.git/hooks
 touch git-daemon-export-ok
 
