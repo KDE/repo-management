@@ -19,3 +19,4 @@ export RSYNC_CONNECT_PROG='ssh -l git %H netcat localhost 873'
 # This should go to ~git/metadata-tree
 rsync -avz --password-file=/home/git/rsync_push_to_anongit.secret --files-from="/home/git/anongit-repos-build.tmp" /srv/kdegit/repositories git-anongit@anongit1.kde.org::metadata-tree
 rsync -avz --password-file=/home/git/rsync_push_to_anongit.secret --files-from="/home/git/anongit-repos-build.tmp" /srv/kdegit/repositories git-anongit@anongit2.kde.org::metadata-tree
+rsync -avz --password-file=/home/git/rsync_push_to_anongit.secret --files-from="/home/git/anongit-repos-build.tmp" /srv/kdegit/repositories git-anongit@anongit3.kde.org::metadata-tree
