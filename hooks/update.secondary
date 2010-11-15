@@ -78,12 +78,16 @@ fi
 auditdir=$mgmtdir/repo-configs/audit/$repopath
 if [ ! -f $auditdir/skip-audit ]; then
     echo "Auditing commits, please wait ..."
+    auditfail=0
     for commit_id in $revlist ; do
         $mgmtdir/bin/audit-commit.pl ${commit_id}
         if [ $? -ne 0 ]; then
-            exit 1
+            auditfail=1
         fi
     done
+    if [ $auditfail -ne 0 ]; then
+        exit 1
+    fi
 fi
 
 # Are post-commit hooks disabled?
