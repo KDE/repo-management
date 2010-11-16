@@ -76,20 +76,6 @@ fi
 
 # Audit the incoming commits
 auditdir=$mgmtdir/repo-configs/audit/$repopath
-<<<<<<< HEAD
-if [ ! -f $auditdir/skip-audit ]; then
-    echo "Auditing commits, please wait ..."
-    auditfail=0
-    for commit_id in $revlist ; do
-        $mgmtdir/bin/audit-commit.pl ${commit_id}
-        if [ $? -ne 0 ]; then
-            auditfail=1
-        fi
-    done
-    if [ $auditfail -ne 0 ]; then
-        exit 1
-    fi
-=======
 echo "Auditing commits, please wait ..."
 auditfail=0
 for commit_id in $revlist ; do
@@ -100,7 +86,6 @@ for commit_id in $revlist ; do
 done
 if [ $auditfail -ne 0 ]; then
     exit 1
->>>>>>> More finegrained exceptions for the hooks
 fi
 
 # Are post-commit hooks disabled?
