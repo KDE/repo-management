@@ -42,9 +42,10 @@ my $gitbin = "/usr/bin/git";
 ######################################################################
 # Initial setup/command-line handling.
 
-&usage unless @ARGV == 1;
+&usage unless @ARGV == 2;
 
 my $commitid = shift;
+my $auditcfg = shift;
 
 ######################################################################
 # Harvest data using git...
@@ -73,6 +74,11 @@ my $internalerror = 0;
 my @restrictednames;
 loadfileconfig();
 
+# Check for things we have to exclude
+my $excludeeol = ( -e "$auditcfg/skip-eol" );
+my $excludemail = ( -e "$auditcfg/skip-author" );
+my $excludefname = ( -e "$auditcfg/skip-filename" );
+
 # Temporary vars
 my $violationdetect = 0;
 my $currentfile = "";
@@ -95,6 +101,9 @@ while(<IN>) {
         next;
     }
 
+    # Are we excluded?
+    next if $excludeeol;
+
     # Don't complain about the same file twice...
     if ( $violationdetect == 1 ) {
         next;
@@ -114,7 +123,7 @@ while(<IN>) {
 close(IN);
 
 # Audit the name + email
-if( $commitmail =~ /^(\S+)@(\S+)$/ )
+if( $commitmail =~ /^(\S+)@(\S+)$/ && !$excludemail )
 {
     # Seperate the email domain out, and disallow localhost
     my $emaildomain = $2;
@@ -132,7 +141,7 @@ if( $commitmail =~ /^(\S+)@(\S+)$/ )
 
     # Update failure status
     if( $detailfailed == 1 ) { $auditfail = 1; }
-} else {
+} elsif( !$excludemail ) {
     # Reg-Exp doesn't match, something is wrong
     $detailfailed = 1;
     $auditfail = 1;
@@ -189,7 +198,7 @@ exit $auditfail;
 sub usage
 {
   warn "@_\n" if @_;
-  die "usage: $0 commit\n";
+  die "usage: $0 commit configdir\n";
 }
 
 sub loadfileconfig
@@ -236,6 +245,9 @@ sub checkfilename
 {
     # Prepare to check
     my $filename = shift;
+
+    # Skip if needed....
+    return if $excludefname;
 
     # Run the file name regexp's...
     foreach my $check ( @restrictednames )
