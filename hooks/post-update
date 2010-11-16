@@ -5,6 +5,6 @@ currpath=$(pwd)
 urlpath=${currpath#/srv/kdegit/repositories/}
 
 echo "Poking gitweb for immediate commit URL resolving..."
-$mgmtdir/bin/immediate-gitweb-update.sh $urlpath
+$mgmtdir/bin/immediate-gitweb-update.sh $urlpath &
 
 git update-server-info
