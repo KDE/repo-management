@@ -24,6 +24,7 @@
 =end
 require 'postgres'
 require 'sinatra'
+require 'grit'
 
 # Set up Postgres connection for Redmine. Read in password from a non-public file.
 postgresuser = "commitsscript"
@@ -48,8 +49,28 @@ helpers do
       # Can't find the repository specified by the UID, bail
       return nil
     end
+
+    # Grit doesn't properly check that SHA1s aren't actually too big
+    if changeset.length > 40
+      return nil
+    end
+
+    # Get the full SHA1
+    sha1 = changeset
+    begin
+      repo = Grit::Repo.new("/repositories/#{path}")
+      commit = repo.commit("#{sha1}")
+      if commit.nil?
+        return nil
+      else
+        sha1 = commit.sha
+      end
+    rescue Exception
+      return nil
+    end
+
     # See if the commit exists in Redmine
-    execstring = "select projects.id, identifier, parent_id, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{changeset}';"
+    execstring = "select projects.id, identifier, parent_id, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{sha1}';"
     res = $pg.exec(execstring)
     # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
     # it only checks one DB path, because it assumes one result. Might have to check each DB path in
@@ -76,10 +97,10 @@ helpers do
           end
           finpath = res[0][1] + "/" + finpath
         end
-        return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{changeset}"
+        return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{sha1}"
       end
     end
-    return "http://gitweb.kde.org/#{path}/commit/#{changeset}"
+    return "http://gitweb.kde.org/#{path}/commit/#{sha1}"
   end
 
 end
@@ -88,7 +109,7 @@ end
 get %r{/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)} do |repoid, changeset|
   url = findGitwebOrRedmineUrl(repoid, changeset)
   if url.nil?
-    redirect "http://projects.kde.org/"
+    return '<HTML><HEAD><META HTTP-EQUIV="refresh" CONTENT="3;URL=http://projects.kde.org"></HEAD><BODY>The repo/commit cannot be found or the commit is non-unique. Redirecting to <a href="http://projects.kde.org">KDE Projects</a>...</BODY></HTML>' 
   else
     redirect url
   end
@@ -96,5 +117,5 @@ end
 
 # Anything else, redirect to Projects.
 get '*' do
-  redirect "http://projects.kde.org/"
+  return '<HTML><HEAD><META HTTP-EQUIV="refresh" CONTENT="3;URL=http://projects.kde.org"></HEAD><BODY>The repo/commit cannot be found or the commit is non-unique. Redirecting to <a href="http://projects.kde.org">KDE Projects</a>...</BODY></HTML>' 
 end
