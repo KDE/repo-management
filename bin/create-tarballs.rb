@@ -33,7 +33,8 @@ def printAndDescend(pattern, directory=nil)
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[git clone -n http://#{$thishost}/#{newpath} #{basename}] }
       Dir.chdir("/repository-tarballs/#{newpath}/#{basename}") { %x[sed -i -e 's/#{$thishost}/anongit.kde.org/g' .git/config] }
       Dir.chdir("/repository-tarballs/#{newpath}/#{basename}") { %x[echo "#!/bin/bash\n\nrm initrepo.sh\n\ngit reset --hard HEAD" > initrepo.sh; chmod +x initrepo.sh] }
-      Dir.chdir("/repository-tarballs/#{newpath}") { %x[tar -czf #{basename}-latest.tar.gz #{basename}; rm -rf #{basename}] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[tar -czf #{basename}-latest-stage.tar.gz #{basename}; rm -rf #{basename}] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[mv #{basename}-latest-stage.tar.gz #{basename}-latest.tar.gz] }
     elsif File.directory?(name)
       directories << name
     end
