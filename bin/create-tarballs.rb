@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'digest/sha1'
+
 # A so far quick and dirty hack to do the tarball generation
 # It uses Ruby to make some things easier and shells out for most of it
 # Found the printAndDescent code on rosettacode and adopted it
@@ -33,8 +35,11 @@ def printAndDescend(pattern, directory=nil)
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[git clone -n http://#{$thishost}/#{newpath} #{basename}] }
       Dir.chdir("/repository-tarballs/#{newpath}/#{basename}") { %x[sed -i -e 's/#{$thishost}/anongit.kde.org/g' .git/config] }
       Dir.chdir("/repository-tarballs/#{newpath}/#{basename}") { %x[echo "#!/bin/bash\n\nrm initrepo.sh\n\ngit reset --hard HEAD" > initrepo.sh; chmod +x initrepo.sh] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[rm -rf #{basename}-*.tar.gz] }
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[tar -czf #{basename}-latest-stage.tar.gz #{basename}; rm -rf #{basename}] }
-      Dir.chdir("/repository-tarballs/#{newpath}") { %x[mv #{basename}-latest-stage.tar.gz #{basename}-latest.tar.gz] }
+      digest = Digest::SHA1.file("/repository-tarballs/#{newpath}/#{basename}-latest-stage.tar.gz").hexdigest
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[ln -s #{basename}-#{digest}.tar.gz #{basename}-latest.tar.gz] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[mv #{basename}-latest-stage.tar.gz #{basename}-#{digest}.tar.gz] }
     elsif File.directory?(name)
       directories << name
     end
