@@ -18,7 +18,6 @@
 
 =end
 require 'sinatra'
-require 'pathname'
 
 get %r{(.*)/([a-zA-Z0-9][a-zA-Z0-9_\.\-]+[a-zA-Z0-9])-latest\.tar\.gz} do |dir, name|
   begin
