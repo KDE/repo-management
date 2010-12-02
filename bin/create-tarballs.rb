@@ -35,11 +35,13 @@ def printAndDescend(pattern, directory=nil)
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[git clone -n http://#{$thishost}/#{newpath} #{basename}] }
       Dir.chdir("/repository-tarballs/#{newpath}/#{basename}") { %x[sed -i -e 's/#{$thishost}/anongit.kde.org/g' .git/config] }
       Dir.chdir("/repository-tarballs/#{newpath}/#{basename}") { %x[echo "#!/bin/bash\n\nrm initrepo.sh\n\ngit reset --hard HEAD" > initrepo.sh; chmod +x initrepo.sh] }
-      Dir.chdir("/repository-tarballs/#{newpath}") { %x[rm -rf #{basename}-*.tar.gz] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[rm -rf *.tar.gz] }
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[tar -czf #{basename}-latest-stage.tar.gz #{basename}; rm -rf #{basename}] }
+      time = Time.now
+      timestring = time.strftime("%Y%m%d%H%M%S")
       digest = Digest::SHA1.file("/repository-tarballs/#{newpath}/#{basename}-latest-stage.tar.gz").hexdigest
-      Dir.chdir("/repository-tarballs/#{newpath}") { %x[ln -s #{basename}-sha1_#{digest}.tar.gz #{basename}-latest.tar.gz] }
-      Dir.chdir("/repository-tarballs/#{newpath}") { %x[mv #{basename}-latest-stage.tar.gz #{basename}_sha1_#{digest}.tar.gz] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[ln -s #{basename}_#{timestring}_sha1-#{digest}.tar.gz #{basename}-latest.tar.gz] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[mv #{basename}-latest-stage.tar.gz #{basename}_#{timestring}_sha1-#{digest}.tar.gz] }
     elsif File.directory?(name)
       directories << name
     end
