@@ -38,8 +38,8 @@ def printAndDescend(pattern, directory=nil)
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[rm -rf #{basename}-*.tar.gz] }
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[tar -czf #{basename}-latest-stage.tar.gz #{basename}; rm -rf #{basename}] }
       digest = Digest::SHA1.file("/repository-tarballs/#{newpath}/#{basename}-latest-stage.tar.gz").hexdigest
-      Dir.chdir("/repository-tarballs/#{newpath}") { %x[ln -s #{basename}-#{digest}.tar.gz #{basename}-latest.tar.gz] }
-      Dir.chdir("/repository-tarballs/#{newpath}") { %x[mv #{basename}-latest-stage.tar.gz #{basename}-#{digest}.tar.gz] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[ln -s #{basename}-sha1_#{digest}.tar.gz #{basename}-latest.tar.gz] }
+      Dir.chdir("/repository-tarballs/#{newpath}") { %x[mv #{basename}-latest-stage.tar.gz #{basename}-sha1_#{digest}.tar.gz] }
     elsif File.directory?(name)
       directories << name
     end
