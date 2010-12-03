@@ -82,7 +82,12 @@ my $excludefname = ( -e "$auditcfg/skip-filename" );
 # Temporary vars
 my $violationdetect = 0;
 my $currentfile = "";
-    
+
+# Do we even need to do any checking at all?
+if( $excludeeol && $excludemail && $excludefname ) {
+  exit 0;
+}
+   
 # Gather all the information
 open(IN, "-|") || exec( $gitbin, 'show', $commitid ) or $internalerror = 1;
 while(<IN>) {
