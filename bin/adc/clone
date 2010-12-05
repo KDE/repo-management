@@ -68,6 +68,8 @@ fi
 
 echo "$from" > kde-cloned-from
 
+echo "" > description
+
 currpath=$(pwd)
 urlpath=${currpath#/srv/kdegit/repositories/}
 urlpath=${urlpath%.git}
