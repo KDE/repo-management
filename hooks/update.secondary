@@ -76,7 +76,7 @@ fi
 
 # Audit the incoming commits
 auditdir=$mgmtdir/repo-configs/audit/$repopath
-if [ -f "$auditdir/skip-eol" && -f "$auditdir/skip-filename" && -f "$auditdir/skip-author" ]; then
+if [ -f "$auditdir/skip-eol" ] && [ -f "$auditdir/skip-filename" ] && [ -f "$auditdir/skip-author" ]; then
     echo "Audits disabled."
 else
     echo "Auditing commits, please wait ..."
