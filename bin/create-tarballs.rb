@@ -32,9 +32,10 @@ def printAndDescend(pattern, directory=nil)
       puts "Will build tarball into /repository-tarballs/#{newpath}/#{basename}-latest.tar.gz"
       # TODO: I'm not actually sure the gc is needed; do fresh checkouts take after the server, or will they be
       # compact automatically since they're a fresh write of the refs to the local repo?
-      # Need to investigate but since everything right now is already aggressively
+      # Need to investigate but since everything right now is already
       # garbage collected I can't at the moment...  :-)
-      Dir.chdir(File.expand_path(name)){ %x[git gc --aggressive] }
+      Dir.chdir(File.expand_path(name)){ %x[git gc --auto] }
+      Dir.chdir(File.expand_path(name)){ %x[git prune] }
       Dir.chdir("/repository-tarballs/"){ %x[mkdir -p  #{newpath}] }
       Dir.chdir("/repository-tarballs/#{newpath}") { %x[git clone -n http://#{$thishost}/#{newpath} #{basename}] }
       Dir.chdir("/repository-tarballs/#{newpath}/#{basename}") { %x[sed -i -e 's/#{$thishost}/anongit.kde.org/g' .git/config] }
