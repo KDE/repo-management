@@ -46,7 +46,7 @@ done
 cd /home/git/metadata-tree
 for file in `find -name "description"`; do
     # Does the description equal the default description?
-    diff $file /home/git/default-description > /dev/null
+    diff $file /home/git/repo-management/bin/anongit/default-description > /dev/null
     result=$?
     # If so, make it empty.
     if [ $result -eq 0 ]
