@@ -2,6 +2,7 @@
 
 # This creates the list of files to rsync down to the anon mirror. These files are metadata living in the various git repository directories.
 cd ~git
+cp projects.list projects-list/projects.list
 rm anongit-repos-build.tmp
 for dir in `cat projects-list/projects.list`
   do
