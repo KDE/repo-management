@@ -5,7 +5,7 @@ cd ~git
 cp projects.list projects-list/projects-to-anongit.list
 chmod 755 projects-list/projects-to-anongit.list
 rm anongit-repos-build.tmp
-for dir in `cat projects-list/projects.list`
+for dir in `cat projects-list/projects-to-anongit.list`
   do
     echo "$dir/cloneurl" >> anongit-repos-build.tmp
     echo "$dir/description" >> anongit-repos-build.tmp
