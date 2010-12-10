@@ -7,7 +7,7 @@ require 'digest/sha1'
 # Found the printAndDescent code on rosettacode and adopted it
 
 # Need a /repository-tarballs folder and "thisanongithost" file there, which contains the full name of this particular server
-$thishost = File.read("/repository-tarballs/thisanongithost").chomp
+$thishost = File.read("/home/git/thisanongithost").chomp
 
 #define a recursive function that will traverse the directory tree
 def printAndDescend(pattern, directory=nil)
