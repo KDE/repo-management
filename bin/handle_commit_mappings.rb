@@ -25,6 +25,7 @@
 require 'postgres'
 require 'sinatra'
 require 'grit'
+require 'git'
 
 # Set up Postgres connection for Redmine. Read in password from a non-public file.
 postgresuser = "commitsscript"
@@ -103,6 +104,25 @@ helpers do
     return "http://gitweb.kde.org/#{path}/commit/#{sha1}"
   end
 
+end
+
+get '/robots.txt' do
+  content_type 'text/plain'
+  return "User-agent: *\nDisallow: /"
+end
+
+get %r{/updateRepo/(.*)} do |url|
+  path = '/repositories/' + url
+  if not File.exists?(path) or not File.directory?(path)
+    return 'FAIL'
+  end
+  begin
+    repo = Git.bare(path)
+    repo.remote('origin').fetch
+    return 'OK'
+  rescue Exception
+    return 'FAIL'
+  end
 end
 
 # Proper URL format? Find a URL, or redirect to Projects.
