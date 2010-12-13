@@ -33,9 +33,10 @@ SVN_LOCATION = ARGV[3]
 
 #============================== Functions ==============================#
 def send_email(from, to, subject, message)
+    branchsub = (BRANCH == "master") ? "" : "/#{BRANCH}"
     msg = "From: #{from}
 To: <#{to}>
-Subject: [#{PROJECT}] #{subject}
+Subject: [#{PROJECT}#{branchsub}] #{subject}
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
