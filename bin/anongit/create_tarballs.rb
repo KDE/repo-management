@@ -37,7 +37,7 @@ def printAndDescend(pattern, directory=nil)
       Dir.chdir(File.expand_path(name)){ %x[git gc --auto] }
       Dir.chdir(File.expand_path(name)){ %x[git prune] }
       Dir.chdir("#{ARGV[1]}/"){ %x[mkdir -p  #{ARGV[1]}/#{newpath}] }
-      Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[git clone -n http://#{$thishost}/#{newpath} #{basename}] }
+      Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[git clone -l #{ARGV[0]}/#{newpath}.git #{basename}] }
       Dir.chdir("#{ARGV[1]}/#{newpath}/#{basename}") { %x[sed -i -e 's/#{$thishost}/anongit.kde.org/g' .git/config] }
       Dir.chdir("#{ARGV[1]}/#{newpath}/#{basename}") { %x[echo "#!/bin/bash\n\nrm initrepo.sh\n\ngit reset --hard HEAD" > initrepo.sh; chmod +x initrepo.sh] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[rm -rf *.tar.gz] }
