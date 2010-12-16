@@ -27,14 +27,17 @@ require 'sinatra'
 require 'grit'
 require 'git'
 
-# Set up Postgres connection for Redmine. Read in password from a non-public file.
-postgresuser = "commitsscript"
-postgrespass = File.read("/home/git/commit_script_pgpass").chomp
-$pg = PGconn.connect("127.0.0.1", 5432, '', '', "redmine", postgresuser, postgrespass)
+$pg = nil
 
 helpers do
 
   def findGitwebOrRedmineUrl(repoid, changeset)
+    # Set up Postgres connection for Redmine. Read in password from a non-public file.
+    if not $pg
+      postgresuser = "commitsscript"
+      postgrespass = File.read("/home/git/commit_script_pgpass").chomp
+      $pg = PGconn.connect("127.0.0.1", 5432, '', '', "redmine", postgresuser, postgrespass)
+    end
     # Every git repository should have a kde-repo-uid file that has a value computed from a hash
     # of its path. In addition, there may be a kde-repo-nick file containing a more friendly name.
     # This more friendly name is used when the URL is generated, if it exists. These are used to
