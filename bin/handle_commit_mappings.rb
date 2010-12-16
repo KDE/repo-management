@@ -22,7 +22,6 @@
  resolve to a Gitweb URL even before the box syncs a new commit from upstream, because it won't
  yet be found in Redmine.
 =end
-require 'postgres'
 require 'sinatra'
 require 'grit'
 require 'git'
@@ -34,6 +33,7 @@ helpers do
   def findGitwebOrRedmineUrl(repoid, changeset)
     # Set up Postgres connection for Redmine. Read in password from a non-public file.
     if not $pg
+      require 'postgres'
       postgresuser = "commitsscript"
       postgrespass = File.read("/home/git/commit_script_pgpass").chomp
       $pg = PGconn.connect("127.0.0.1", 5432, '', '', "redmine", postgresuser, postgrespass)
