@@ -35,7 +35,7 @@ helpers do
       require 'postgres'
       postgresuser = "commitsscript"
       postgrespass = File.read("/home/git/commit_script_pgpass").chomp
-      $pg = PGconn.connect("127.0.0.1", 5432, '', '', "redmine", postgresuser, postgrespass)
+      $pg = PGconn.connect("projects.kde.org", 5432, '', '', "redmine", postgresuser, postgrespass)
     end
     # Every git repository should have a kde-repo-uid file that has a value computed from a hash
     # of its path. In addition, there may be a kde-repo-nick file containing a more friendly name.
