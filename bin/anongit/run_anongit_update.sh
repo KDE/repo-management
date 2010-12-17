@@ -13,7 +13,3 @@ cd /home/git/repo-management; git pull
 bin/anongit/update_repo_mirrors.sh
 bin/anongit/update_repo_pointers.sh
 
-[ ! -d /var/lib/redmine/redmine ] && exit 0
-
-cd /var/lib/redmine/redmine; RAILS_ENV=production rake redmine:fetch_changesets
-
