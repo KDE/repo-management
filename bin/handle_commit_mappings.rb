@@ -24,7 +24,6 @@
 =end
 require 'sinatra'
 require 'grit'
-require 'git'
 
 $pg = nil
 
@@ -119,6 +118,7 @@ get %r{/updateRepo/(.*)} do |url|
   if not File.exists?(path) or not File.directory?(path)
     return 'FAIL'
   end
+  require 'git'
   begin
     repo = Git.bare(path)
     repo.remote('origin').fetch
