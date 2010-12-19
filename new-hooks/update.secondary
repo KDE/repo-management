@@ -62,13 +62,12 @@ if( $change_type eq "delete" ) {
 initialise_audit();
 
 # Audit the commits that are being pushed to this ref...
-@commit_list = get_revision_list($oldsha1, $newsha1);
-$audit_objection = 0;
+my @commit_list = get_revision_list($oldsha1, $newsha1);
+my $audit_objection = 0;
 
-foreach $commit (@commit_list) {
+foreach my $commit (@commit_list) {
     # Some preperation
     my @commit_errors = ();
-    print "Auditing - $commit\n";
 
     # Perform the audits
     audit_eol($commit, @commit_errors);
@@ -80,7 +79,7 @@ foreach $commit (@commit_list) {
 
     # Looks like we are objecting :(
     print "**** Audit Failure - Commit $commit\n";
-    foreach $error(@commit_errors) {
+    foreach my $error(@commit_errors) {
         print "** $error\n";
     }
 
