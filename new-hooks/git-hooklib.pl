@@ -10,13 +10,13 @@ sub get_revision_list
 
     # Build the revision span git will use to help build the revision list...
     if( $change_type eq "create" ) {
-        $revision_span = "$newsha1 " . `git for-each-ref --format='^%(objectname)' refs/heads/`;
+        $revision_span = "$newsha1";
     } else {
-        $revision_span = "$oldsha1..$newsha1";
+        $revision_span = `git merge-base $newsha1 $oldsha1` . "..$newsha1"
     }
 
     # Read in the revision list...
-    open(GITIN, "-|") || exec( "git rev-list --reverse --topo-order $revision_span" );
+    open(GITIN, "-|") || exec( "git rev-parse --not --all | grep -v $oldsha1 | git rev-list --reverse --stdin $revision_span" );
     while(<GITIN>) {
         push( @revision_list, $_ );
     }
