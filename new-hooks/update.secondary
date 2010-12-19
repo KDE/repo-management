@@ -1,0 +1,97 @@
+#!/usr/bin/perl -w
+#use strict;
+use warnings;
+
+# KDE Git Source Code Management push verification hook
+# Takes arguments: refname sha1-old sha1-new
+
+# Specify some constants
+use constant {
+    GIT_EMPTY_REF => "0000000000000000000000000000000000000000"
+};
+
+# Initial setup, read in provided data
+my $refname = shift;
+my $oldsha1 = shift;
+my $newsha1 = shift;
+my $git_dir = $ENV{'GIT_DIR'};
+my $push_user = $ENV{'GL_USER'};
+my $user_home = $ENV{'HOME'};
+
+# Locate ourselves...
+my $repomgmt_dir = "$user_home/sysadmin/repo-management";
+
+# Bring in the library we share....
+require "$repomgmt_dir/new-hooks/git-hooklib.pl";
+
+# Verify the provided information is valid....
+if( $refname eq "" || $oldsha1 eq "" || $newsha1 eq "" || $git_dir eq "" || $push_user eq "" ) {
+    print "Information needed to run could not be gathered successfully.\n";
+    print "Required environment variables: GIT_DIR, GL_USER, HOME\n";
+    print "Syntax: update.secondary <refname> <oldsha> <newsha>\n";
+    exit 1;
+}
+
+# Ensure that git.kde.org services have not been globally suspended (or suspended for this repo)
+if( -e "$user_home/.gitolite.down" || -e "$git_dir/.gitolite.down" ) {
+    print "Sorry, but the repository you are trying to access is currently unavailable.\n";
+    print "This is to allow for maintenance, we apologise for any inconvience caused.\n";
+    print "If you believe this not to be the case, please contact sysadmin\@kde.org.\n";
+    exit 1;
+}
+
+# Determine what we are trying to do to this ref.....
+# 0000->1234 (create)
+# 1234->2345 (update)
+# 2345->0000 (delete)
+$change_type = "update";
+
+if( $oldsha1 eq GIT_EMPTY_REF ) {
+    $change_type = "create";
+} elsif( $newsha1 eq GIT_EMPTY_REF ) {
+    $change_type = "delete";
+}
+
+# If we are deleting, then no auditing is needed -> no new commits are being added, we do want to backup the ref though....
+if( $change_type eq "delete" ) {
+    # Backup the ref here....
+    exit 0;
+}
+
+# Get audit ready to run....
+initialise_audit();
+
+# Audit the commits that are being pushed to this ref...
+@commit_list = get_revision_list($oldsha1, $newsha1);
+$audit_objection = 0;
+
+foreach $commit (@commit_list) {
+    # Some preperation
+    my @commit_errors = ();
+    print "Auditing - $commit\n";
+
+    # Perform the audits
+    audit_eol($commit, @commit_errors);
+    audit_filename($commit, @commit_errors);
+    audit_author($commit, @commit_errors);
+
+    # Continue if we have no objections....
+    next if scalar(@commit_errors) == 0;
+
+    # Looks like we are objecting :(
+    print "**** Audit Failure - Commit $commit\n";
+    foreach $error(@commit_errors) {
+        print "** $error\n";
+    }
+
+    $audit_objection = 1;
+}
+
+# Did audit object to this push? If so, we need to deny it....
+if( $audit_objection == 1 ) {
+    exit 1;
+}
+
+# Everything passed ok then, we can accept and pass off to the post-push hooks...
+print "Push denied as we are just testing :)\n";
+exit 1;
