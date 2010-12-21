@@ -34,6 +34,7 @@ def printAndDescend(pattern, directory=nil)
       # compact automatically since they're a fresh write of the refs to the local repo?
       # Need to investigate but since everything right now is already
       # garbage collected I can't at the moment...  :-)
+      next if not File.exists?("#{File.expand_path(name)}/git-daemon-export-ok")
       Dir.chdir(File.expand_path(name)){ %x[git gc --auto] }
       Dir.chdir(File.expand_path(name)){ %x[git prune] }
       Dir.chdir("#{ARGV[1]}/"){ %x[mkdir -p  #{ARGV[1]}/#{newpath}] }
