@@ -15,6 +15,7 @@ BEGIN {
 # Put an Axe into @INC so we can call "use", and have everything imported....
 use lib "$repomgmt_dir/new-hooks/";
 use GitHookLib;
+use Cwd;
 
 # Read in input...
 my $refname = shift;
@@ -25,6 +26,11 @@ my $newsha1 = shift;
 $git_dir = $ENV{'GIT_DIR'};
 $push_user = $ENV{'GL_USER'};
 $user_home = $ENV{'HOME'};
+
+# Ensure the information is fully usable
+if( $git_dir eq "." ) {
+    $git_dir = getcwd();
+}
 
 # Verify the provided information is valid....
 if( $refname eq "" || $oldsha1 eq "" || $newsha1 eq "" || $git_dir eq "" || $push_user eq "" ) {
@@ -46,7 +52,18 @@ if( -e "$user_home/.gitolite.down" || -e "$git_dir/.gitolite.down" ) {
     exit 1;
 }
 
+# Retrieve some information about the repositories...
+my $repoid = repository_id( $git_dir );
+my $repopath = repository_path( $git_dir );
 
+# Generate the information that gitweb will later use...
+if( -e "$git_dir/cloneurl" ) {
+    open(CLONEURLS, ">$git_dir/cloneurl");
+    print CLONEURLS "Pull (read-only): git://anongit.kde.org/$repopath\n"
+    print CLONEURLS "Pull (read-only): http://anongit.kde.org/$repopath\n"
+    print CLONEURLS "Pull+Push (read+write): git\@git.kde.org:$repopath\n";
+    close(CLONEURLS);
+}
 
 ###############
 ### Information collection phase
@@ -60,11 +77,11 @@ if( $oldsha1 ne GIT_EMPTY_REF && $newsha1 ne GIT_EMPTY_REF ) {
 }
 
 # What type is the ref being changed?
-if( $refname =~ "/^refs/heads/(.+)$/" ) {
+if( $refname =~ s,refs/heads/(.+)$,, ) {
     $ref_type = REF_BRANCH;
-} elsif( $refname =~ "/^refs/tags/(.+)$/" ) {
+} elsif( $refname =~ s,/^refs/tags/(.+)$,, ) {
     $ref_type = REF_TAG;
-} elsif( $refname =~ "/^refs/backups/(.+)$/" ) {
+} elsif( $refname =~ s,/^refs/backups/(.+)$/,, ) {
     $ref_type = REF_BACKUP;
 } else {
     $ref_type = REF_UNKNOWN;
@@ -108,7 +125,7 @@ if( $ref_type eq REF_BACKUP ) {
 ### Post-Acceptance Phase
 ###############
 
-exit 0;
+exit 1;
 
 # Returns a list of revisions for the given oldsha1 and newsha1, which are new to this repository
 # This is mainly seperated out as it is quite large. Arguments: oldsha1 newsha1 ref_change_type
@@ -144,8 +161,8 @@ sub repository_id
 
     # Write out the repository uid if it doesn't exist
     unless( -e "$git_dir/kde-repo-uid" ) {
-        open(REPOUID, "$repository/kde-repo-uid");
-        print(REPOUID, $repoid);
+        open(REPOUID, ">$repository/kde-repo-uid");
+        print REPOUID $repoid;
         close(REPOUID);
     }
 
@@ -155,7 +172,19 @@ sub repository_id
     }
 
     # Return the default repository id
-    return $repoid;
+    return read_file( "$repository/kde-repo-uid" );
+}
+
+sub repository_path
+{
+    # A few things...
+    my $fspath = shift;
+
+    if( $fspath =~ s,^/home/ben/sysadmin/(.+).git$,, ) {
+        return $1;
+    }
+
+    die "Error - Failed to extract repository path from $fspath\n";
 }
 
 # Reads the first line of a file in....
@@ -167,5 +196,7 @@ sub read_file
     my @lines = <INPUTFILE>; # read file into list
     close(INPUTFILE);
 
-    return shift(@lines);
+    my $data = shift(@lines);
+    chomp($data);
+    return $data;
 }
