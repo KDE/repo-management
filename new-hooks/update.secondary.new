@@ -70,10 +70,23 @@ unless( -e "$git_dir/cloneurl" ) {
 ###############
 
 # Retrieve some information....
-my ( $ref_type, $ref_change );
+my ( $ref_type, $ref_change, $repo_type );
 my $ref_merge_base = "";
 if( $oldsha1 ne GIT_EMPTY_REF && $newsha1 ne GIT_EMPTY_REF ) {
     $ref_merge_base = read_git_oneline('merge-base', $oldsha1, $newsha1);
+}
+
+# What type of repo have we got???
+if( $repopath =~ s,sysadmin/(.+)$,, || $repopath eq "gitolite-admin" ) {
+    $repo_type = REPO_SYSADMIN;
+} elsif( $repopath =~ s,websites/(.+)$,, ) {
+    $repo_type = REPO_WEBSITE;
+} elsif( $repopath =~ s,scratch/(.+)$,, ) {
+    $repo_type = REPO_SCRATCH;
+} elsif( $repopath =~ s,clones/(.+)$,, ) {
+    $repo_type = REPO_CLONE;
+} else {
+    $repo_type = REPO_NORMAL;
 }
 
 # What type is the ref being changed?

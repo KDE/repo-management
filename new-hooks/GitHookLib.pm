@@ -7,6 +7,7 @@ use Exporter;
 
 # Perl best practice can go to Antarctica as far as I care....
 our @EXPORT = qw( GIT_EMPTY_REF
+                  REPO_SYSADMIN REPO_WEBSITE REPO_SCRATCH REPO_CLONE REPO_NORMAL
                   REF_BRANCH REF_TAG REF_BACKUP REF_UNKNOWN
                   CHANGE_UPDATE CHANGE_CREATE CHANGE_DELETE CHANGE_FORCED
                   read_git read_git_oneline commit_changed_files commit_metadata commit_diffstat
@@ -15,6 +16,15 @@ our @EXPORT = qw( GIT_EMPTY_REF
 # Specify some constants
 use constant {
     GIT_EMPTY_REF  => "0000000000000000000000000000000000000000"
+};
+
+# Types of repositories....
+use constant {
+    REPO_SYSADMIN  => "sysadmin",
+    REPO_WEBSITE   => "website",
+    REPO_SCRATCH   => "scratch",
+    REPO_CLONE     => "clone",
+    REPO_NORMAL    => "normal"
 };
 
 # Types of refs....
