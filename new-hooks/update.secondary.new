@@ -57,10 +57,10 @@ my $repoid = repository_id( $git_dir );
 my $repopath = repository_path( $git_dir );
 
 # Generate the information that gitweb will later use...
-if( -e "$git_dir/cloneurl" ) {
+unless( -e "$git_dir/cloneurl" ) {
     open(CLONEURLS, ">$git_dir/cloneurl");
-    print CLONEURLS "Pull (read-only): git://anongit.kde.org/$repopath\n"
-    print CLONEURLS "Pull (read-only): http://anongit.kde.org/$repopath\n"
+    print CLONEURLS "Pull (read-only): git://anongit.kde.org/$repopath\n";
+    print CLONEURLS "Pull (read-only): http://anongit.kde.org/$repopath\n";
     print CLONEURLS "Pull+Push (read+write): git\@git.kde.org:$repopath\n";
     close(CLONEURLS);
 }
