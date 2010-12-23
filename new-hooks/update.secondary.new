@@ -1,0 +1,171 @@
+#!/usr/bin/perl -w
+use warnings;
+
+###############
+### Update hook startup
+###############
+
+# Retrieve the repo-management directory path....
+# This is done in a begin block in order to be ready for it to be used by "use lib" below
+BEGIN {
+    $repomgmt_dir = $ENV{'HOME'} . "/repo-management";
+    $repomgmt_dir = $ENV{'REPOMGMT_DIR'} if( $ENV{'REPOMGMT_DIR'} );
+}
+
+# Put an Axe into @INC so we can call "use", and have everything imported....
+use lib "$repomgmt_dir/new-hooks/";
+use GitHookLib;
+
+# Read in input...
+my $refname = shift;
+my $oldsha1 = shift;
+my $newsha1 = shift;
+
+# Read needed environment variables
+$git_dir = $ENV{'GIT_DIR'};
+$push_user = $ENV{'GL_USER'};
+$user_home = $ENV{'HOME'};
+
+# Verify the provided information is valid....
+if( $refname eq "" || $oldsha1 eq "" || $newsha1 eq "" || $git_dir eq "" || $push_user eq "" ) {
+    print "Information needed to run could not be gathered successfully.\n";
+    print "Required environment variables: GIT_DIR, GL_USER, HOME\n";
+    print "Syntax: update.secondary <refname> <oldsha> <newsha>\n";
+    exit 1;
+}
+
+###############
+### Initialisation Phase
+###############
+
+# Ensure that git.kde.org services have not been globally suspended (or suspended for this repo)
+if( -e "$user_home/.gitolite.down" || -e "$git_dir/.gitolite.down" ) {
+    print "Sorry, but the repository you are trying to access is currently unavailable.\n";
+    print "This is to allow for maintenance, we apologise for any inconvience caused.\n";
+    print "If you believe this not to be the case, please contact sysadmin\@kde.org.\n";
+    exit 1;
+}
+
+
+
+###############
+### Information collection phase
+###############
+
+# Retrieve some information....
+my ( $ref_type, $ref_change );
+my $ref_merge_base = "";
+if( $oldsha1 ne GIT_EMPTY_REF && $newsha1 ne GIT_EMPTY_REF ) {
+    $ref_merge_base = read_git_oneline('merge-base', $oldsha1, $newsha1);
+}
+
+# What type is the ref being changed?
+if( $refname =~ "/^refs/heads/(.+)$/" ) {
+    $ref_type = REF_BRANCH;
+} elsif( $refname =~ "/^refs/tags/(.+)$/" ) {
+    $ref_type = REF_TAG;
+} elsif( $refname =~ "/^refs/backups/(.+)$/" ) {
+    $ref_type = REF_BACKUP;
+} else {
+    $ref_type = REF_UNKNOWN;
+}
+
+# What type of change is happening here?
+if( GIT_EMPTY_REF eq $oldsha1  ) {
+    $ref_change = CHANGE_CREATE;
+} elsif( GIT_EMPTY_REF eq $newsha1 ) {
+    $ref_change = CHANGE_DELETE;
+} elsif( $ref_merge_base ne $oldsha1 ) {
+    $ref_change = CHANGE_FORCED;
+} else {
+    $ref_change = CHANGE_UPDATE;
+}
+
+# Get a list of revisions which are going to change....
+@revision_list = revision_list( $oldsha1, $newsha1, $ref_change );
+
+###############
+### Auditing Phase
+###############
+
+# Check the operation they are trying to perform on the refs...
+if( $ref_type eq REF_BACKUP ) {
+    # Caught trying to tamper with a backup eh?
+    print "ATTEMPTED BACKUP TAMPER DETECTED!\n";
+    print "PUSH DECLINED - POLICY VIOLATION!\n";
+    exit 1;
+} elsif( $ref_type eq REF_UNKNOWN ) {
+    print "Sorry, but the ref you are trying to push to could not be recognised.\n";
+    print "Only pushes to branches and tags are supported.\n";
+    exit 1;
+}
+
+###############
+### Pre-Acceptance Phase
+###############
+
+###############
+### Post-Acceptance Phase
+###############
+
+exit 0;
+
+# Returns a list of revisions for the given oldsha1 and newsha1, which are new to this repository
+# This is mainly seperated out as it is quite large. Arguments: oldsha1 newsha1 ref_change_type
+sub revision_list
+{
+    my $oldsha1 = shift;
+    my $newsha1 = shift;
+    my $ref_change = shift;
+
+    # Build the revision span git will use to help build the revision list...
+    if( $ref_change eq CHANGE_CREATE ) {
+       $revision_span = "$newsha1";
+    } else {
+       $revision_span = read_git_oneline( 'merge-base', $newsha1, $oldsha1 ) . "..$newsha1";
+    }
+
+    # Get a list of objects which are not in any of our refs....
+    @step1 = read_git( 'rev-parse', '--not', '--all' );
+    # Exclude the old item in case it crept in...
+    @step2 = grep( !/$oldsha1/, @step1 );
+    @revision_list = read_git( 'rev-list', '--reverse', $revision_span, @step2 );
+
+    print "Revision List = @revision_list \n";
+}
+
+# Creates the repository uid if needed, and reads the nick and returns that instead of the uid if it is available.
+# Arguments: path to the repository of which to generate the id of...
+sub repository_id
+{
+    # Generate the repository id....
+    my $repository = shift;
+    my $repoid = `echo $repository | sha1sum | cut -c -8`;
+
+    # Write out the repository uid if it doesn't exist
+    unless( -e "$git_dir/kde-repo-uid" ) {
+        open(REPOUID, "$repository/kde-repo-uid");
+        print(REPOUID, $repoid);
+        close(REPOUID);
+    }
+
+    # Check to see if we have a repository nick, and use that instead of it's uid...
+    if( -e "$repository/kde-repo-nick" ) {
+        return read_file( "$repository/kde-repo-nick" );
+    }
+
+    # Return the default repository id
+    return $repoid;
+}
+
+# Reads the first line of a file in....
+sub read_file
+{
+    my $filename = shift;
+
+    open(INPUTFILE, "<$filename"); # open for input
+    my @lines = <INPUTFILE>; # read file into list
+    close(INPUTFILE);
+
+    return shift(@lines);
+}
