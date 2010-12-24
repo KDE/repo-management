@@ -172,11 +172,11 @@ if( -e "$git_dir/kde-hooks-off" ) {
 # Lets output a convenient access url... exclude sysadmin repos though -> non-public
 if( $repo_type ne REPO_SYSADMIN ) {
     if( $revision_count == 1 ) {
-        print "In a few minutes this commit will be available for viewing at:";
+        print "In a few minutes this commit will be available for viewing at:\n";
     } else {
-        print "In a few minutes the last commit in the series will be available for viewing at:";
+        print "In a few minutes the last commit in the series will be available for viewing at:\n";
     }
-    print "http://commits.kde.org/$repoid/$newsha1";
+    print "http://commits.kde.org/$repoid/$newsha1\n";
 }
 
 exit 1;
