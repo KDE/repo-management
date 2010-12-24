@@ -144,6 +144,24 @@ if( $ref_change eq CHANGE_FORCED || $ref_change eq CHANGE_DELETE ) {
     read_git( 'update-ref', "refs/backup/$ref_type-$ref_subname-$timestamp", $oldsha1 );
 }
 
+# Are post-commit hooks disabled on this repository?
+if( -e "$git_dir/kde-hooks-off" ) {
+    # Perform Gitolite access control check....
+    $repo_admin = 0;
+    if( !$repo_admin ) {
+        print "Repository access DENIED by Sysadmin Policy";
+        print "Repository post commit hooks are currently disabled";
+        print "Please contact sysadmin\@kde.org for further assistance";
+        exit 1;
+    }
+
+    print "***** NOTICE *****";
+    print "** Post commit hooks are DISABLED";
+    print "** Push access is restricted to repository admins";
+    print "***** NOTICE *****";
+    exit 0
+}
+
 ###############
 ### Post-Acceptance Phase
 ###############
