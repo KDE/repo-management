@@ -117,6 +117,9 @@ if( GIT_EMPTY_REF eq $oldsha1  ) {
 # Get a list of revisions which are going to change....
 @revision_list = revision_list( $oldsha1, $newsha1, $ref_change );
 
+# Prepare a count of revisions for later use if needed....
+$revision_count = @revision_list;
+
 ###############
 ### Auditing Phase
 ###############
@@ -165,6 +168,16 @@ if( -e "$git_dir/kde-hooks-off" ) {
 ###############
 ### Post-Acceptance Phase
 ###############
+
+# Lets output a convenient access url... exclude sysadmin repos though -> non-public
+if( $repo_type ne REPO_SYSADMIN ) {
+    if( $revision_count == 1 ) {
+        print "In a few minutes this commit will be available for viewing at:";
+    } else {
+        print "In a few minutes the last commit in the series will be available for viewing at:";
+    }
+    print "http://commits.kde.org/$repoid/$newsha1";
+}
 
 exit 1;
 
