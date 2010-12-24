@@ -70,7 +70,7 @@ unless( -e "$git_dir/cloneurl" ) {
 ###############
 
 # Retrieve some information....
-my ( $ref_type, $ref_change, $repo_type );
+my ( $ref_type, $ref_change, $ref_subname, $repo_type );
 my $ref_merge_base = "";
 if( $oldsha1 ne GIT_EMPTY_REF && $newsha1 ne GIT_EMPTY_REF ) {
     $ref_merge_base = read_git_oneline('merge-base', $oldsha1, $newsha1);
@@ -92,10 +92,13 @@ if( $repopath =~ s,sysadmin/(.+)$,, || $repopath eq "gitolite-admin" ) {
 # What type is the ref being changed?
 if( $refname =~ s,refs/heads/(.+)$,, ) {
     $ref_type = REF_BRANCH;
+    $ref_subname = $1;
 } elsif( $refname =~ s,/^refs/tags/(.+)$,, ) {
     $ref_type = REF_TAG;
+    $ref_subname = $1;
 } elsif( $refname =~ s,/^refs/backups/(.+)$/,, ) {
     $ref_type = REF_BACKUP;
+    $ref_subname = $1;
 } else {
     $ref_type = REF_UNKNOWN;
 }
@@ -133,6 +136,13 @@ if( $ref_type eq REF_BACKUP ) {
 ###############
 ### Pre-Acceptance Phase
 ###############
+
+# Do we need to backup the ref being pushed?
+if( $ref_change eq CHANGE_FORCED || $ref_change eq CHANGE_DELETE ) {
+    # Back it up!
+    my $timestamp = time();
+    read_git( 'update-ref', "refs/backup/$ref_type-$ref_subname-$timestamp", $oldsha1 );
+}
 
 ###############
 ### Post-Acceptance Phase
