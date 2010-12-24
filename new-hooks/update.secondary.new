@@ -70,49 +70,9 @@ unless( -e "$git_dir/cloneurl" ) {
 ###############
 
 # Retrieve some information....
-my ( $ref_type, $ref_change, $ref_subname, $repo_type );
-my $ref_merge_base = "";
-if( $oldsha1 ne GIT_EMPTY_REF && $newsha1 ne GIT_EMPTY_REF ) {
-    $ref_merge_base = read_git_oneline('merge-base', $oldsha1, $newsha1);
-}
-
-# What type of repo have we got???
-if( $repopath =~ s,sysadmin/(.+)$,, || $repopath eq "gitolite-admin" ) {
-    $repo_type = REPO_SYSADMIN;
-} elsif( $repopath =~ s,websites/(.+)$,, ) {
-    $repo_type = REPO_WEBSITE;
-} elsif( $repopath =~ s,scratch/(.+)$,, ) {
-    $repo_type = REPO_SCRATCH;
-} elsif( $repopath =~ s,clones/(.+)$,, ) {
-    $repo_type = REPO_CLONE;
-} else {
-    $repo_type = REPO_NORMAL;
-}
-
-# What type is the ref being changed?
-if( $refname =~ s,refs/heads/(.+)$,, ) {
-    $ref_type = REF_BRANCH;
-    $ref_subname = $1;
-} elsif( $refname =~ s,/^refs/tags/(.+)$,, ) {
-    $ref_type = REF_TAG;
-    $ref_subname = $1;
-} elsif( $refname =~ s,/^refs/backups/(.+)$/,, ) {
-    $ref_type = REF_BACKUP;
-    $ref_subname = $1;
-} else {
-    $ref_type = REF_UNKNOWN;
-}
-
-# What type of change is happening here?
-if( GIT_EMPTY_REF eq $oldsha1  ) {
-    $ref_change = CHANGE_CREATE;
-} elsif( GIT_EMPTY_REF eq $newsha1 ) {
-    $ref_change = CHANGE_DELETE;
-} elsif( $ref_merge_base ne $oldsha1 ) {
-    $ref_change = CHANGE_FORCED;
-} else {
-    $ref_change = CHANGE_UPDATE;
-}
+my $repo_type = repository_type( $repopath );
+my $ref_change = object_change( $oldsha1, $newsha1 );
+my ( $ref_type, $ref_subname ) = object_details( $refname );
 
 # Get a list of revisions which are going to change....
 @revision_list = revision_list( $oldsha1, $newsha1, $ref_change );
@@ -239,6 +199,65 @@ sub repository_path
     }
 
     die "Error - Failed to extract repository path from $fspath\n";
+}
+
+sub repository_type
+{
+    my $repopath = shift;
+
+    # What type of repo have we got???
+    if( $repopath =~ s,sysadmin/(.+)$,, || $repopath eq "gitolite-admin" ) {
+        return REPO_SYSADMIN;
+    } elsif( $repopath =~ s,websites/(.+)$,, ) {
+        return REPO_WEBSITE;
+    } elsif( $repopath =~ s,scratch/(.+)$,, ) {
+        return REPO_SCRATCH;
+    } elsif( $repopath =~ s,clones/(.+)$,, ) {
+        return REPO_CLONE;
+    }
+
+    return REPO_NORMAL;
+}
+
+sub object_details
+{
+    # Initialisation....
+    my $refname = shift;
+
+    # What type is the ref being changed?
+    if( $refname =~ s,refs/heads/(.+)$,, ) {
+        return( REF_BRANCH, $1 );
+    } elsif( $refname =~ s,/^refs/tags/(.+)$,, ) {
+        return( REF_TAG, $1 );
+    } elsif( $refname =~ s,/^refs/backups/(.+)$/,, ) {
+        return( REF_BACKUP, $1 );
+    }
+
+    return( REF_UNKNOWN, "" );
+}
+
+sub object_change
+{
+    # Initialisation...
+    my $oldsha1 = shift;
+    my $newsha1 = shift;
+    my $ref_merge_base = "";
+
+    # Determine the merge base, to detect if we are experiencing a force or normal push....
+    if( $oldsha1 ne GIT_EMPTY_REF && $newsha1 ne GIT_EMPTY_REF ) {
+        $ref_merge_base = read_git_oneline('merge-base', $oldsha1, $newsha1);
+    }
+
+    # What type of change is happening here?
+    if( GIT_EMPTY_REF eq $oldsha1  ) {
+        return CHANGE_CREATE;
+    } elsif( GIT_EMPTY_REF eq $newsha1 ) {
+        return CHANGE_DELETE;
+    } elsif( $ref_merge_base ne $oldsha1 ) {
+        return CHANGE_FORCED;
+    }
+
+    return CHANGE_UPDATE;
 }
 
 # Reads the first line of a file in....
