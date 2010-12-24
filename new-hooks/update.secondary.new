@@ -189,6 +189,8 @@ sub repository_id
     return read_file( "$repository/kde-repo-uid" );
 }
 
+# Extracts the externally visible repository path, excluding the ".git" suffix.
+# WARNING: Causes the script to exit immediately if the extraction failed.
 sub repository_path
 {
     # A few things...
@@ -201,6 +203,8 @@ sub repository_path
     die "Error - Failed to extract repository path from $fspath\n";
 }
 
+# Determines the type of repository (whether sysadmin, website, scratch, clone or normal)
+# Returns the repository type through a REPO_* constant
 sub repository_type
 {
     my $repopath = shift;
@@ -219,6 +223,9 @@ sub repository_type
     return REPO_NORMAL;
 }
 
+# Retrieves some information about the ref being changed. Namely, it's type and the name of the object itself
+# Returns an array, of the type and the name
+# Example: ( "tag", "v1.0.0" )
 sub object_details
 {
     # Initialisation....
@@ -236,6 +243,8 @@ sub object_details
     return( REF_UNKNOWN, "" );
 }
 
+# Determines the type of change being done to a ref, based on it's old revision and new revision
+# Returns the type of change as a CHANGE_* constant
 sub object_change
 {
     # Initialisation...
