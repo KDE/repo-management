@@ -87,12 +87,14 @@ sub read_git_oneline
     return shift(@data);
 }
 
+# Returns a list of files changed in the specified commit
 sub commit_changed_files
 {
     my $commit = shift;
     return read_git( 'show', '--pretty=format:', '--name-only', $commit );
 }
 
+# Returns the metadata of the specified commit ( in a list, ordered author name, author email, date, commit message )
 sub commit_metadata
 {
     # Retrieve information....
@@ -109,10 +111,11 @@ sub commit_metadata
     return ( $author_name, $author_email, $date, $message );
 }
 
+# Return the diff stat
 sub commit_diffstat
 {
     my $commit = shift;
-    return read_git( 'log', '--encoding=UTF-8', '--pretty=format:%an%n%ae%n%aD%n%B', '-n1',  $commit );
+    return read_git( 'log', '--encoding=UTF-8', '--stat', '--pretty=format:', '-n1',  $commit );
 }
 
 # Auditing Part 1
