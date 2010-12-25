@@ -75,7 +75,8 @@ my $ref_change = object_change( $oldsha1, $newsha1 );
 my ( $ref_type, $ref_subname ) = object_details( $refname );
 
 # Get a list of revisions which are going to change....
-@revision_list = revision_list( $oldsha1, $newsha1, $ref_change );
+@new_revisions = revision_list( $oldsha1, $newsha1, $ref_change );
+print "Revision List = @new_revisions\n";
 
 # Prepare a count of revisions for later use if needed....
 $revision_count = @revision_list;
@@ -94,6 +95,34 @@ if( $ref_type eq REF_BACKUP ) {
     print "Sorry, but the ref you are trying to push to could not be recognised.\n";
     print "Only pushes to branches and tags are supported.\n";
     exit 1;
+}
+
+# Prepare to audit inbound commits....
+my $auditcfg = "$repomgmt_dir/repo-configs/audit/${repopath}.git";
+my $filenamecfg = audit_load_filename_cfg( $repomgmt_dir );
+
+# Audit the incoming commits
+foreach my $commit( @new_revisions ) {
+    # Do we have a per-user exception?
+    next if $push_user =~ m/scripty/;
+
+    # Initialise...
+    my @errors;
+
+    # Invoke the audits on the given commit if needed...
+    audit_diff( $commit, \@errors ) unless -e "$auditcfg/skip-eol";
+    audit_filenames( $commit, \@errors ) unless -e "$auditcfg/skip-filename";
+    audit_metadata( $commit, \@errors ) unless -e "$auditcfg/skip-author";
+
+    # Don't try to show errors if we have none....
+    my $error_count = @errors;
+    next if $error_count == 0;
+
+    # Ok, we got errors, output them
+    print "** Audit Failure - commit $commit\n";
+    foreach my $errmsg( @errors ) {
+        print "$errmsg\n";
+    }
 }
 
 ###############
@@ -160,9 +189,7 @@ sub revision_list
     @step1 = read_git( 'rev-parse', '--not', '--all' );
     # Exclude the old item in case it crept in...
     @step2 = grep( !/$oldsha1/, @step1 );
-    @revision_list = read_git( 'rev-list', '--reverse', $revision_span, @step2 );
-
-    print "Revision List = @revision_list \n";
+    return read_git( 'rev-list', '--reverse', $revision_span, @step2 );
 }
 
 # Creates the repository uid if needed, and reads the nick and returns that instead of the uid if it is available.
