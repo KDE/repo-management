@@ -5,7 +5,6 @@ use strict;
 ###############
 ### Update hook startup
 ###############
-
 my $repomgmt_dir;
 
 # Retrieve the repo-management directory path....
@@ -118,14 +117,14 @@ foreach my $commit( @new_revisions ) {
     audit_metadata( $commit, \@errors ) unless -e "$auditcfg/skip-author";
 
     # Don't try to show errors if we have none....
-    my $error_count = @errors;
-    next if $error_count == 0;
+    next if scalar(@errors) == 0;
 
     # Ok, we got errors, output them
-    print "** Audit Failure - commit $commit **\n";
+    print "Audit Failure - commit $commit\n";
     foreach my $errmsg( @errors ) {
         print "   $errmsg\n";
     }
+    print "\n";
     $auditerror = 1;
 }
 
