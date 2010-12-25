@@ -63,7 +63,7 @@ sub read_git
     open(GIT_IN, '-|') || exec('git', @_) or die "Failed to execute Git...\n";
     while(<GIT_IN>) {
         chomp;
-        push(@output, $_);
+        push(@output, $_) if $_ ne "";
     }
     close(GIT_IN);
 
@@ -165,14 +165,19 @@ sub audit_filenames
     my $errors = shift;
     my $deny_filenames = shift;
 
+    # Check for validity....
+    if( !@$deny_filenames ) {
+        die "Error - Insufficient input to execute filename audit\n";
+    }
+
     # Get a list of filenames...
     my @files = commit_changed_files( $commit );
 
     # Run the file name regexp's...
-    foreach my $filename ( @files ) {
-        foreach my $check( @$deny_filenames ) {
+    foreach $filename ( @files ) {
+        foreach $check( @$deny_filenames ) {
             # Run the check
-            push(@$errors, "** File Name - $filename\n") if $filename =~ $check;
+            push(@$errors, "File Name - $filename") if $filename =~ $check;
         }
     }
 }
@@ -190,22 +195,25 @@ sub audit_metadata
     {
         # Seperate the email domain out, and disallow localhost
         my $emaildomain = $2;
-        if( $emaildomain eq "localhost" || $emaildomain eq "localhost.localdomain" || $emaildomain eq "(none)" ) { $detailfailed = 1; }
+        if( $emaildomain eq "localhost" || $emaildomain eq "localhost.localdomain" || $emaildomain eq "(none)" ) { 
+            push(@$errors, "Author Email");
+            return;
+        }
 
         # Check if the domain exists...
         my $resolver  = Net::DNS::Resolver->new;
         my $query = $resolver->query($emaildomain, "MX");
 
         # If the MX doesn't exist, perhaps A will...
-        $query = $resolver->query($emaildomain, "A") unless $query;
+        $query = $resolver->query($emaildomain, "A") if !$query;
 
         # Fail if it doesn't exist
-        push(@$errors, "** Author Email\n") unless $query;
+        push(@$errors, "Author Email") if !$query;
         return;
     }
 
     # Parse failure, so reject them....
-    push(@$errors, "** Author Email\n");
+    push(@$errors, "Author Email");
 }
 
 # Auditing initialisation
@@ -220,6 +228,8 @@ sub audit_load_filename_cfg
     open(CFG, "$managementdir/config/blockedfiles.cfg") or die "Error - Failed to locate blockedfiles.cfg for auditing setup\n";
     while( my $line = <CFG> ) 
     {
+        chomp($line);
+
         # Skip comments and blank lines
         if( $line =~ m/#/ || $line eq "" ) {
             next;

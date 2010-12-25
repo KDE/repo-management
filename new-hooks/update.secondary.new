@@ -76,7 +76,6 @@ my ( $ref_type, $ref_subname ) = object_details( $refname );
 
 # Get a list of revisions which are going to change....
 @new_revisions = revision_list( $oldsha1, $newsha1, $ref_change );
-print "Revision List = @new_revisions\n";
 
 # Prepare a count of revisions for later use if needed....
 $revision_count = @revision_list;
@@ -99,7 +98,8 @@ if( $ref_type eq REF_BACKUP ) {
 
 # Prepare to audit inbound commits....
 my $auditcfg = "$repomgmt_dir/repo-configs/audit/${repopath}.git";
-my $filenamecfg = audit_load_filename_cfg( $repomgmt_dir );
+my @filenamecfg = audit_load_filename_cfg( $repomgmt_dir );
+my $auditerror = 0;
 
 # Audit the incoming commits
 foreach my $commit( @new_revisions ) {
@@ -111,7 +111,7 @@ foreach my $commit( @new_revisions ) {
 
     # Invoke the audits on the given commit if needed...
     audit_diff( $commit, \@errors ) unless -e "$auditcfg/skip-eol";
-    audit_filenames( $commit, \@errors ) unless -e "$auditcfg/skip-filename";
+    audit_filenames( $commit, \@errors, \@filenamecfg ) unless -e "$auditcfg/skip-filename";
     audit_metadata( $commit, \@errors ) unless -e "$auditcfg/skip-author";
 
     # Don't try to show errors if we have none....
@@ -119,10 +119,16 @@ foreach my $commit( @new_revisions ) {
     next if $error_count == 0;
 
     # Ok, we got errors, output them
-    print "** Audit Failure - commit $commit\n";
+    print "** Audit Failure - commit $commit **\n";
     foreach my $errmsg( @errors ) {
-        print "$errmsg\n";
+        print "   $errmsg\n";
     }
+    $auditerror = 1;
+}
+
+# If Audit rejected it, then we bail out
+if( $auditerror == 1 ) {
+    exit 1;
 }
 
 ###############
