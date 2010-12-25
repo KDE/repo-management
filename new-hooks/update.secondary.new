@@ -1,9 +1,12 @@
 #!/usr/bin/perl -w
 use warnings;
+use strict;
 
 ###############
 ### Update hook startup
 ###############
+
+my $repomgmt_dir;
 
 # Retrieve the repo-management directory path....
 # This is done in a begin block in order to be ready for it to be used by "use lib" below
@@ -23,9 +26,9 @@ my $oldsha1 = shift;
 my $newsha1 = shift;
 
 # Read needed environment variables
-$git_dir = $ENV{'GIT_DIR'};
-$push_user = $ENV{'GL_USER'};
-$user_home = $ENV{'HOME'};
+my $git_dir = $ENV{'GIT_DIR'};
+my $push_user = $ENV{'GL_USER'};
+my $user_home = $ENV{'HOME'};
 
 # Ensure the information is fully usable
 if( $git_dir eq "." ) {
@@ -75,10 +78,10 @@ my $ref_change = object_change( $oldsha1, $newsha1 );
 my ( $ref_type, $ref_subname ) = object_details( $refname );
 
 # Get a list of revisions which are going to change....
-@new_revisions = revision_list( $oldsha1, $newsha1, $ref_change );
+my @new_revisions = revision_list( $oldsha1, $newsha1, $ref_change );
 
 # Prepare a count of revisions for later use if needed....
-$revision_count = @revision_list;
+my $revision_count = @new_revisions;
 
 ###############
 ### Auditing Phase
@@ -145,7 +148,7 @@ if( $ref_change eq CHANGE_FORCED || $ref_change eq CHANGE_DELETE ) {
 # Are post-commit hooks disabled on this repository?
 if( -e "$git_dir/kde-hooks-off" ) {
     # Perform Gitolite access control check....
-    $repo_admin = 0;
+    my $repo_admin = 0;
     if( !$repo_admin ) {
         print "Repository access DENIED by Sysadmin Policy";
         print "Repository post commit hooks are currently disabled";
@@ -180,9 +183,11 @@ exit 1;
 # This is mainly seperated out as it is quite large. Arguments: oldsha1 newsha1 ref_change_type
 sub revision_list
 {
+    # Initialisation
     my $oldsha1 = shift;
     my $newsha1 = shift;
     my $ref_change = shift;
+    my $revision_span = "";
 
     # Build the revision span git will use to help build the revision list...
     if( $ref_change eq CHANGE_CREATE ) {
@@ -192,9 +197,9 @@ sub revision_list
     }
 
     # Get a list of objects which are not in any of our refs....
-    @step1 = read_git( 'rev-parse', '--not', '--all' );
+    my @step1 = read_git( 'rev-parse', '--not', '--all' );
     # Exclude the old item in case it crept in...
-    @step2 = grep( !/$oldsha1/, @step1 );
+    my @step2 = grep( !/$oldsha1/, @step1 );
     return read_git( 'rev-list', '--reverse', $revision_span, @step2 );
 }
 
