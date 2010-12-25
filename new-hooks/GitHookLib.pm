@@ -200,12 +200,12 @@ sub audit_metadata
         $query = $resolver->query($emaildomain, "A") unless $query;
 
         # Fail if it doesn't exist
-        push(@$errors, "** Author Email - $filename\n") unless $query;
+        push(@$errors, "** Author Email\n") unless $query;
         return;
     }
 
     # Parse failure, so reject them....
-    push(@$errors, "** Author Email - $filename\n");
+    push(@$errors, "** Author Email\n");
 }
 
 # Auditing initialisation
