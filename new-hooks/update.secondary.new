@@ -269,11 +269,11 @@ sub object_details
     my $refname = shift;
 
     # What type is the ref being changed?
-    if( $refname =~ s,refs/heads/(.+)$,, ) {
+    if( $refname =~ s,^refs/heads/(.+)$,, ) {
         return( REF_BRANCH, $1 );
-    } elsif( $refname =~ s,/^refs/tags/(.+)$,, ) {
+    } elsif( $refname =~ s,^refs/tags/(.+)$,, ) {
         return( REF_TAG, $1 );
-    } elsif( $refname =~ s,/^refs/backups/(.+)$/,, ) {
+    } elsif( $refname =~ s,^refs/backups/(.+)$/,, ) {
         return( REF_BACKUP, $1 );
     }
 
