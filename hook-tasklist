@@ -1,0 +1,71 @@
+== KDE Git Hooks
+
+Jobs (in order):
+
+( Initialisation )
++ Check if repository or server is in maintenance mode
++ Generate + Store a repository identifier, for use by commits.ko
++ Generate a repository checkout information file for gitweb.ko
+
+( Auditing )
++ Ensure they aren't trying to tamper with a protected ref (backups mainly)
++ Verify all pushed commits use the correct unix line endings
++ Ensure only valid filenames have been committed to
++ Check to see if their email address is valid
+
+( Pre Acceptance )
++ Backup refs if they are being deleted/force pushed
+
+( Post Acceptance )
++ Output a url for the commit to be viewed at
+- Notify CIA
+- Send emails
+
+Needed tasks to accomplish the jobs:
+
+- Read arguments + environment
+- Determine where the configuration repo is located
+- Check for the existance of .gitolite.down
+   - In $HOME -> server is in maintenance mode
+   - In $GITDIR -> repository is in maintenance mode
+
+- Getting repo identifier:
+   - Check for $GITDIR/kde-repo-nick, and use it's contents as the identifier if it exists
+   - Write a 8 character limited, sha1sum of the current working directory path to $GITDIR/kde-repo-uid
+
+- Generate repository checkout information file:
+   - Strip the base repository path off $GITDIR
+   - Fill it into a template, and write to $GITDIR/cloneurl
+
+- Gather extra information for usage in the audit:
+   - The type of ref being changed (branch/tag/etc) and the type of change (create/delete/update/forced update)
+   - List of commits being pushed if type of change is create/update/forced update
+
+- Check to ensure a backup ref is not being tampered with
+- Iterate over the list of commits (which will be empty if the operation is a deletion)
+   - Extract metadata of the commit (author name + email, list of changed files)
+   - Check EOL style
+   - Use extracted data to verify author + files changed
+
+- Assume at this point the refs will be accepted, so make a backup if it is a deletion or force push operation 
+   - Backups to be made to refs/backups/<reftype>-<refname>-<timestamp> (eg: refs/backups/branch-master-1212121212 )
+   - Garbage clean up script run by cronjob will delete backups after 30 days
+
+- Fill in a template and output the url for the last commit made
+
+- Check if we created/deleted a ref, and send special email notices about it
+- Iterate over the list of new commits
+    - Extract commit metadata (author name + email, commit message, diffstat, file changed list, less than 200 line diff if available)
+    - Send notification to CIA, using author details + commit message + file changed list
+    - Look for bugzilla hooks, and send it the author details + commit message
+    - Send single email, including to CCMAIL recipients, with author details + commit message, using diff or diffstat if diff is too big
+
+Design:
+- Wrapper to run git and read entire output into memory
+    - Helps for commit message, author details, diff stat, file changed listing, ref type extraction
+    - Allows for advanced error handling logic
+- Isolatable tasks run as own subroutines
+    - Audits
+    - Email/Bugzilla/CIA
+    - Repo identifier/clone info generation
+    - Any task which is in general more than 5 lines of logic....
