@@ -41,8 +41,10 @@ revdiff="$newrev"
 if [ $oldrev != "0000000000000000000000000000000000000000" ]; then
     revdiff="$(git merge-base $oldrev $newrev)..$newrev"
 fi
-
-revlist=$(git rev-parse --not --all | grep -v $oldrev | git rev-list --reverse --stdin $revdiff)
+revlist=""
+if [ $newrev != "0000000000000000000000000000000000000000" ]; then
+  revlist=$(git rev-parse --not --all | grep -v $oldrev | git rev-list --reverse --stdin $revdiff)
+fi
 
 # Generate short unique ID for each repo that can be used for a shortened commit viewing URL
 repouid=$(pwd | sha1sum | cut -c -8)
