@@ -32,7 +32,7 @@ for line in `cat ~/projects-to-anongit.list`; do
       then
         cd $bname
         git remote update
-        git remote prune
+        git remote prune origin
         git update-server-info
       else
         rm -rf $bname
