@@ -4,11 +4,11 @@ Jobs (in order):
 
 ( Initialisation )
 + Check if repository or server is in maintenance mode
-- Generate + Store a repository identifier, for use by commits.ko
++ Generate + Store a repository identifier, for use by commits.ko
 - Generate a repository checkout information file for gitweb.ko
 
 ( Auditing )
-- Ensure they aren't trying to tamper with a protected ref (backups mainly)
++ Ensure they aren't trying to tamper with a protected ref (backups mainly)
 - Verify all pushed commits use the correct unix line endings
 - Ensure only valid filenames have been committed to
 - Check to see if their email address is valid
@@ -29,9 +29,9 @@ Needed tasks to accomplish the jobs:
    + In $HOME -> server is in maintenance mode
    + In $GITDIR -> repository is in maintenance mode
 
-- Getting repo identifier:
-   - Check for $GITDIR/kde-repo-nick, and use it's contents as the identifier if it exists
-   - Write a 8 character limited, sha1sum of the current working directory path to $GITDIR/kde-repo-uid
++ Getting repo identifier:
+   + Check for $GITDIR/kde-repo-nick, and use it's contents as the identifier if it exists
+   + Write a 8 character limited, sha1sum of the current working directory path to $GITDIR/kde-repo-uid
 
 - Generate repository checkout information file:
    - Strip the base repository path off $GITDIR

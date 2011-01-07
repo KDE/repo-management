@@ -95,7 +95,22 @@ class Repository:
             self.commits.append( commit )
 
     def __get_repo_id(self):
-        pass
+        base = os.getenv('GIT_DIR')
+        # Look for kde-repo-nick, then kde-repo-uid and finally generate one if we find neither....
+        if not os.path.exists(base + "/kde-repo-uid"):
+            repo_uid = read_command( "echo $GIT_DIR | sha1sum | cut -c -8" )
+            uid_file = file(base + "/kde-repo-uid", "w")
+            uid_file.write(repo_uid)
+            uid_file.close()
+        
+        if os.path.exists(base + "/kde-repo-nick"):
+            repo_id = file(base + "/kde-repo-nick", "r")
+        else:
+            repo_id = file(base + "/kde-repo-uid", "r")
+        
+        rid = repo_id.readline().strip()
+        repo_id.close()
+        return rid
 
     def __get_repo_type(self):
         sysadmin_repos = ["gitolite-admin", "repo-management"]
