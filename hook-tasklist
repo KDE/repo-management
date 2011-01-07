@@ -33,9 +33,9 @@ Needed tasks to accomplish the jobs:
    + Check for $GITDIR/kde-repo-nick, and use it's contents as the identifier if it exists
    + Write a 8 character limited, sha1sum of the current working directory path to $GITDIR/kde-repo-uid
 
-- Generate repository checkout information file:
-   - Strip the base repository path off $GITDIR
-   - Fill it into a template, and write to $GITDIR/cloneurl
++ Generate repository checkout information file:
+   + Strip the base repository path off $GITDIR
+   + Fill it into a template, and write to $GITDIR/cloneurl
 
 + Gather extra information for usage in the audit:
    + The type of ref being changed (branch/tag/etc) and the type of change (create/delete/update/forced update)

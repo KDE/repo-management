@@ -44,6 +44,7 @@ class Repository:
         path_match = re.match("^/home/ben/sysadmin/(.+).git$", os.getenv('GIT_DIR'))
         self.path = path_match.group(1)
         self.uid = self.__get_repo_id()
+        self.__write_metadata()
 
         # Determine types....
         self.repo_type = self.__get_repo_type()
@@ -93,6 +94,13 @@ class Repository:
             commit = Commit()
             commit.__dict__.update(match.groupdict())
             self.commits.append( commit )
+            
+    def __write_metadata(self):
+        metadata = file(os.getenv('GIT_DIR') + "/cloneurl", "w")
+        metadata.write( "Pull (read-only): git://anongit.kde.org/" + self.path + "\n" )
+        metadata.write( "Pull (read-only): http://anongit.kde.org/" + self.path + "\n" )
+        metadata.write( "Pull+Push (read+write): git@git.kde.org:" + self.path + "\n" )
+        metadata.close()
 
     def __get_repo_id(self):
         base = os.getenv('GIT_DIR')
@@ -100,7 +108,7 @@ class Repository:
         if not os.path.exists(base + "/kde-repo-uid"):
             repo_uid = read_command( "echo $GIT_DIR | sha1sum | cut -c -8" )
             uid_file = file(base + "/kde-repo-uid", "w")
-            uid_file.write(repo_uid)
+            uid_file.write(repo_uid + "\n")
             uid_file.close()
         
         if os.path.exists(base + "/kde-repo-nick"):
