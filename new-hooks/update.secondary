@@ -3,7 +3,7 @@
 # Load dependencies
 import os
 import sys
-from hooklib import Repository, Commit, RepoType, ChangeType, RefType
+from hooklib import Repository, Commit, CommitAuditor, RepoType, ChangeType, RefType
 
 def usage():
     print "Information needed to run could not be gathered successfully."
@@ -43,4 +43,24 @@ if repository.ref_type == RefType.Backup:
     print "PUSH DECLINED - POLICY VIOLATION!"
     exit(1)
 
+# Audit the commits....
+auditor = CommitAuditor( repository )
+skip_base = repository.management_directory + "/repo-configs/audit/"
+if not os.path.exists(skip_base + repository.path + ".git/skip-eol"):
+    auditor.audit_eol()
+
+if not os.path.exists(skip_base + repository.path + ".git/skip-filename"):
+    auditor.audit_filename()
+
+if not os.path.exists(skip_base + repository.path + ".git/skip-author"):
+    auditor.audit_metadata()
+
+# Did we have any commit audit failures?
+if not len(auditor.failures) == 0:
+    for (sha1, failures) in auditor.failures.iteritems():
+        print "Audit Failure - commit " + sha1
+        print "   " + "\n   ".join(failures)
+    exit(1)
+
+# Post auditing now, commits will be accepted from this point forward
 exit(0)
