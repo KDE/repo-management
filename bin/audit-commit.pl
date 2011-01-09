@@ -95,6 +95,7 @@ while(<IN>) {
     # Search for the file name....
     if (/^diff --git a\/(\S+) b\/(\S+)$/) {
         $currentfile = $2;
+        $violationdetect = 0;
         checkfilename( $2 );
         next;
     }
