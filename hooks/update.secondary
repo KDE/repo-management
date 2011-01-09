@@ -136,7 +136,7 @@ if [ ! -f $emaildir/skip-email ]; then
     if [ -f $emaildir/filtername ] && [ -f $emaildir/svnpath ]; then
         echo "Processing commit message keywords and sending emails ..."
         for commit_id in $revlist ; do
-            $mgmtdir/bin/email-git ${refname##refs/heads/} ${commit_id} "$(cat $emaildir/filtername)" $(cat $emaildir/svnpath)
+            $mgmtdir/bin/email-git ${refname##refs/heads/} ${commit_id} "$(cat $emaildir/filtername)" "$(cat $emaildir/svnpath)"
         done
     fi
 fi
