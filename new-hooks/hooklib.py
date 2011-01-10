@@ -2,10 +2,11 @@
 
 import os
 import re
+import time
 import subprocess
 import dns.resolver
 import smtplib
-import email.mime.text
+from email.mime.text import MIMEText
 
 class RepoType:
     "Enum type - Indicates the type of repository"
@@ -277,7 +278,8 @@ class CommitAuditor:
 
 class CiaNotifier:
     "Notifies CIA of changes to a repository"
-     template = """<message>
+
+    template = """<message>
   <generator>
     <name>KDE CIA Python client</name>
     <version>1.00</version>
@@ -307,6 +309,7 @@ class CiaNotifier:
     def __init__(self, repository):
         self.repository = repository
         self.smtp = smtplib.SMTP()
+        self.smtp.connect()
         
     def __del__(self):
         self.smtp.quit()
@@ -320,18 +323,17 @@ class CiaNotifier:
         for commit in self.repository.commits.values():
             self.__send_cia(commit)
             if big_sleep:
-                sleep(0.5)
+                time.sleep(0.5)
                 
     def __send_cia(self, commit):
         # Build the <files> section for the template...
         files_list = []
         for filename in commit.files_changed:
             files_list.append( "<file>{0}</file>".format(filename) )
-        file_output = '\n'.join(files_list)
+        file_output = '\n        '.join(files_list)
                 
         # Fill in the template...
-        commit_xml = template
-        commit_xml.format( self.repository.path, "", commit.date, commit.author_name, commit.sha1, file_output, commit.message, commit.url() )
+        commit_xml = self.template.format( self.repository.path, "", commit.date, commit.author_name, commit.sha1, file_output, commit.message.strip(), commit.url() )
         
         # Craft the email....
         message = MIMEText( commit_xml )
