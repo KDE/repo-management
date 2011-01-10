@@ -56,7 +56,7 @@ Needed tasks to accomplish the jobs:
 - Check if we created/deleted a ref, and send special email notices about it
 - Iterate over the list of new commits
     - Extract commit metadata (author name + email, commit message, diffstat, file changed list, less than 200 line diff if available)
-    - Send notification to CIA, using author details + commit message + file changed list
+    + Send notification to CIA, using author details + commit message + file changed list
     - Look for bugzilla hooks, and send it the author details + commit message
     - Send single email, including to CCMAIL recipients, with author details + commit message, using diff or diffstat if diff is too big
 

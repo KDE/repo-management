@@ -4,6 +4,8 @@ import os
 import re
 import subprocess
 import dns.resolver
+import smtplib
+import email.mime.text
 
 class RepoType:
     "Enum type - Indicates the type of repository"
@@ -76,7 +78,7 @@ class Repository:
              ('CH' , ('%H%n',  '(?P<sha1>.+)\n')),
              ('AN' , ('%an%n', '(?P<author_name>.+)\n')),
              ('AE' , ('%ae%n', '(?P<author_email>.+)\n')),
-             ('D'  , ('%aD%n', '(?P<date>.+)\n')),
+             ('D'  , ('%at%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.+)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
              ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(?P<files_changed>(.|\n)*)'))
@@ -272,6 +274,78 @@ class CommitAuditor:
                     a_results  = dns.resolver.query(domain, 'A')
                 except dns.resolver.NXDOMAIN:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
+
+class CiaNotifier:
+    "Notifies CIA of changes to a repository"
+     template = """<message>
+  <generator>
+    <name>KDE CIA Python client</name>
+    <version>1.00</version>
+    <url>http://projects.kde.org/repo-management</url>
+  </generator>
+  <source>
+    <project>KDE</project>
+    <module>{0}</module>
+    <branch>{1}</branch>
+  </source>
+  <timestamp>{2}</timestamp>
+  <body>
+    <commit>
+      <author>{3}</author>
+      <revision>{4}</revision>
+      <files>
+        {5}
+      </files>
+      <log>
+        {6}
+      </log>
+      <url>{7}</url>
+    </commit>
+  </body>
+</message>"""
+
+    def __init__(self, repository):
+        self.repository = repository
+        self.smtp = smtplib.SMTP()
+        
+    def __del__(self):
+        self.smtp.quit()
+        
+    def notify(self):
+        # Do we need to sleep at all?
+        if len(self.repository.commits) > 10:
+            big_sleep = True
+            
+        # Iterate and send....
+        for commit in self.repository.commits.values():
+            self.__send_cia(commit)
+            if big_sleep:
+                sleep(0.5)
+                
+    def __send_cia(self, commit):
+        # Build the <files> section for the template...
+        files_list = []
+        for filename in commit.files_changed:
+            files_list.append( "<file>{0}</file>".format(filename) )
+        file_output = '\n'.join(files_list)
+        
+        # Build url...
+        url = "http://commits.kde.org/{0}/{1}".format( self.repository.uid, commit.sha1 )
+        
+        # Fill in the template...
+        commit_xml = template
+        commit_xml.format( self.repository.path, "", commit.date, commit.author_name, commit.sha1, file_output, commit.message, url )
+        
+        # Craft the email....
+        message = MIMEText( commit_xml )
+        message['Subject'] = "DeliverXML"
+        message['From'] = "sysadmin@kde.org"
+        message['To'] = "cia@cia.vc"
+        message['Content-Type'] = "text/xml; charset=UTF-8"
+        message['Content-Transfer-Encoding'] = "8bit"
+        
+        # Send email...
+        self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"], message.as_string())
 
 class Commit:
     "Represents a git commit"
