@@ -100,7 +100,7 @@ class Repository:
         # Parse time!
         for commit_data in output.split("\x00\x00"):
             match = re.match(re_format, commit_data, re.MULTILINE)
-            commit = Commit()
+            commit = Commit(self)
             commit.__dict__.update(match.groupdict())
             self.commits[ commit.sha1 ] = commit
             
@@ -328,13 +328,10 @@ class CiaNotifier:
         for filename in commit.files_changed:
             files_list.append( "<file>{0}</file>".format(filename) )
         file_output = '\n'.join(files_list)
-        
-        # Build url...
-        url = "http://commits.kde.org/{0}/{1}".format( self.repository.uid, commit.sha1 )
-        
+                
         # Fill in the template...
         commit_xml = template
-        commit_xml.format( self.repository.path, "", commit.date, commit.author_name, commit.sha1, file_output, commit.message, url )
+        commit_xml.format( self.repository.path, "", commit.date, commit.author_name, commit.sha1, file_output, commit.message, commit.url() )
         
         # Craft the email....
         message = MIMEText( commit_xml )
@@ -349,11 +346,14 @@ class CiaNotifier:
 
 class Commit:
     "Represents a git commit"
-    def __init__(self):
-        pass
+    def __init__(self, repository):
+        self.repository = repository
 
     def __repr__(self):
         return str(self.__dict__)
+        
+    def url(self):
+        return "http://commits.kde.org/{0}/{1}".format( self.repository.uid, self.sha1 )
 
 def read_command( command ):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
