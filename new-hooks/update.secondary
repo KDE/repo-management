@@ -31,7 +31,7 @@ push_user = os.getenv('GL_USER')
 user_home = os.getenv('HOME')
     
 # Check for maintenance mode...
-if( os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.gitolite.down") ):
+if os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.gitolite.down"):
     maintenance()
     
 # Initialise the repository
