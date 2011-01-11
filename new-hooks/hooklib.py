@@ -82,13 +82,13 @@ class Repository:
              ('D'  , ('%at%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.+)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
-             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(?P<files_changed>(.|\n)*)'))
+             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff\n(?P<files_changed>(.|\n)*)'))
             )
         pretty_format = ''.join([': '.join((i,j[0])) for i,j in l])
         re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
 
         # Get the data we are going to be parsing....
-        log_arguments = "--name-only --reverse -z --pretty=format:'{0}'".format(pretty_format)
+        log_arguments = "--name-status --reverse -z --pretty=format:'{0}'".format(pretty_format)
         command = "git log {0}..{1} {2}".format(self.old_sha1, self.new_sha1, log_arguments) # For debugging...
         #command = "git rev-parse --not --all | grep -v {0} | git log --stdin --no-walk {1} {2}".format(self.old_sha1, log_arguments, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -107,8 +107,10 @@ class Repository:
             
         # Cleanup files_changed....
         for (sha1, commit) in self.commits.iteritems():
-            clean_list = commit.files_changed.split("\x00")
-            commit.files_changed = [filename.strip() for filename in clean_list]
+            clean_list = re.split("\x00", commit.files_changed)
+            files = clean_list[1::2]
+            changes = clean_list[::2]
+            commit.files_changed = dict( zip(files, changes) )
             
     def __write_metadata(self):
         metadata = file(os.getenv('GIT_DIR') + "/cloneurl", "w")
