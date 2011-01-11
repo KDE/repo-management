@@ -86,7 +86,7 @@ if repository.change_type == ChangeType.Forced or repository.change_type == Chan
 # KDE PIM: Add a note to all commits which are new to the Enterprise branch...
 if (repository.path == "kdepim" or repository.path == "kdepim-runtime") and repository.ref_name == "enterprise":
     for commit in repository.commits:
-        command = "git notes add --message 'Merge: PENDING' " + commit.sha1
+        command = "git notes add --message 'PENDING' " + commit.sha1
         subprocess.Popen(command, shell=True)
 
 #####
