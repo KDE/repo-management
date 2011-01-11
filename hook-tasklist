@@ -14,11 +14,11 @@ Jobs (in order):
 + Check to see if their email address is valid
 
 ( Pre Acceptance )
-- Backup refs if they are being deleted/force pushed
++ Backup refs if they are being deleted/force pushed
 
 ( Post Acceptance )
-- Output a url for the commit to be viewed at
-- Notify CIA
++ Output a url for the commit to be viewed at
++ Notify CIA
 - Send emails
 
 Needed tasks to accomplish the jobs:
@@ -47,11 +47,11 @@ Needed tasks to accomplish the jobs:
    + Check EOL style
    + Use extracted data to verify author + files changed
 
-- Assume at this point the refs will be accepted, so make a backup if it is a deletion or force push operation 
-   - Backups to be made to refs/backups/<reftype>-<refname>-<timestamp> (eg: refs/backups/branch-master-1212121212 )
++ Assume at this point the refs will be accepted, so make a backup if it is a deletion or force push operation 
+   + Backups to be made to refs/backups/<reftype>-<refname>-<timestamp> (eg: refs/backups/branch-master-1212121212 )
    - Garbage clean up script run by cronjob will delete backups after 30 days
 
-- Fill in a template and output the url for the last commit made
++ Fill in a template and output the url for the last commit made
 
 - Check if we created/deleted a ref, and send special email notices about it
 - Iterate over the list of new commits
