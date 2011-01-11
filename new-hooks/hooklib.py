@@ -338,7 +338,7 @@ class CiaNotifier:
         file_output = '\n        '.join(files_list)
                 
         # Fill in the template...
-        commit_xml = self.template.format( self.repository.path, "", commit.date, commit.author_name, commit.sha1, file_output, commit.message.strip(), commit.url() )
+        commit_xml = self.template.format( self.repository.path, self.repository.ref_name, commit.date, commit.author_name, commit.sha1, file_output, commit.message.strip(), commit.url() )
         
         # Craft the email....
         message = MIMEText( commit_xml )
