@@ -25,11 +25,11 @@ class ChangeType:
     
 class RefType:
     "Enum type - indicates the type of ref in the repository"
-    Branch = 1
-    Tag = 2
-    Backup = 3
-    Notes = 4
-    Unknown = 5
+    Branch = "branch"
+    Tag = "tag"
+    Backup = "backup"
+    Notes = "notes"
+    Unknown = 0
 
 class Repository:
     "Represents a repository, and changes made to it"
@@ -61,9 +61,16 @@ class Repository:
         self.repo_type = self.__get_repo_type()
         self.ref_type = self.__get_ref_type()
         self.change_type = self.__get_change_type()
-        
+        ref_name_match = re.match("^refs/(.+)/(.+)$", self.ref)
+        self.ref_name = ref_name_match.group(2)
+
         # Final initialisation
         self.__build_commits()
+        
+    def backup_ref(self):
+        # Back ourselves up!
+        command = "git update-ref refs/backup/{0}-{1}-{2} {3}".format( self.ref_type, self.ref_name, int( time.time() ), self.old_sha1 )
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def __build_commits(self):
         # Build the revision span git will use to help build the revision list...
