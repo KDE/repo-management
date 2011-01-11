@@ -52,7 +52,7 @@ class Repository:
             self.management_directory = os.getenv('HOME') + "/repo-management"
         
         # Set path and id....
-        path_match = re.match("^/home/ben/sysadmin/(.+).git$", os.getenv('GIT_DIR'))
+        path_match = re.match("^/home/ben/sysadmin/(.+).git$", os.getcwd())
         self.path = path_match.group(1)
         self.uid = self.__get_repo_id()
         self.__write_metadata()
@@ -96,9 +96,9 @@ class Repository:
         re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
 
         # Get the data we are going to be parsing....
-        log_arguments = "--name-status --reverse -z --pretty=format:'{0}'".format(pretty_format)
-        command = "git log {0}..{1} {2}".format(self.old_sha1, self.new_sha1, log_arguments) # For debugging...
-        #command = "git rev-parse --not --all | grep -v {0} | git log --stdin --no-walk {1} {2}".format(self.old_sha1, log_arguments, revision_span)
+        log_arguments = "--name-status -z --pretty=format:'{0}'".format(pretty_format)
+        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {2} | git log --stdin --no-walk {1}"
+        command = command.format(self.old_sha1, log_arguments, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = process.stdout.read()
         
@@ -389,7 +389,7 @@ def read_command( command ):
 
 def get_change_diff( repository, log_arguments ):
     # Prepare to run....
-    command = "git log -p --pretty=format:%x00%H%x00 --stdin " + log_arguments
+    command = "git log --no-walk -p --pretty=format:%x00%H%x00 --stdin " + log_arguments
     process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     # Pass on the commits for it to show...
