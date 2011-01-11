@@ -28,7 +28,8 @@ class RefType:
     Branch = 1
     Tag = 2
     Backup = 3
-    Unknown = 4
+    Notes = 4
+    Unknown = 5
 
 class Repository:
     "Represents a repository, and changes made to it"
@@ -162,6 +163,8 @@ class Repository:
             return RefType.Tag
         elif re.match("^refs/backups/(.+)$", self.ref):
             return RefType.Backup
+        elif re.match("^refs/notes/(.+)$", self.ref):
+            return RefType.Notes
         else:
             return RefType.Unknown
             
@@ -215,15 +218,8 @@ class CommitAuditor:
         re_filename = re.compile("^diff --git a\/(\S+) b\/(\S+)$")
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
         
-        # Get the full diff for all commits...
-        commit_list = ' '.join( self.repository.commits.keys() )
-        command = "git log -p --reverse --pretty=format:%x00%H%x00 --stdin"
-        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        for sha1 in self.repository.commits.keys():
-            process.stdin.write(sha1 + "\n")
-        process.stdin.close()
-        
         # Do EOL audit!
+        process = get_change_diff( self.repository, "--reverse" )
         for line in process.stdout:
             commit_change = re.match( re_commit, line )
             if commit_change:
@@ -348,6 +344,27 @@ class CiaNotifier:
         # Send email...
         self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"], message.as_string())
 
+class EmailNotifier:
+    "Notifies a specified email address of changes to a repository"
+
+    def __init__(self, repository):
+        self.repository = repository
+        self.smtp = smtplib.SMTP()
+        self.smtp.connect()
+        
+    def __del__(self):
+        self.smtp.quit()
+        
+    def notification_address(self):
+        if self.repository.repo_type == RepoType.Sysadmin:
+            return "sysadmin-svn@kde.org"
+        else:
+            return "kde-commits@kde.org"
+        
+    def notify(self):
+        # This doesn't actually do anything yet...
+        pass
+
 class Commit:
     "Represents a git commit"
     def __init__(self, repository):
@@ -362,3 +379,14 @@ class Commit:
 def read_command( command ):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process.stdout.readline().strip()
+
+def get_change_diff( repository, log_arguments ):
+    # Prepare to run....
+    command = "git log -p --pretty=format:%x00%H%x00 --stdin " + log_arguments
+    process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    # Pass on the commits for it to show...
+    for sha1 in repository.commits.keys():
+        process.stdin.write(sha1 + "\n")
+    process.stdin.close()
+    return process

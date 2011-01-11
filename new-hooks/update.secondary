@@ -3,7 +3,7 @@
 # Load dependencies
 import os
 import sys
-from hooklib import Repository, Commit, CommitAuditor, RepoType, ChangeType, RefType
+from hooklib import Repository, Commit, CommitAuditor, CiaNotifier, EmailNotifier, RepoType, ChangeType, RefType
 
 def usage():
     print "Information needed to run could not be gathered successfully."
@@ -17,7 +17,11 @@ def maintenance():
     print "If you believe this not to be the case, please contact sysadmin@kde.org."
     exit(1)
     
-# Read in input...
+#####
+# Initialisation
+#####
+
+# Read arguments...
 try:
     ref_name = sys.argv[1]
     old_sha1 = sys.argv[2]
@@ -37,13 +41,21 @@ if os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.
 # Initialise the repository
 repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 
-# Auditing - Repository
+#####
+# Auditing
+#####
+
+# Repository change checks...
 if repository.ref_type == RefType.Backup:
-    print "ATTEMPTED BACKUP TAMPER DETECTED!"
-    print "PUSH DECLINED - POLICY VIOLATION!"
+    print "Pushing to backup refs is not supported for security reasons"
+    print "Push declined - attempted repository integrity violation"
+    exit(1)
+elif repository.ref_type == RefType.Unknown:
+    print "Sorry, but the ref you are trying to push to could not be recognised."
+    print "Only pushes to branches and tags are supported."
     exit(1)
 
-# Audit the commits....
+# New commits...
 auditor = CommitAuditor( repository )
 skip_base = repository.management_directory + "/repo-configs/audit/"
 if not os.path.exists(skip_base + repository.path + ".git/skip-eol"):
@@ -62,5 +74,37 @@ if not len(auditor.failures) == 0:
         print "   " + "\n   ".join(failures)
     exit(1)
 
-# Post auditing now, commits will be accepted from this point forward
+#####
+# Pre-acceptance
+#####
+
+# Do we need to back it up??
+if repository.change_type == ChangeType.Forced or repository.change_type == ChangeType.Delete:
+    repository.backup_ref()
+    
+# Repository specific special handling....
+# KDE PIM: Add a note to all commits which are new to the Enterprise branch...
+if (repository.path == "kdepim" or repository.path == "kdepim-runtime") and repository.ref_name == "enterprise":
+    for commit in repository.commits:
+        command = "git notes add --message 'Merge: PENDING' " + commit.sha1
+        subprocess.Popen(command, shell=True)
+
+#####
+# Post acceptance
+#####
+
+# Does this user need a special post-update skip?
+post_exceptions = ["scripty"]
+if push_user in post_exceptions:
+    exit(0)
+    
+# Notify CIA...
+cia = CiaNotifier(repository)
+cia.notify()
+
+# Send email based notifications (email, bugzilla, reviewboard)
+email = EmailNotifier(repository)
+email.notify()
+
+# Everything is done....
 exit(0)
