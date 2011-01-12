@@ -391,7 +391,7 @@ class EmailNotifier:
             if len(diffs[commit]) < 1000:
                 diffs[commit].append(line)
             else:
-                diffs[commit] = NoneType
+                diffs[commit] = None
                 
         # Build our diff stats...
         diffstats = dict()
@@ -427,24 +427,18 @@ class EmailNotifier:
         presence['email_gui'] = re.compile("^\s*GUI:")
         presence['silent']    = re.compile("(?:CVS|SVN|GIT|SCM).?SILENT")
         
-        results = dict('diff' => list())
+        results = defaultdict(list)
         for line in commit.message.split("\n"):
             for (name, regex) in split.iteritems():
                 match = re.match( regex, line )
                 if match:
-                    self.__store_keyword(results, name, match.group(1))
+                    results[name].append( match.group(1).split(",") )
                     
             for (name, regex) in split.iteritems(): 
                 if re.match( regex, line ):
                     results[name] = True
                     
-        return results
-
-    def __store_keyword(self, results, key, values):
-        if not results.haskey( key ):
-            results[key] = list()
-            
-        results[key] = results[key] + values.split(",")
+        return results        
 
 class Commit:
     "Represents a git commit"
