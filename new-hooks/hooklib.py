@@ -226,7 +226,7 @@ class CommitAuditor:
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
         
         # Do EOL audit!
-        process = get_change_diff( self.repository, "--reverse" )
+        process = get_change_diff( self.repository, "-p" )
         for line in process.stdout:
             commit_change = re.match( re_commit, line )
             if commit_change:
@@ -369,8 +369,82 @@ class EmailNotifier:
             return "kde-commits@kde.org"
         
     def notify(self):
-        # This doesn't actually do anything yet...
-        pass
+        # Get diff-stats if needed, and perform licensing checks here.....
+        diffs, diffstats = self.__retrieve_diffs()
+        licensing = self.__check_licenses()
+        
+        # Send out the mails...
+        for (sha1, commit) in self.repository.commits.iteritems():
+            self.__send_email(commit, licensing[sha1], diffs[sha1], diffstats[sha1])
+            
+    def __retrieve_diffs(self):
+        # Build our diffs....
+        diffs = dict()
+        process = get_change_diff( self.repository, "-p" )
+        for line in process.stdout:
+            commit_change = re.match( "^\x00(.+)\x00$", line )
+            if commit_change:
+                commit = commit_change.group(1)
+                diffs[commit] = list()
+                continue
+
+            if len(diffs[commit]) < 1000:
+                diffs[commit].append(line)
+            else:
+                diffs[commit] = NoneType
+                
+        # Build our diff stats...
+        diffstats = dict()
+        process = get_change_diff( self.repository, "--stat" )
+        data = process.stdout.read()
+        for line in data.split('\x00\x00'):
+            commit_change = re.match( "^(.+)\x00(.|\n)+$", line, re.MULTILINE )
+            commit = commit_change.group(1)
+            diffstats[commit] = commit_change.group(2)
+                
+        return (diffs, diffstats)
+                
+    def __send_email(self, commit, licensing, diff, diffstat):    
+        # Build list for X-Commit-Directories...
+        commit_directories = dict()
+        for filename in commit.files_changed:
+            # Seperate out the directory...
+            match = re.match("^(.+)/(.+)$", filename)
+            commit_directories.append( match.group(1) )
+            
+        # Check for keywords...
+        keyword_info = self.__parse_keywords(commit)
+            
+    def __parse_keywords(self, commit):
+        split = dict()
+        split['bug_fixed'] = re.compile("^\s*(?:BUGS?|FEATURE)[:=]\s*(\d{4,10})")
+        split['bug_cc']    = re.compile("^\s*CCBUGS?[:=]\s*(\d{4,10})")
+        split['email_cc']  = re.compile("^\s*CC[-_]?MAIL[:=]\s*(.*)")
+        split['email_cc2'] = re.compile("^\s*C[Cc][:=]\s*(.*)")
+        split['fixed_in']  = re.compile("^\s*FIXED[-_]?IN[:=]\s*(\d[\d\.-]*)/")
+
+        presence = dict()
+        presence['email_gui'] = re.compile("^\s*GUI:")
+        presence['silent']    = re.compile("(?:CVS|SVN|GIT|SCM).?SILENT")
+        
+        results = dict('diff' => list())
+        for line in commit.message.split("\n"):
+            for (name, regex) in split.iteritems():
+                match = re.match( regex, line )
+                if match:
+                    self.__store_keyword(results, name, match.group(1))
+                    
+            for (name, regex) in split.iteritems(): 
+                if re.match( regex, line ):
+                    results[name] = True
+                    
+        return results
+
+    def __store_keyword(self, results, key, values):
+        if not results.haskey( key ):
+            results[key] = list()
+            
+        results[key] = results[key] + values.split(",")
 
 class Commit:
     "Represents a git commit"
@@ -389,7 +463,7 @@ def read_command( command ):
 
 def get_change_diff( repository, log_arguments ):
     # Prepare to run....
-    command = "git log --no-walk -p --pretty=format:%x00%H%x00 --stdin " + log_arguments
+    command = "git log --no-walk --pretty=format:%x00%H%x00 --stdin " + log_arguments
     process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     # Pass on the commits for it to show...
