@@ -369,26 +369,25 @@ class EmailNotifier:
             return "kde-commits@kde.org"
         
     def notify(self):
-        # Get diff-stats if needed, and perform licensing checks here.....
+        # Get diff-stats if needed, and perform content checks...
         diffs, diffstats = self.__retrieve_diffs()
-        licensing = self.__check_licenses()
+        self.__check_problems()
         
         # Send out the mails...
         for (sha1, commit) in self.repository.commits.iteritems():
-            self.__send_email(commit, licensing[sha1], diffs[sha1], diffstats[sha1])
+            self.__send_email(commit, diffs[sha1], diffstats[sha1])
             
     def __retrieve_diffs(self):
         # Build our diffs....
-        diffs = dict()
+        diffs = defaultdict(list)
         process = get_change_diff( self.repository, "-p" )
         for line in process.stdout:
             commit_change = re.match( "^\x00(.+)\x00$", line )
             if commit_change:
                 commit = commit_change.group(1)
-                diffs[commit] = list()
                 continue
 
-            if len(diffs[commit]) < 1000:
+            if len(diffs[commit]) < 8000:
                 diffs[commit].append(line)
             else:
                 diffs[commit] = None
@@ -403,8 +402,179 @@ class EmailNotifier:
             diffstats[commit] = commit_change.group(2)
                 
         return (diffs, diffstats)
+        
+    def __check_problems(self):
+        # Initialisation
+        self.file_notes = defaultdict( defaultdict(list) )
+        self.forced_cc  = list()
+
+        # Retrieve the diff and do the problem checks...
+        process = get_change_diff( self.repository, "-p" )
+        for line in process.stdout:
+            commit_change = re.match( "^\x00(.+)\x00$", line )
+            if commit_change:
+                commit = commit_change.group(1)
+                continue
+            
+            file_change = re.match( "^diff --git a\/(\S+) b\/(\S+)$", line )
+            if file_change:
+                # Are we changing file? If so, we have the full diff, so do a license check....
+                if filename and self.repository.commits[ commit ].files_changed[ filename ] == 'A':
+                    self.__check_license( commit, filename, diff.join(' ') )
+
+                diff = list()
+                filename = file_change.group(2)
+                continue
+            
+            # Do an incremental check for *.desktop syntax errors....
+            if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
+                self.file_notes[ commit ][ filename ].append( "[TRAILING SPACE]" )
+                self.forced_cc.append( commit )
                 
-    def __send_email(self, commit, licensing, diff, diffstat):    
+            # Look for things which aren't safe....
+            unsafe_matches = list()
+            unsafe_matches.append( "\b(KRun::runCommand|K3?ShellProcess|setUseShell|setShellCommand)\b\s*[\(\r\n]" )
+            unsafe_matches.append( "\b(system|popen|mktemp|mkstemp|tmpnam|gets|syslog|strptime)\b\s*[\(\r\n]" )
+            unsafe_matches.append( "(scanf)\b\s*[\(\r\n]" )
+
+            safety_check = line
+            unsafe = None
+            #$current =~ s/\"[^\"]*\"//g;
+            #$current =~ s/\/\*.*\*\///g;
+            #$current =~ s,//.*,,g;
+            for safety_match in unsafe_matches:
+                match = re.match(safety_match, safety_check)
+                if match:
+                    self.file_notes[ commit ][ filename ].append("[POSSIBLY UNSAFE: " + match.group(1) + "]")
+                    self.forced_cc.append( commit )
+            
+            # Store the diff....
+            diff.append(line)
+
+    def __check_license(self, text):
+        gl = qte = license = ""
+        text = re.sub("^\#", "", text)
+        text = re.sub("\t\n\r", "   ", text)
+        text = re.sub("[^ A-Za-z.@0-9]", "", text)
+        text = re.sub("\s+", " ", text)
+
+        if re.search("version 2(?:\.0)? .{0,40}as published by the Free Software Foundation", text):
+            gl = " (v2)"
+
+        if re.search("version 2(?:\.0)? of the License", text):
+            gl = " (v2)"
+  
+        if re.search("version 3(?:\.0)? .{0,40}as published by the Free Software Foundation", text):
+            gl = " (v3)"
+   
+        if re.search("either version 2(?: of the License)? or at your option any later version", text):
+            gl = " (v2+)"
+
+        if re.search("version 2(?: of the License)? or at your option version 3", text):
+            gl = " (v2/3)"
+                
+        if re.search("version 2(?: of the License)? or at your option version 3 or at the discretion of KDE e.V.{10,60}any later version", text):
+            gl = " (v2/3+eV)"
+
+        if re.search("either version 3(?: of the License)? or at your option any later version", text):
+            gl = " (v3+)"
+                
+        if re.search("version 2\.1 as published by the Free Software Foundation", text):
+            gl = " (v2.1)"
+                
+        if re.search("2\.1 available at: http:\/\/www.fsf.org\/copyleft\/lesser.html", text):
+            gl = " (v2.1)"
+
+        if re.search("either version 2\.1 of the License or at your option any later version", text):
+            gl = " (v2.1+)"
+
+        if re.search("([Pp]ermission is given|[pP]ermission is also granted|[pP]ermission) to link (the code of )?this program with (any edition of )?(Qt|the Qt library)", text):
+            qte = " (+Qt exception)"
+
+        # Check for an old FSF address
+        # MIT licenses will trigger the check too, as "675 Mass Ave" is MIT's address
+        if re.search("(?:675 Mass Ave|59 Temple Place|Suite 330|51 Franklin Steet|02139|02111-1307)", text, re.IGNORECASE):
+            # "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301" is the right FSF address
+            wrong = " (wrong address)"
+            license_problem = True
+
+        # LGPL or GPL
+        if re.search("under (the (terms|conditions) of )?the GNU (Library|Lesser) General Public License", text):
+            license = "LGPL" + gl + wrong + " " + license
+                
+        if re.search("under (the (terms|conditions) of )?the (Library|Lesser) GNU General Public License", text):
+            license = "LGPL" + gl + wrong + " " + license
+                
+        if re.search("under (the (terms|conditions) of )?the (GNU )?LGPL", text):
+            license = "LGPL" + gl + wrong + " " + license
+                
+        if re.search("[Tt]he LGPL as published by the Free Software Foundation", text):
+            license = "LGPL" + gl + wrong + " " + license
+                
+        if re.search("LGPL with the following explicit clarification", text):
+            license = "LGPL" + gl + wrong + " " + license
+
+        if re.search("under (the terms of )?(version 2 of )?the GNU (General Public License|GENERAL PUBLIC LICENSE)", text):
+            license = "GPL" + gl + qte + wrong + " " + license
+
+        # QPL
+        if re.search("may be distributed under the terms of the Q Public License as defined by Trolltech AS", text):
+            license = "QPL " + license
+
+        # X11, BSD-like
+        if re.search("Permission is hereby granted free of charge to any person obtaining a copy of this software and associated documentation files", text):
+            license = "X11 (BSD like) " + license
+
+        # MIT license
+        if re.search("Permission to use copy modify (and )?distribute(and sell)? this software and its documentation for any purpose", text):
+            license = "MIT " + license
+
+        # BSD
+        if re.search("MERCHANTABILITY( AND|| or) FITNESS FOR A PARTICULAR PURPOSE", text) and re.search("GPL", license):
+            license = "BSD " + license
+
+        # MPL
+        if re.search("subject to the Mozilla Public License Version 1.1", text):
+            license = "MPL 1.1 " + license
+                
+        if re.search("Mozilla Public License Version 1\.0/", text):
+            license = "MPL 1.0 " + license
+
+        # Artistic license
+        if re.search("under the Artistic License", text):
+            license = "Artistic " + license
+
+        # Public domain
+        if re.search("Public Domain", text, re.IGNORECASE) or re.search(" disclaims [Cc]opyright", text):
+            license = "Public Domain " + license
+
+        # Auto-generated
+        if re.search("(All changes made in this file will be lost|This file is automatically generated|DO NOT EDIT|DO NOT delete this file|[Gg]enerated by|uicgenerated|produced by gperf)", text):
+            license = "GENERATED FILE"
+            license_problem = True
+
+        # Don't bother with trivial files.
+        if len(license) == 0 and len(text) < 128:
+            license = "Trivial file"
+
+        # About every license has this clause; but we've failed to detect which type it is.
+        if len(license) == 0 and re.search("This (software|package)( is free software and)? is provided ", text, re.IGNORECASE):
+            license = "Unknown license"
+            license_problem = True
+
+        # Either a missing or an unsupported license
+        if len(license) == 0:
+            license = "UNKNOWN"
+            license_problem = True
+
+        license = license.strip()
+        if len(license):
+            self.file_notes[ commit ][ filename ].append( "[License: " + license + "]" )
+
+        if license_problem:
+            self.forced_cc.append( commit )
+                
+    def __send_email(self, commit, diff, diffstat):    
         # Build list for X-Commit-Directories...
         commit_directories = dict()
         for filename in commit.files_changed:
