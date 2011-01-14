@@ -614,13 +614,13 @@ class EmailNotifier:
             body = "\n" + diff
             
         # Handle the normal mailing list mails....
-        message = MIMEText( summary.join('\n') )
+        message = MIMEText( body )
         message['Subject'] = Header( subject )
-        message['From'] = Header( "{0} <{1}>".format( commit.committer_name, commit.committer_email ) )
-        message['To'] = Header( self.notification_address() )
-        message['Cc'] = Header( cc_addresses.join(', ') )
-        message['X-Commit-Ref'] = Header( self.repository.ref_name )
-        message['X-Commit-Project'] = Header( self.repository.path )
+        message['From']    = Header( "{0} <{1}>".format( commit.committer_name, commit.committer_email ) )
+        message['To']      = Header( self.notification_address() )
+        message['Cc']      = Header( cc_addresses.join(', ') )
+        message['X-Commit-Ref']         = Header( self.repository.ref_name )
+        message['X-Commit-Project']     = Header( self.repository.path )
         message['X-Commit-Directories'] = Header( "(0)" + commit_directories.join('\n') )
 
         message['Content-Type'] = "text/plain; charset=UTF-8"
