@@ -613,6 +613,7 @@ class EmailNotifier:
         message['Cc'] = cc_addresses.join(', ')
         message['Content-Type'] = "text/xml; charset=UTF-8"
         message['Content-Transfer-Encoding'] = "8bit"
+        message['X-Commit-Directories'] = "(0)" + commit_directories.join('\n')
         
         to_addresses = cc_addresses + [self.notification_address()]
         
