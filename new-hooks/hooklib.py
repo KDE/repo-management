@@ -7,6 +7,7 @@ import subprocess
 import dns.resolver
 import smtplib
 from email.mime.text import MIMEText
+from emai.header import Header
 
 class RepoType:
     "Enum type - Indicates the type of repository"
@@ -605,19 +606,29 @@ class EmailNotifier:
         if keyword_info['email_gui']:
             cc_addresses.append( 'kde-doc-english@kde.org' )
             
+        # Build the subject
+        lowest_common_path = []
+        for path in commit_directories:
+            path_tree = path.split('/')
+            lowest_common_path = [val for val in lowest_common_path if val in path_tree]
+
+        subject = "[{0}] {1}".format(self.repository.path, lowest_common_path.join('/'))
+            
         # Handle the normal mailing list mails....
         message = MIMEText( summary.join('\n') )
-        message['Subject'] = subject
-        message['From'] = "{0} <{1}>".format( commit.committer_name, commit.committer_email )
-        message['To'] = self.notification_address()
-        message['Cc'] = cc_addresses.join(', ')
-        message['Content-Type'] = "text/xml; charset=UTF-8"
+        message['Subject'] = Header( subject )
+        message['From'] = Header( "{0} <{1}>".format( commit.committer_name, commit.committer_email ) )
+        message['To'] = Header( self.notification_address() )
+        message['Cc'] = Header( cc_addresses.join(', ') )
+        message['X-Commit-Ref'] = Header( self.repository.ref_name )
+        message['X-Commit-Project'] = Header( self.repository.path )
+        message['X-Commit-Directories'] = Header( "(0)" + commit_directories.join('\n') )
+
+        message['Content-Type'] = "text/plain; charset=UTF-8"
         message['Content-Transfer-Encoding'] = "8bit"
-        message['X-Commit-Directories'] = "(0)" + commit_directories.join('\n')
-        
-        to_addresses = cc_addresses + [self.notification_address()]
-        
+                
         # Send email...
+        to_addresses = cc_addresses + [self.notification_address()]
         self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())         
             
     def __parse_keywords(self, commit):
