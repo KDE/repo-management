@@ -607,12 +607,8 @@ class EmailNotifier:
             cc_addresses.append( 'kde-doc-english@kde.org' )
             
         # Build the subject
-        lowest_common_path = []
-        for path in commit_directories:
-            path_tree = path.split('/')
-            lowest_common_path = [val for val in lowest_common_path if val in path_tree]
-
-        subject = "[{0}] {1}".format(self.repository.path, lowest_common_path.join('/'))
+        lowest_common_path = os.path.commonprefix( commit_directories )
+        subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
             
         # Handle the normal mailing list mails....
         message = MIMEText( summary.join('\n') )
