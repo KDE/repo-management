@@ -606,9 +606,12 @@ class EmailNotifier:
         if keyword_info['email_gui']:
             cc_addresses.append( 'kde-doc-english@kde.org' )
             
-        # Build the subject
+        # Build the subject and body...
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
+        body = summary.join('\n')
+        if diff:
+            body = "\n" + diff
             
         # Handle the normal mailing list mails....
         message = MIMEText( summary.join('\n') )
