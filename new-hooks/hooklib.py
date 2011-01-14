@@ -592,11 +592,13 @@ class EmailNotifier:
             firstline = firstline + " on behalf of " + commit.author_name
 
         summary = list(firstline, "\n")
+        summary.append( "Pushed by {0} into {1} {2}".format(self.repository.push_user, self.repository.ref_type, self.repository.ref_name) )
         for line in diffstat.split('\n'):
             match = re.match("^(.+) |", line)
             filename = match.group(1)
             notes = self.file_notes[commit.sha1][filename].join(" ")
             summary.append( line + " | " + notes )
+        summary.append( "\n" + commit.url() )
             
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
