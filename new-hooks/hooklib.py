@@ -584,6 +584,40 @@ class EmailNotifier:
             
         # Check for keywords...
         keyword_info = self.__parse_keywords(commit)
+        
+        # Build up the needed parts of the message....
+        firstline = "Git commit {0} by {1}".format( commit.sha1, commit.committer_name )
+        if commit.author_name != commit.committer_name:
+            firstline = firstline + " on behalf of " + commit.author_name
+
+        summary = list(firstline, "\n")
+        for line in diffstat.split('\n'):
+            match = re.match("^(.+) |", line)
+            filename = match.group(1)
+            notes = self.file_notes[commit.sha1][filename].join(" ")
+            summary.append( line + " | " + notes )
+            
+        # Build a list of addresses to Cc,
+        cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
+        if commit.sha1 in self.forced_cc:
+            cc_addresses.append( commit.committer_email )
+            
+        if keyword_info['email_gui']:
+            cc_addresses.append( 'kde-doc-english@kde.org' )
+            
+        # Handle the normal mailing list mails....
+        message = MIMEText( summary.join('\n') )
+        message['Subject'] = subject
+        message['From'] = "{0} <{1}>".format( commit.committer_name, commit.committer_email )
+        message['To'] = self.notification_address()
+        message['Cc'] = cc_addresses.join(', ')
+        message['Content-Type'] = "text/xml; charset=UTF-8"
+        message['Content-Transfer-Encoding'] = "8bit"
+        
+        to_addresses = cc_addresses + [self.notification_address()]
+        
+        # Send email...
+        self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())         
             
     def __parse_keywords(self, commit):
         split = dict()
