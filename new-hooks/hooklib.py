@@ -627,7 +627,7 @@ def read_command( command ):
 
 def get_change_diff( repository, log_arguments ):
     # Prepare to run....
-    command = "git log --no-walk --pretty=format:%x00%H%x00 --stdin " + log_arguments
+    command = "git show --pretty=format:%x00%H%x00 --stdin " + log_arguments
     process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     # Pass on the commits for it to show...
