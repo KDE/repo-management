@@ -10,7 +10,7 @@ from collections import defaultdict
 from email.mime.text import MIMEText
 from email.header import Header
 
-class RepoType:
+class RepoType(object):
     "Enum type - Indicates the type of repository"
     Normal = 1
     Sysadmin = 2
@@ -18,14 +18,14 @@ class RepoType:
     Scratch = 4
     Clone = 5
 
-class ChangeType:
+class ChangeType(object):
     "Enum type - indicates the type of change to a ref"
     Update = 1
     Create = 2
     Delete = 3
     Forced = 4
 
-class RefType:
+class RefType(object):
     "Enum type - indicates the type of ref in the repository"
     Branch = "branch"
     Tag = "tag"
@@ -33,7 +33,7 @@ class RefType:
     Notes = "notes"
     Unknown = 0
 
-class Repository:
+class Repository(object):
     "Represents a repository, and changes made to it"
     EmptyRef = "0000000000000000000000000000000000000000"
 
@@ -105,7 +105,7 @@ class Repository:
         output = process.stdout.read()
 
         # If nothing was output -> no commits to parse
-        if output == "":
+        if not output:
             return
 
         # Parse time!
@@ -192,7 +192,7 @@ class Repository:
         else:
             return ChangeType.Update
 
-class CommitAuditor:
+class CommitAuditor(object):
     "Performs all audits on commits"
     def __init__(self, repository):
         self.repository = repository
@@ -212,7 +212,7 @@ class CommitAuditor:
             regex = line.strip()
 
             # Skip comments and blank lines
-            if regex.startswith("#") or len(regex) == 0:
+            if regex.startswith("#") or not regex:
                 continue
 
             restriction = re.compile(regex)
@@ -283,7 +283,7 @@ class CommitAuditor:
                 except dns.resolver.NXDOMAIN:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
 
-class CiaNotifier:
+class CiaNotifier(object):
     "Notifies CIA of changes to a repository"
 
     template = """<message>
@@ -353,7 +353,7 @@ class CiaNotifier:
         # Send email...
         self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"], message.as_string())
 
-class EmailNotifier:
+class EmailNotifier(object):
     "Notifies a specified email address of changes to a repository"
 
     def __init__(self, repository):
@@ -394,7 +394,7 @@ class EmailNotifier:
         diff = list()
         for line in process.stdout:
             commit_change = re.match( "^\x00(.+)\x00$", line )
-            if commit_change and len(diff) != 0:
+            if commit_change and diff:
                 self.__send_email(self.repository.commits[commit], diff, diffinfo[commit])
                 diff = list()
 
@@ -413,6 +413,7 @@ class EmailNotifier:
 
         # Retrieve the diff and do the problem checks...
         filename = ""
+        filediff = list()
         for line in diff:
             file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
             if file_change:
@@ -651,7 +652,7 @@ class EmailNotifier:
 
         return results
 
-class Commit:
+class Commit(object):
     "Represents a git commit"
     def __init__(self, repository):
         self.repository = repository
