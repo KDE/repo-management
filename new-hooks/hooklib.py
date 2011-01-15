@@ -13,7 +13,6 @@ from email.header import Header
 import lxml.etree as etree
 from lxml.builder import E
 
-
 class RepoType(object):
     "Enum type - Indicates the type of repository"
     Normal = 1
