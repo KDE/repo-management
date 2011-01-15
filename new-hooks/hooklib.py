@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import logging
 import os
 import re
 import time
@@ -145,17 +146,18 @@ class Repository(object):
         # Look for kde-repo-nick, then kde-repo-uid and finally generate one if we find neither....
         if not os.path.exists(base + "/kde-repo-uid"):
             repo_uid = read_command( "echo $GIT_DIR | sha1sum | cut -c -8" )
-            uid_file = file(base + "/kde-repo-uid", "w")
-            uid_file.write(repo_uid + "\n")
-            uid_file.close()
+
+            with open(base + "/kde-repo-uid", "w") as uid_file:
+                uid_file.write(repo_uid + "\n")
 
         if os.path.exists(base + "/kde-repo-nick"):
-            repo_id = file(base + "/kde-repo-nick", "r")
+            repo_id_file = base + "/kde-repo-nick"
         else:
-            repo_id = file(base + "/kde-repo-uid", "r")
+            repo_id_file = base + "/kde-repo-uid"
 
-        rid = repo_id.readline().strip()
-        repo_id.close()
+        with open(repo_id_file, "r") as repo_id:
+            rid = repo_id.readline().strip()
+
         return rid
 
     def __get_repo_type(self):
@@ -204,33 +206,53 @@ class Repository(object):
             return ChangeType.Update
 
 class CommitAuditor(object):
+
     "Performs all audits on commits"
+
     def __init__(self, repository):
+
         self.repository = repository
-        self.failures = dict()
+
+        self.__failed = False
+
+        self.__logger = logging.getLogger("auditor")
+        self.__logger.setLevel(logging.ERROR)
+
+        formatter = logging.Formatter("Audit failure - %(message)s")
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        self.__logger.addHandler(handler)
+
         self.__setup_filenames()
 
     def __log_failure(self, commit, message):
-        if not self.failures.has_key( commit ):
-            self.failures[ commit ] = []
 
-        self.failures[ commit ].append( message )
+        message = "Commit {1} - {2}".format(commit, message)
+        self.__logger.critical(message)
+        self.__failed = True
 
     def __setup_filenames(self):
         self.filename_limits = []
-        configuration = open(self.repository.management_directory + "/config/blockedfiles.cfg")
-        for line in configuration:
-            regex = line.strip()
 
-            # Skip comments and blank lines
-            if regex.startswith("#") or not regex:
-                continue
+        configuration_file = os.path.join(self.repository_management_directory,
+                                          "config/blockedfiles.cfg")
 
-            restriction = re.compile(regex)
-            if restriction:
-                self.filename_limits.append( restriction )
+        with open(configuration_file) as configuration:
 
-        configuration.close()
+            for line in configuration:
+                regex = line.strip()
+
+                # Skip comments and blank lines
+                if regex.startswith("#") or not regex:
+                    continue
+
+                restriction = re.compile(regex)
+                if restriction:
+                    self.filename_limits.append( restriction )
+
+    @property
+    def audit_failed(self):
+        return self.__failed
 
     def audit_eol(self):
 
@@ -343,6 +365,8 @@ class CiaNotifier(object):
         url = E.url("http://projects.kde.org/repo-management")
 
         generator = self.GENERATOR(name, version, url)
+
+        return generator
 
     def notify(self):
 
