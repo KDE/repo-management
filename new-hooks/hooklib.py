@@ -367,6 +367,8 @@ class CiaNotifier(object):
 
         generator = self.GENERATOR(name, version, url)
 
+        return generator
+
     def notify(self):
 
         """Send a notification to CIA."""
