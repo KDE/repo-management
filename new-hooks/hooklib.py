@@ -6,8 +6,9 @@ import time
 import subprocess
 import dns.resolver
 import smtplib
+from collections import defaultdict
 from email.mime.text import MIMEText
-from emai.header import Header
+from email.header import Header
 
 class RepoType:
     "Enum type - Indicates the type of repository"
@@ -370,74 +371,65 @@ class EmailNotifier:
             return "kde-commits@kde.org"
         
     def notify(self):
-        # Get diff-stats if needed, and perform content checks...
-        diffs, diffstats = self.__retrieve_diffs()
-        self.__check_problems()
-        
-        # Send out the mails...
-        for (sha1, commit) in self.repository.commits.iteritems():
-            self.__send_email(commit, diffs[sha1], diffstats[sha1])
-            
-    def __retrieve_diffs(self):
-        # Build our diffs....
-        diffs = defaultdict(list)
-        process = get_change_diff( self.repository, "-p" )
-        for line in process.stdout:
-            commit_change = re.match( "^\x00(.+)\x00$", line )
-            if commit_change:
-                commit = commit_change.group(1)
-                continue
-
-            if len(diffs[commit]) < 8000:
-                diffs[commit].append(line)
-            else:
-                diffs[commit] = None
-                
-        # Build our diff stats...
-        diffstats = dict()
-        process = get_change_diff( self.repository, "--stat" )
-        data = process.stdout.read()
-        for line in data.split('\x00\x00'):
-            commit_change = re.match( "^(.+)\x00(.|\n)+$", line, re.MULTILINE )
-            commit = commit_change.group(1)
-            diffstats[commit] = commit_change.group(2)
-                
-        return (diffs, diffstats)
-        
-    def __check_problems(self):
         # Initialisation
-        self.file_notes = defaultdict( defaultdict(list) )
+        self.file_notes = defaultdict(lambda: defaultdict(list))
         self.forced_cc  = list()
 
-        # Retrieve the diff and do the problem checks...
+        # Retrieve diff-stats...
+        diffinfo = defaultdict(list)
+        process = get_change_diff( self.repository, "--numstat" )
+        for line in process.stdout:
+            commit_change = re.match( "^\x00(.+)\x00$", line)
+            if commit_change:
+                commit = commit_change.group(1)
+                continue
+                
+            diff_line = re.match("([0-9]+)\W+([0-9]+)\W+(.+)$", line)
+            if diff_line:
+                file_info = (diff_line.group(3), diff_line.group(1), diff_line.group(2))
+                diffinfo[commit].append( file_info )
+        
+        # We will incrementally send the mails as we gather up the diffs....
         process = get_change_diff( self.repository, "-p" )
+        diff = list()
         for line in process.stdout:
             commit_change = re.match( "^\x00(.+)\x00$", line )
+            if commit_change and len(diff) != 0:
+                self.__send_email(self.repository.commits[commit], diff, diffinfo[commit])
+                diff = list()
+
             if commit_change:
                 commit = commit_change.group(1)
                 continue
             
-            file_change = re.match( "^diff --git a\/(\S+) b\/(\S+)$", line )
+            diff.append( line )
+        
+    def __check_problems(self, commit, diff):
+        # Unsafe regex checks...
+        unsafe_matches = list()
+        unsafe_matches.append( "\b(KRun::runCommand|K3?ShellProcess|setUseShell|setShellCommand)\b\s*[\(\r\n]" )
+        unsafe_matches.append( "\b(system|popen|mktemp|mkstemp|tmpnam|gets|syslog|strptime)\b\s*[\(\r\n]" )
+        unsafe_matches.append( "(scanf)\b\s*[\(\r\n]" )
+            
+        # Retrieve the diff and do the problem checks...
+        filename = ""
+        for line in diff:
+            file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
             if file_change:
                 # Are we changing file? If so, we have the full diff, so do a license check....
-                if filename and self.repository.commits[ commit ].files_changed[ filename ] == 'A':
-                    self.__check_license( commit, filename, diff.join(' ') )
+                if filename != "" and commit.files_changed[ filename ] == 'A':
+                    self.__check_license( commit, filename, ''.join(filediff) )
 
-                diff = list()
+                filediff = list()
                 filename = file_change.group(2)
                 continue
             
             # Do an incremental check for *.desktop syntax errors....
             if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
-                self.file_notes[ commit ][ filename ].append( "[TRAILING SPACE]" )
-                self.forced_cc.append( commit )
+                self.file_notes[ commit.sha1 ][ filename ].append( "[TRAILING SPACE]" )
+                self.forced_cc.append( commit.sha1 )
                 
-            # Look for things which aren't safe....
-            unsafe_matches = list()
-            unsafe_matches.append( "\b(KRun::runCommand|K3?ShellProcess|setUseShell|setShellCommand)\b\s*[\(\r\n]" )
-            unsafe_matches.append( "\b(system|popen|mktemp|mkstemp|tmpnam|gets|syslog|strptime)\b\s*[\(\r\n]" )
-            unsafe_matches.append( "(scanf)\b\s*[\(\r\n]" )
-
+            # Check for things which are unsafe...
             safety_check = line
             unsafe = None
             #$current =~ s/\"[^\"]*\"//g;
@@ -450,10 +442,11 @@ class EmailNotifier:
                     self.forced_cc.append( commit )
             
             # Store the diff....
-            diff.append(line)
+            filediff.append(line)
 
-    def __check_license(self, text):
-        gl = qte = license = ""
+    def __check_license(self, commit, filename, text):
+        gl = qte = license = wrong = ""
+        license_problem = False
         text = re.sub("^\#", "", text)
         text = re.sub("\t\n\r", "   ", text)
         text = re.sub("[^ A-Za-z.@0-9]", "", text)
@@ -575,30 +568,31 @@ class EmailNotifier:
         if license_problem:
             self.forced_cc.append( commit )
                 
-    def __send_email(self, commit, diff, diffstat):    
+    def __send_email(self, commit, diff, diffinfo):    
+        # Check for problems in this commit and build the keywords....
+        self.__check_problems(commit, diff)
+        keyword_info = self.__parse_keywords(commit)
+
         # Build list for X-Commit-Directories...
-        commit_directories = dict()
+        commit_directories = list()
         for filename in commit.files_changed:
             # Seperate out the directory...
-            match = re.match("^(.+)/(.+)$", filename)
-            commit_directories.append( match.group(1) )
-            
-        # Check for keywords...
-        keyword_info = self.__parse_keywords(commit)
+            directory = os.path.dirname(filename)
+            commit_directories.append( directory )
         
         # Build up the needed parts of the message....
         firstline = "Git commit {0} by {1}".format( commit.sha1, commit.committer_name )
         if commit.author_name != commit.committer_name:
             firstline = firstline + " on behalf of " + commit.author_name
 
-        summary = list(firstline, "\n")
-        summary.append( "Pushed by {0} into {1} {2}".format(self.repository.push_user, self.repository.ref_type, self.repository.ref_name) )
-        for line in diffstat.split('\n'):
-            match = re.match("^(.+) |", line)
-            filename = match.group(1)
-            notes = self.file_notes[commit.sha1][filename].join(" ")
-            summary.append( line + " | " + notes )
-        summary.append( "\n" + commit.url() )
+        pushed_by = "Pushed by {0} into {1} {2}".format(self.repository.push_user, self.repository.ref_type, self.repository.ref_name)
+        summary = [firstline, pushed_by, "\n"]
+        for info in diffinfo:
+            filename, added, removed = info
+            notes = ''.join( self.file_notes[commit.sha1][filename] )
+            data = "{0} +{1} -{2} {3} {4}".format( commit.files_changed[filename], added, removed, filename, notes )
+            summary.append( data )
+        summary.append( "\n" + commit.url() + "\n" )
             
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
@@ -611,19 +605,19 @@ class EmailNotifier:
         # Build the subject and body...
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
-        body = summary.join('\n')
+        body = '\n'.join( summary )
         if diff:
-            body = "\n" + diff
+            body = body + "\n" + ''.join( diff )
             
         # Handle the normal mailing list mails....
         message = MIMEText( body )
         message['Subject'] = Header( subject )
         message['From']    = Header( "{0} <{1}>".format( commit.committer_name, commit.committer_email ) )
         message['To']      = Header( self.notification_address() )
-        message['Cc']      = Header( cc_addresses.join(', ') )
+        message['Cc']      = Header( ''.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
-        message['X-Commit-Directories'] = Header( "(0)" + commit_directories.join('\n') )
+        message['X-Commit-Directories'] = Header( "(0) " + '\n'.join(commit_directories) )
 
         message['Content-Type'] = "text/plain; charset=UTF-8"
         message['Content-Transfer-Encoding'] = "8bit"
@@ -674,7 +668,7 @@ def read_command( command ):
 
 def get_change_diff( repository, log_arguments ):
     # Prepare to run....
-    command = "git show -C --pretty=format:%x00%H%x00 --stdin " + log_arguments
+    command = "git show --pretty=format:%x00%H%x00 --stdin " + log_arguments
     process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     # Pass on the commits for it to show...
