@@ -235,19 +235,22 @@ class CommitAuditor(object):
 
     def __setup_filenames(self):
         self.filename_limits = []
-        configuration = open(self.repository.management_directory + "/config/blockedfiles.cfg")
-        for line in configuration:
-            regex = line.strip()
 
-            # Skip comments and blank lines
-            if regex.startswith("#") or not regex:
-                continue
+        configuration_file = os.path.join(self.repository_management_directory,
+                                          "config/blockedfiles.cfg")
 
-            restriction = re.compile(regex)
-            if restriction:
-                self.filename_limits.append( restriction )
+        with open(configuration_file) as configuration:
 
-        configuration.close()
+            for line in configuration:
+                regex = line.strip()
+
+                # Skip comments and blank lines
+                if regex.startswith("#") or not regex:
+                    continue
+
+                restriction = re.compile(regex)
+                if restriction:
+                    self.filename_limits.append( restriction )
 
     @property
     def audit_failed(self):
