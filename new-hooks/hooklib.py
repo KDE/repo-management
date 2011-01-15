@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import logging
 import os
 import re
 import time
@@ -207,18 +208,30 @@ class Repository(object):
             return ChangeType.Update
 
 class CommitAuditor(object):
+
     "Performs all audits on commits"
+
     def __init__(self, repository):
+
         self.repository = repository
-        self.failures = dict()
+
+        self.__failed = False
+
+        self.__logger = logging.getLogger("auditor")
+        self.__logger.setLevel(logging.ERROR)
+
+        formatter = logging.Formatter("Audit failure - %(message)s")
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        self.__logger.addHandler(handler)
+
         self.__setup_filenames()
 
     def __log_failure(self, commit, message):
 
-        if commit not in self.failures:
-            self.failures[ commit ] = []
-
-        self.failures[ commit ].append( message )
+        message = "Commit {1} - {2}".format(commit, message)
+        self.__logger.critical(message)
+        self.__failed = True
 
     def __setup_filenames(self):
         self.filename_limits = []
@@ -235,6 +248,10 @@ class CommitAuditor(object):
                 self.filename_limits.append( restriction )
 
         configuration.close()
+
+    @property
+    def audit_failed(self):
+        return self.__failed
 
     def audit_eol(self):
 
