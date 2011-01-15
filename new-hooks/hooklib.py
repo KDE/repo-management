@@ -149,17 +149,18 @@ class Repository(object):
         # Look for kde-repo-nick, then kde-repo-uid and finally generate one if we find neither....
         if not os.path.exists(base + "/kde-repo-uid"):
             repo_uid = read_command( "echo $GIT_DIR | sha1sum | cut -c -8" )
-            uid_file = file(base + "/kde-repo-uid", "w")
-            uid_file.write(repo_uid + "\n")
-            uid_file.close()
+
+            with open(base + "/kde-repo-uid", "w") as uid_file:
+                uid_file.write(repo_uid + "\n")
 
         if os.path.exists(base + "/kde-repo-nick"):
-            repo_id = file(base + "/kde-repo-nick", "r")
+            repo_id_file = base + "/kde-repo-nick"
         else:
-            repo_id = file(base + "/kde-repo-uid", "r")
+            repo_id_file = base + "/kde-repo-uid"
 
-        rid = repo_id.readline().strip()
-        repo_id.close()
+        with open(repo_id_file, "r") as repo_id:
+            rid = repo_id.readline().strip()
+
         return rid
 
     def __get_repo_type(self):
