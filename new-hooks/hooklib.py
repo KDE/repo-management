@@ -74,8 +74,10 @@ class Repository(object):
         """Backup the git refs."""
 
         # Back ourselves up!
-        command = "git update-ref refs/backup/{0}-{1}-{2} {3}".format( self.ref_type, self.ref_name, int( time.time() ), self.old_sha1 )
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command = "git update-ref refs/backup/{0}-{1}-{2} {3}".format(
+            self.ref_type, self.ref_name, int( time.time() ), self.old_sha1 )
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
 
     def __build_commits(self):
         # Build the revision span git will use to help build the revision list...
@@ -84,7 +86,8 @@ class Repository(object):
         elif self.change_type == ChangeType.Create:
             revision_span = self.new_sha1
         else:
-            merge_base = read_command( 'git merge-base {0} {1}'.format(self.new_sha1, self.old_sha1) )
+            merge_base = read_command( 'git merge-base {0} {1}'.format(
+                self.new_sha1, self.old_sha1) )
             revision_span = "{0}..{1}".format(merge_base, self.new_sha1)
 
         # Build the git pretty format + regex.
@@ -104,7 +107,8 @@ class Repository(object):
         log_arguments = "--name-status -z --pretty=format:'{0}'".format(pretty_format)
         command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {2} | git log --stdin --no-walk {1}"
         command = command.format(self.old_sha1, log_arguments, revision_span)
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
         output = process.stdout.read()
 
         # If nothing was output -> no commits to parse
@@ -229,7 +233,9 @@ class CommitAuditor(object):
 
     def audit_eol(self):
 
-        """Audit the commit for proper end-of-line characters."""
+        """Audit the commit for proper end-of-line characters.
+
+        The UNIX type EOL is the only allowed EOL character."""
 
         # Regex's....
         re_commit = re.compile("^\x00(.+)\x00$")
@@ -381,7 +387,8 @@ class CiaNotifier(object):
         message['Content-Transfer-Encoding'] = "8bit"
 
         # Send email...
-        self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"], message.as_string())
+        self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"],
+                           message.as_string())
 
 class EmailNotifier(object):
     "Notifies a specified email address of changes to a repository"
@@ -423,7 +430,8 @@ class EmailNotifier(object):
 
             diff_line = re.match("([0-9]+)\W+([0-9]+)\W+(.+)$", line)
             if diff_line:
-                file_info = (diff_line.group(3), diff_line.group(1), diff_line.group(2))
+                file_info = (diff_line.group(3), diff_line.group(1),
+                             diff_line.group(2))
                 diffinfo[commit].append( file_info )
 
         # We will incrementally send the mails as we gather up the diffs....
@@ -432,7 +440,8 @@ class EmailNotifier(object):
         for line in process.stdout:
             commit_change = re.match( "^\x00(.+)\x00$", line )
             if commit_change and diff:
-                self.__send_email(self.repository.commits[commit], diff, diffinfo[commit])
+                self.__send_email(self.repository.commits[commit], diff,
+                                  diffinfo[commit])
                 diff = list()
 
             if commit_change:
@@ -596,7 +605,8 @@ class EmailNotifier(object):
             license = "Trivial file"
 
         # About every license has this clause; but we've failed to detect which type it is.
-        if not license and re.search("This (software|package)( is free software and)? is provided ", text, re.IGNORECASE):
+        if not license and re.search("This (software|package)( is free software and)? is provided ",
+                                     text, re.IGNORECASE):
             license = "Unknown license"
             license_problem = True
 
@@ -628,16 +638,22 @@ class EmailNotifier(object):
             commit_directories.append( directory )
 
         # Build up the needed parts of the message....
-        firstline = "Git commit {0} by {1}".format( commit.sha1, commit.committer_name )
+        firstline = "Git commit {0} by {1}".format( commit.sha1,
+                                                   commit.committer_name )
         if commit.author_name != commit.committer_name:
             firstline = firstline + " on behalf of " + commit.author_name
 
-        pushed_by = "Pushed by {0} into {1} {2}".format(self.repository.push_user, self.repository.ref_type, self.repository.ref_name)
+        pushed_by = "Pushed by {0} into {1} {2}".format(
+            self.repository.push_user, self.repository.ref_type,
+            self.repository.ref_name)
+
         summary = [firstline, pushed_by, "\n"]
         for info in diffinfo:
             filename, added, removed = info
             notes = ''.join( self.file_notes[commit.sha1][filename] )
-            data = "{0} +{1} -{2} {3} {4}".format( commit.files_changed[filename], added, removed, filename, notes )
+            data = "{0} +{1} -{2} {3} {4}".format(
+                commit.files_changed[filename], added, removed,
+                filename, notes )
             summary.append( data )
         summary.append( "\n" + commit.url() + "\n" )
 
@@ -659,7 +675,8 @@ class EmailNotifier(object):
         # Handle the normal mailing list mails....
         message = MIMEText( body )
         message['Subject'] = Header( subject )
-        message['From']    = Header( "{0} <{1}>".format( commit.committer_name, commit.committer_email ) )
+        message['From']    = Header( "{0} <{1}>".format(
+            commit.committer_name, commit.committer_email ) )
         message['To']      = Header( self.notification_address() )
         message['Cc']      = Header( ''.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
@@ -711,16 +728,19 @@ class Commit(object):
         return str(self.__dict__)
 
     def url(self):
-        return "http://commits.kde.org/{0}/{1}".format( self.repository.uid, self.sha1 )
+        return "http://commits.kde.org/{0}/{1}".format( self.repository.uid,
+                                                       self.sha1 )
 
 def read_command( command ):
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
     return process.stdout.readline().strip()
 
 def get_change_diff( repository, log_arguments ):
     # Prepare to run....
     command = "git show --pretty=format:%x00%H%x00 --stdin " + log_arguments
-    process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Pass on the commits for it to show...
     for sha1 in repository.commits.keys():
