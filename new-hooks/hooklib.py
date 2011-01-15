@@ -592,21 +592,21 @@ class EmailNotifier(object):
             license_problem = True
 
         # Don't bother with trivial files.
-        if len(license) == 0 and len(text) < 128:
+        if not license and len(text) < 128:
             license = "Trivial file"
 
         # About every license has this clause; but we've failed to detect which type it is.
-        if len(license) == 0 and re.search("This (software|package)( is free software and)? is provided ", text, re.IGNORECASE):
+        if not license and re.search("This (software|package)( is free software and)? is provided ", text, re.IGNORECASE):
             license = "Unknown license"
             license_problem = True
 
         # Either a missing or an unsupported license
-        if len(license) == 0:
+        if not license:
             license = "UNKNOWN"
             license_problem = True
 
         license = license.strip()
-        if len(license):
+        if license:
             self.file_notes[ commit ][ filename ].append( "[License: " + license + "]" )
 
         if license_problem:
