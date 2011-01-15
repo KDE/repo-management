@@ -11,7 +11,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 
 import lxml.etree as etree
-from lxml.builter import E
+from lxml.builder import E
 
 
 class RepoType(object):
@@ -102,9 +102,9 @@ class Repository(object):
              ('D'  , ('%at%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.+)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
-             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff\n(?P<files_changed>(.|\n)*)'))
+             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(?P<files_changed>(.|\n)*)\x00'))
             )
-        pretty_format = ''.join([': '.join((i,j[0])) for i,j in l])
+        pretty_format = '%xfe' + ''.join([': '.join((i,j[0])) for i,j in l])
         re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
 
         # Get the data we are going to be parsing....
@@ -115,12 +115,10 @@ class Repository(object):
                                    stderr=subprocess.PIPE)
         output = process.stdout.read()
 
-        # If nothing was output -> no commits to parse
-        if not output:
-            return
-
         # Parse time!
-        for commit_data in output.split("\x00\x00"):
+        split_out = output.split("\xfe")
+        split_out.remove("")
+        for commit_data in split_out:
             match = re.match(re_format, commit_data, re.MULTILINE)
             commit = Commit(self)
             commit.__dict__.update(match.groupdict())
