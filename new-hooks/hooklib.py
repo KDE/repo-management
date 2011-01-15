@@ -332,8 +332,6 @@ class CiaNotifier(object):
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
 
-        self._generate_tree()
-
     def __del__(self):
         self.smtp.quit()
 
