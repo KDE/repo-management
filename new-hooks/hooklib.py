@@ -10,6 +10,10 @@ from collections import defaultdict
 from email.mime.text import MIMEText
 from email.header import Header
 
+import lxml.etree as etree
+from lxml.builter import E
+
+
 class RepoType(object):
     "Enum type - Indicates the type of repository"
     Normal = 1
@@ -311,40 +315,37 @@ class CommitAuditor(object):
 class CiaNotifier(object):
     "Notifies CIA of changes to a repository"
 
-    template = """<message>
-  <generator>
-    <name>KDE CIA Python client</name>
-    <version>1.00</version>
-    <url>http://projects.kde.org/repo-management</url>
-  </generator>
-  <source>
-    <project>KDE</project>
-    <module>{0}</module>
-    <branch>{1}</branch>
-  </source>
-  <timestamp>{2}</timestamp>
-  <body>
-    <commit>
-      <author>{3}</author>
-      <revision>{4}</revision>
-      <files>
-        {5}
-      </files>
-      <log>
-        {6}
-      </log>
-      <url>{7}</url>
-    </commit>
-  </body>
-</message>"""
+    MESSAGE = E.message
+    GENERATOR = E.generator
+    SOURCE = E.source
+    TIMESTAMP = E.timestamp
+    BODY = E.body
+    COMMIT = E.commit
 
     def __init__(self, repository):
+
+        # Attributes needed for XML generation
+
+        self._generator = self._create_generator_tree()
+
         self.repository = repository
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
 
+        self._generate_tree()
+
     def __del__(self):
         self.smtp.quit()
+
+    def _create_generator_tree(self):
+
+        """Generate the non-variant part of the XML message sent to CIA."""
+
+        name = E.name("KDE CIA Python client")
+        version = E.version("1.00")
+        url = E.url("http://projects.kde.org/repo-management")
+
+        generator = self.GENERATOR(name, version, url)
 
     def notify(self):
 
@@ -362,21 +363,45 @@ class CiaNotifier(object):
 
     def __send_cia(self, commit):
 
-        """Send the commmit notification to CIA."""
+        """Send the commmit notification to CIA.
+
+        The message is created incrementally using lxml's "E" builder.
+
+        """
 
         # Build the <files> section for the template...
-        files_list = []
-        for filename in commit.files_changed:
-            files_list.append( "<file>{0}</file>".format(filename) )
-        file_output = '\n        '.join(files_list)
+        files = E.files()
 
-        # Fill in the template...
-        commit_xml = self.template.format( self.repository.path,
-                                          self.repository.ref_name, commit.date,
-                                          commit.author_name, commit.sha1,
-                                          file_output,
-                                          commit.message.strip(),
-                                          commit.url() )
+        for filename in commit.files_changed:
+
+            file_element = E.file(filename)
+            files.append(file_element)
+
+        # Build the message
+        message = self.MESSAGE()
+        message.append(self._generator)
+
+        source = self.SOURCE(E.project("KDE"))
+        source.append(E.module(self.repository.path))
+        source.append(E.branch(self.repository.ref_name))
+
+        message.append(source)
+        message.append(self.TIMESTAMP(commit.date))
+
+        body = self.BODY()
+
+        commit_data = self.COMMIT()
+        commit_data.append(E.author(commit.author_name))
+        commit_data.append(E.revision(commit.sha1))
+        commit_data.append(files)
+        commit_data.append(E.log(commit.message.strip()))
+        commit_data.append(E.url(commit.url()))
+
+        body.append(commit_data)
+        message.append(body)
+
+        # Convert to a string
+        commit_xml = etree.tostring(message)
 
         # Craft the email....
         message = MIMEText( commit_xml )
