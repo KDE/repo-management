@@ -214,7 +214,8 @@ class CommitAuditor(object):
         self.__setup_filenames()
 
     def __log_failure(self, commit, message):
-        if not self.failures.has_key( commit ):
+
+        if commit not in self.failures:
             self.failures[ commit ] = []
 
         self.failures[ commit ].append( message )
