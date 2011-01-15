@@ -17,14 +17,14 @@ class RepoType:
     Website = 3
     Scratch = 4
     Clone = 5
-    
+
 class ChangeType:
     "Enum type - indicates the type of change to a ref"
     Update = 1
     Create = 2
     Delete = 3
     Forced = 4
-    
+
 class RefType:
     "Enum type - indicates the type of ref in the repository"
     Branch = "branch"
@@ -36,23 +36,23 @@ class RefType:
 class Repository:
     "Represents a repository, and changes made to it"
     EmptyRef = "0000000000000000000000000000000000000000"
-    
+
     def __init__(self, ref, old_sha1, new_sha1, push_user):
         "Create a Repository object"
-        
+
         # Save configuration
         self.ref = ref
         self.old_sha1 = old_sha1
         self.new_sha1 = new_sha1
         self.push_user = push_user
         self.commits = dict()
-        
+
         # Find our configuration directory....
         if os.getenv('REPO_MGMT'):
             self.management_directory = os.getenv('REPO_MGMT')
         else:
             self.management_directory = os.getenv('HOME') + "/repo-management"
-        
+
         # Set path and id....
         path_match = re.match("^/home/ben/sysadmin/(.+).git$", os.getcwd())
         self.path = path_match.group(1)
@@ -68,7 +68,7 @@ class Repository:
 
         # Final initialisation
         self.__build_commits()
-        
+
     def backup_ref(self):
         # Back ourselves up!
         command = "git update-ref refs/backup/{0}-{1}-{2} {3}".format( self.ref_type, self.ref_name, int( time.time() ), self.old_sha1 )
@@ -83,7 +83,7 @@ class Repository:
         else:
             merge_base = read_command( 'git merge-base {0} {1}'.format(self.new_sha1, self.old_sha1) )
             revision_span = "{0}..{1}".format(merge_base, self.new_sha1)
-            
+
         # Build the git pretty format + regex.
         l = (
              ('CH' , ('%H%n',  '(?P<sha1>.+)\n')),
@@ -103,25 +103,25 @@ class Repository:
         command = command.format(self.old_sha1, log_arguments, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = process.stdout.read()
-        
+
         # If nothing was output -> no commits to parse
         if output == "":
             return
-        
+
         # Parse time!
         for commit_data in output.split("\x00\x00"):
             match = re.match(re_format, commit_data, re.MULTILINE)
             commit = Commit(self)
             commit.__dict__.update(match.groupdict())
             self.commits[ commit.sha1 ] = commit
-            
+
         # Cleanup files_changed....
         for (sha1, commit) in self.commits.iteritems():
             clean_list = re.split("\x00", commit.files_changed)
             files = clean_list[1::2]
             changes = clean_list[::2]
             commit.files_changed = dict( zip(files, changes) )
-            
+
     def __write_metadata(self):
         metadata = file(os.getenv('GIT_DIR') + "/cloneurl", "w")
         metadata.write( "Pull (read-only): git://anongit.kde.org/" + self.path + "\n" )
@@ -137,19 +137,19 @@ class Repository:
             uid_file = file(base + "/kde-repo-uid", "w")
             uid_file.write(repo_uid + "\n")
             uid_file.close()
-        
+
         if os.path.exists(base + "/kde-repo-nick"):
             repo_id = file(base + "/kde-repo-nick", "r")
         else:
             repo_id = file(base + "/kde-repo-uid", "r")
-        
+
         rid = repo_id.readline().strip()
         repo_id.close()
         return rid
 
     def __get_repo_type(self):
         sysadmin_repos = ["gitolite-admin", "repo-management"]
-        
+
         # What type of repo have we got???
         if self.path in sysadmin_repos:
             return RepoType.Sysadmin
@@ -163,7 +163,7 @@ class Repository:
             return RepoType.Clone
         else:
             return RepoType.Normal
-            
+
     def __get_ref_type(self):
         # What type is the ref being changed?
         if re.match("^refs/heads/(.+)$", self.ref):
@@ -176,7 +176,7 @@ class Repository:
             return RefType.Notes
         else:
             return RefType.Unknown
-            
+
     def __get_change_type(self):
         # Determine the merge base, to detect if we are experiencing a force or normal push....
         if( self.old_sha1 != self.EmptyRef and self.new_sha1 != self.EmptyRef ):
@@ -191,20 +191,20 @@ class Repository:
             return ChangeType.Forced
         else:
             return ChangeType.Update
-            
+
 class CommitAuditor:
     "Performs all audits on commits"
     def __init__(self, repository):
         self.repository = repository
         self.failures = dict()
         self.__setup_filenames()
-            
+
     def __log_failure(self, commit, message):
         if not self.failures.has_key( commit ):
             self.failures[ commit ] = []
-            
+
         self.failures[ commit ].append( message )
-        
+
     def __setup_filenames(self):
         self.filename_limits = []
         configuration = open(self.repository.management_directory + "/config/blockedfiles.cfg")
@@ -214,19 +214,19 @@ class CommitAuditor:
             # Skip comments and blank lines
             if regex.startswith("#") or len(regex) == 0:
                 continue
-            
+
             restriction = re.compile(regex)
             if restriction:
                 self.filename_limits.append( restriction )
 
         configuration.close()
-        
+
     def audit_eol(self):
         # Regex's....
         re_commit = re.compile("^\x00(.+)\x00$")
         re_filename = re.compile("^diff --git a\/(\S+) b\/(\S+)$")
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
-        
+
         # Do EOL audit!
         process = get_change_diff( self.repository, "-p" )
         for line in process.stdout:
@@ -253,14 +253,14 @@ class CommitAuditor:
                 # Failure has been found... handle it
                 violation = True
                 self.__log_failure(commit, "End Of Line Style - " + filename);
-                
+
     def audit_filename(self):
         for commit in self.repository.commits.values():
             for filename in commit.files_changed:
                 for restriction in self.filename_limits:
                     if re.search(restriction, filename):
                         self.__log_failure(commit.sha1, "File Name - " + filename)
-                        
+
     def audit_metadata(self):
         # Iterate over commits....
         disallowed_domains = ["localhost", "localhost.localdomain", "(none)"]
@@ -270,7 +270,7 @@ class CommitAuditor:
                 extraction = re.match("^(\S+)@(\S+)$", email_address)
                 if not extraction:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
-                
+
                 # Don't allow domains which are disallowed...
                 domain = extraction.group(2)
                 if domain in disallowed_domains:
@@ -317,31 +317,31 @@ class CiaNotifier:
         self.repository = repository
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
-        
+
     def __del__(self):
         self.smtp.quit()
-        
+
     def notify(self):
         # Do we need to sleep at all?
         if len(self.repository.commits) > 10:
             big_sleep = True
-            
+
         # Iterate and send....
         for commit in self.repository.commits.values():
             self.__send_cia(commit)
             if big_sleep:
                 time.sleep(0.5)
-                
+
     def __send_cia(self, commit):
         # Build the <files> section for the template...
         files_list = []
         for filename in commit.files_changed:
             files_list.append( "<file>{0}</file>".format(filename) )
         file_output = '\n        '.join(files_list)
-                
+
         # Fill in the template...
         commit_xml = self.template.format( self.repository.path, self.repository.ref_name, commit.date, commit.author_name, commit.sha1, file_output, commit.message.strip(), commit.url() )
-        
+
         # Craft the email....
         message = MIMEText( commit_xml )
         message['Subject'] = "DeliverXML"
@@ -349,7 +349,7 @@ class CiaNotifier:
         message['To'] = "cia@cia.vc"
         message['Content-Type'] = "text/xml; charset=UTF-8"
         message['Content-Transfer-Encoding'] = "8bit"
-        
+
         # Send email...
         self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"], message.as_string())
 
@@ -360,16 +360,16 @@ class EmailNotifier:
         self.repository = repository
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
-        
+
     def __del__(self):
         self.smtp.quit()
-        
+
     def notification_address(self):
         if self.repository.repo_type == RepoType.Sysadmin:
             return "sysadmin-svn@kde.org"
         else:
             return "kde-commits@kde.org"
-        
+
     def notify(self):
         # Initialisation
         self.file_notes = defaultdict(lambda: defaultdict(list))
@@ -383,12 +383,12 @@ class EmailNotifier:
             if commit_change:
                 commit = commit_change.group(1)
                 continue
-                
+
             diff_line = re.match("([0-9]+)\W+([0-9]+)\W+(.+)$", line)
             if diff_line:
                 file_info = (diff_line.group(3), diff_line.group(1), diff_line.group(2))
                 diffinfo[commit].append( file_info )
-        
+
         # We will incrementally send the mails as we gather up the diffs....
         process = get_change_diff( self.repository, "-p" )
         diff = list()
@@ -401,16 +401,16 @@ class EmailNotifier:
             if commit_change:
                 commit = commit_change.group(1)
                 continue
-            
+
             diff.append( line )
-        
+
     def __check_problems(self, commit, diff):
         # Unsafe regex checks...
         unsafe_matches = list()
         unsafe_matches.append( "\b(KRun::runCommand|K3?ShellProcess|setUseShell|setShellCommand)\b\s*[\(\r\n]" )
         unsafe_matches.append( "\b(system|popen|mktemp|mkstemp|tmpnam|gets|syslog|strptime)\b\s*[\(\r\n]" )
         unsafe_matches.append( "(scanf)\b\s*[\(\r\n]" )
-            
+
         # Retrieve the diff and do the problem checks...
         filename = ""
         for line in diff:
@@ -423,12 +423,12 @@ class EmailNotifier:
                 filediff = list()
                 filename = file_change.group(2)
                 continue
-            
+
             # Do an incremental check for *.desktop syntax errors....
             if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
                 self.file_notes[ commit.sha1 ][ filename ].append( "[TRAILING SPACE]" )
                 self.forced_cc.append( commit.sha1 )
-                
+
             # Check for things which are unsafe...
             safety_check = line
             unsafe = None
@@ -440,7 +440,7 @@ class EmailNotifier:
                 if match:
                     self.file_notes[ commit ][ filename ].append("[POSSIBLY UNSAFE: " + match.group(1) + "]")
                     self.forced_cc.append( commit )
-            
+
             # Store the diff....
             filediff.append(line)
 
@@ -457,25 +457,25 @@ class EmailNotifier:
 
         if re.search("version 2(?:\.0)? of the License", text):
             gl = " (v2)"
-  
+
         if re.search("version 3(?:\.0)? .{0,40}as published by the Free Software Foundation", text):
             gl = " (v3)"
-   
+
         if re.search("either version 2(?: of the License)? or at your option any later version", text):
             gl = " (v2+)"
 
         if re.search("version 2(?: of the License)? or at your option version 3", text):
             gl = " (v2/3)"
-                
+
         if re.search("version 2(?: of the License)? or at your option version 3 or at the discretion of KDE e.V.{10,60}any later version", text):
             gl = " (v2/3+eV)"
 
         if re.search("either version 3(?: of the License)? or at your option any later version", text):
             gl = " (v3+)"
-                
+
         if re.search("version 2\.1 as published by the Free Software Foundation", text):
             gl = " (v2.1)"
-                
+
         if re.search("2\.1 available at: http:\/\/www.fsf.org\/copyleft\/lesser.html", text):
             gl = " (v2.1)"
 
@@ -495,16 +495,16 @@ class EmailNotifier:
         # LGPL or GPL
         if re.search("under (the (terms|conditions) of )?the GNU (Library|Lesser) General Public License", text):
             license = "LGPL" + gl + wrong + " " + license
-                
+
         if re.search("under (the (terms|conditions) of )?the (Library|Lesser) GNU General Public License", text):
             license = "LGPL" + gl + wrong + " " + license
-                
+
         if re.search("under (the (terms|conditions) of )?the (GNU )?LGPL", text):
             license = "LGPL" + gl + wrong + " " + license
-                
+
         if re.search("[Tt]he LGPL as published by the Free Software Foundation", text):
             license = "LGPL" + gl + wrong + " " + license
-                
+
         if re.search("LGPL with the following explicit clarification", text):
             license = "LGPL" + gl + wrong + " " + license
 
@@ -530,7 +530,7 @@ class EmailNotifier:
         # MPL
         if re.search("subject to the Mozilla Public License Version 1.1", text):
             license = "MPL 1.1 " + license
-                
+
         if re.search("Mozilla Public License Version 1\.0/", text):
             license = "MPL 1.0 " + license
 
@@ -567,8 +567,8 @@ class EmailNotifier:
 
         if license_problem:
             self.forced_cc.append( commit )
-                
-    def __send_email(self, commit, diff, diffinfo):    
+
+    def __send_email(self, commit, diff, diffinfo):
         # Check for problems in this commit and build the keywords....
         self.__check_problems(commit, diff)
         keyword_info = self.__parse_keywords(commit)
@@ -579,7 +579,7 @@ class EmailNotifier:
             # Seperate out the directory...
             directory = os.path.dirname(filename)
             commit_directories.append( directory )
-        
+
         # Build up the needed parts of the message....
         firstline = "Git commit {0} by {1}".format( commit.sha1, commit.committer_name )
         if commit.author_name != commit.committer_name:
@@ -593,22 +593,22 @@ class EmailNotifier:
             data = "{0} +{1} -{2} {3} {4}".format( commit.files_changed[filename], added, removed, filename, notes )
             summary.append( data )
         summary.append( "\n" + commit.url() + "\n" )
-            
+
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
         if commit.sha1 in self.forced_cc:
             cc_addresses.append( commit.committer_email )
-            
+
         if keyword_info['email_gui']:
             cc_addresses.append( 'kde-doc-english@kde.org' )
-            
+
         # Build the subject and body...
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
         body = '\n'.join( summary )
         if diff:
             body = body + "\n" + ''.join( diff )
-            
+
         # Handle the normal mailing list mails....
         message = MIMEText( body )
         message['Subject'] = Header( subject )
@@ -621,11 +621,11 @@ class EmailNotifier:
 
         message['Content-Type'] = "text/plain; charset=UTF-8"
         message['Content-Transfer-Encoding'] = "8bit"
-                
+
         # Send email...
         to_addresses = cc_addresses + [self.notification_address()]
-        self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())         
-            
+        self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())
+
     def __parse_keywords(self, commit):
         split = dict()
         split['bug_fixed'] = re.compile("^\s*(?:BUGS?|FEATURE)[:=]\s*(\d{4,10})")
@@ -637,19 +637,19 @@ class EmailNotifier:
         presence = dict()
         presence['email_gui'] = re.compile("^\s*GUI:")
         presence['silent']    = re.compile("(?:CVS|SVN|GIT|SCM).?SILENT")
-        
+
         results = defaultdict(list)
         for line in commit.message.split("\n"):
             for (name, regex) in split.iteritems():
                 match = re.match( regex, line )
                 if match:
                     results[name].append( match.group(1).split(",") )
-                    
-            for (name, regex) in split.iteritems(): 
+
+            for (name, regex) in split.iteritems():
                 if re.match( regex, line ):
                     results[name] = True
-                    
-        return results        
+
+        return results
 
 class Commit:
     "Represents a git commit"
@@ -658,7 +658,7 @@ class Commit:
 
     def __repr__(self):
         return str(self.__dict__)
-        
+
     def url(self):
         return "http://commits.kde.org/{0}/{1}".format( self.repository.uid, self.sha1 )
 
@@ -670,7 +670,7 @@ def get_change_diff( repository, log_arguments ):
     # Prepare to run....
     command = "git show --pretty=format:%x00%H%x00 --stdin " + log_arguments
     process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
+
     # Pass on the commits for it to show...
     for sha1 in repository.commits.keys():
         process.stdin.write(sha1 + "\n")
