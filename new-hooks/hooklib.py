@@ -245,6 +245,9 @@ class CommitAuditor(object):
 
     @property
     def audit_failed(self):
+
+        """Whether the audit failed (True) or passed (False)."""
+
         return self.__failed
 
     def audit_eol(self):
@@ -783,6 +786,9 @@ class Commit(object):
 
     @property
     def url(self):
+
+        """The URL of the commit at commits.kde.org."""
+
         return "http://commits.kde.org/{0}/{1}".format( self.repository.uid,
                                                        self.sha1 )
 
