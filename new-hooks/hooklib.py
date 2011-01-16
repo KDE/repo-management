@@ -712,7 +712,7 @@ class EmailNotifier(object):
         # Build the subject and body...
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
-        body = unicode( '\n'.join( summary ) )
+        body = unicode( '\n'.join( summary ), "utf-8" )
         if diff and len(diff) < 8000:
             body = body + "\n" + ''.join( diff )
 
