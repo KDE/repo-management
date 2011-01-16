@@ -708,7 +708,7 @@ class EmailNotifier(object):
         # Build the subject and body...
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
-        body = '\n'.join( summary )
+        body = unicode( '\n'.join( summary ) )
         if diff and len(diff) < 8000:
             body = body + "\n" + ''.join( diff )
 
@@ -721,7 +721,7 @@ class EmailNotifier(object):
         message['Cc']      = Header( ''.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
-        message['X-Commit-Directories'] = Header( "(0) " + '\n'.join(commit_directories) )
+        message['X-Commit-Directories'] = Header( "(0) " + ' '.join(commit_directories) )
 
         # Send email...
         to_addresses = cc_addresses + [self.notification_address]
