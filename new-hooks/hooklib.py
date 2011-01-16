@@ -690,10 +690,11 @@ class EmailNotifier(object):
         for info in diffinfo:
             filename, added, removed = info
             notes = ''.join( self.file_notes[commit.sha1][filename] )
-            try:
-                file_change = commit.files_changed[filename]
-            except KeyError:
+            file_change = commit.files_changed.get(filename, None)
+
+            if file_change is None:
                 file_change = "I"
+
             data = "{0} +{1} -{2} {3} {4}".format(
                 file_change, added, removed,
                 filename, notes )
