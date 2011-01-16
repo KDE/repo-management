@@ -417,12 +417,10 @@ class CiaNotifier(object):
         commit_xml = etree.tostring(message)
 
         # Craft the email....
-        message = MIMEText( commit_xml )
+        message = MIMEText( commit_xml, 'xml', 'utf-8' )
         message['Subject'] = "DeliverXML"
         message['From'] = "sysadmin@kde.org"
         message['To'] = "cia@cia.vc"
-        message['Content-Type'] = "text/xml; charset=UTF-8"
-        message['Content-Transfer-Encoding'] = "8bit"
 
         # Send email...
         self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"],
@@ -715,7 +713,7 @@ class EmailNotifier(object):
             body = body + "\n" + ''.join( diff )
 
         # Handle the normal mailing list mails....
-        message = MIMEText( body )
+        message = MIMEText( body, 'plain', 'utf-8' )
         message['Subject'] = Header( subject )
         message['From']    = Header( "{0} <{1}>".format(
             commit.committer_name, commit.committer_email ) )
@@ -724,9 +722,6 @@ class EmailNotifier(object):
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
         message['X-Commit-Directories'] = Header( "(0) " + '\n'.join(commit_directories) )
-
-        message['Content-Type'] = "text/plain; charset=UTF-8"
-        message['Content-Transfer-Encoding'] = "8bit"
 
         # Send email...
         to_addresses = cc_addresses + [self.notification_address]
