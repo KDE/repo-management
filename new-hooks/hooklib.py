@@ -613,7 +613,7 @@ class EmailNotifier(object):
             license = "MIT " + license
 
         # BSD
-        if re.search("MERCHANTABILITY( AND|| or) FITNESS FOR A PARTICULAR PURPOSE", text) and re.search("GPL", license):
+        if re.search("MERCHANTABILITY( AND|| or) FITNESS FOR A PARTICULAR PURPOSE", text) and not re.search("GPL", license):
             license = "BSD " + license
 
         # MPL
