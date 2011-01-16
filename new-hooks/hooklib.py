@@ -401,7 +401,7 @@ class CiaNotifier(object):
         commit_data.append(E.revision(commit.sha1))
         commit_data.append(files)
         commit_data.append(E.log(commit.message.strip()))
-        commit_data.append(E.url(commit.url()))
+        commit_data.append(E.url(commit.url))
 
         body.append(commit_data)
         cia_message.append(body)
@@ -692,7 +692,7 @@ class EmailNotifier(object):
                 file_change, added, removed,
                 filename, notes )
             summary.append( data )
-        summary.append( "\n" + commit.url() + "\n" )
+        summary.append( "\n" + commit.url + "\n" )
 
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
@@ -781,6 +781,7 @@ class Commit(object):
     def __repr__(self):
         return str(self._commit_data)
 
+    @property
     def url(self):
         return "http://commits.kde.org/{0}/{1}".format( self.repository.uid,
                                                        self.sha1 )
