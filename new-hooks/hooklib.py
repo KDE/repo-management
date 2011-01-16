@@ -227,7 +227,7 @@ class CommitAuditor(object):
 
     def __log_failure(self, commit, message):
 
-        message = "Commit {0} - {1}".format(commit, message)
+        log_message = "Commit {0} - {1}".format(commit, message)
         self.__logger.critical(message)
         self.__failed = True
 
@@ -391,15 +391,15 @@ class CiaNotifier(object):
             files.append(file_element)
 
         # Build the message
-        message = self.MESSAGE()
-        message.append(self._generator)
+        cia_message = self.MESSAGE()
+        cia_message.append(self._generator)
 
         source = self.SOURCE(E.project("KDE"))
         source.append(E.module(self.repository.path))
         source.append(E.branch(self.repository.ref_name))
 
-        message.append(source)
-        message.append(self.TIMESTAMP(commit.date))
+        cia_message.append(source)
+        cia_message.append(self.TIMESTAMP(commit.date))
 
         body = self.BODY()
 
@@ -411,10 +411,10 @@ class CiaNotifier(object):
         commit_data.append(E.url(commit.url()))
 
         body.append(commit_data)
-        message.append(body)
+        cia_message.append(body)
 
         # Convert to a string
-        commit_xml = etree.tostring(message)
+        commit_xml = etree.tostring(cia_message)
 
         # Craft the email....
         message = MIMEText( commit_xml, 'xml', 'utf-8' )
