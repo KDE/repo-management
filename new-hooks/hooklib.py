@@ -120,8 +120,7 @@ class Repository(object):
         split_out.remove("")
         for commit_data in split_out:
             match = re.match(re_format, commit_data, re.MULTILINE)
-            commit = Commit(self)
-            commit.__dict__.update(match.groupdict())
+            commit = Commit(self, match.groupdict())
             self.commits[ commit.sha1 ] = commit
 
         # Cleanup files_changed....
@@ -761,12 +760,25 @@ class EmailNotifier(object):
         return results
 
 class Commit(object):
+
     "Represents a git commit"
-    def __init__(self, repository):
+
+    def __init__(self, repository, repository_data):
         self.repository = repository
+        self._repository_data = repository_data
+
+    def __getattr__(self, key):
+
+        if key not in self._repository_data:
+            raise AttributeError
+
+        value = self._repository_data[key]
+        value = unicode(value, "utf-8")
+
+        return value
 
     def __repr__(self):
-        return str(self.__dict__)
+        return str(self._repository_data)
 
     def url(self):
         return "http://commits.kde.org/{0}/{1}".format( self.repository.uid,
