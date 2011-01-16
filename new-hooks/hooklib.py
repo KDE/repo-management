@@ -673,6 +673,9 @@ class EmailNotifier(object):
             directory = os.path.dirname(filename)
             commit_directories.append( directory )
 
+        # Remove all duplicates...
+        commit_directories = list( set(commit_directories) )
+
         # Build up the needed parts of the message....
         firstline = "Git commit {0} by {1}".format( commit.sha1,
                                                    commit.committer_name )
