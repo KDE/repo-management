@@ -685,7 +685,7 @@ class EmailNotifier(object):
             self.repository.push_user, self.repository.ref_type,
             self.repository.ref_name)
 
-        summary = [firstline, pushed_by, "\n"]
+        summary = [firstline, pushed_by]
         for info in diffinfo:
             filename, added, removed = info
             notes = ''.join( self.file_notes[commit.sha1][filename] )
@@ -711,7 +711,7 @@ class EmailNotifier(object):
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
         body = '\n'.join( summary )
-        if diff:
+        if diff and len(diff) < 8000:
             body = body + "\n" + ''.join( diff )
 
         # Handle the normal mailing list mails....
