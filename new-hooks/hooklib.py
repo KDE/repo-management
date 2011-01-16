@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import itertools
 import logging
 import os
 import re
@@ -122,13 +123,6 @@ class Repository(object):
             match = re.match(re_format, commit_data, re.MULTILINE)
             commit = Commit(self, match.groupdict())
             self.commits[ commit.sha1 ] = commit
-
-        # Cleanup files_changed....
-        for (sha1, commit) in self.commits.iteritems():
-            clean_list = re.split("\x00", commit.files_changed)
-            files = clean_list[1::2]
-            changes = clean_list[::2]
-            commit.files_changed = dict( zip(files, changes) )
 
     def __write_metadata(self):
 
@@ -763,22 +757,29 @@ class Commit(object):
 
     "Represents a git commit"
 
-    def __init__(self, repository, repository_data):
+    def __init__(self, repository, commit_data):
         self.repository = repository
-        self._repository_data = repository_data
+        self._commit_data = commit_data
+
+        # Create file changed list and replace the original value
+        clean_list = re.split("\x00", self._commit_data["files_changed"])
+        files = clean_list[1::2]
+        changes = clean_list[::2]
+        self._commit_data["files_changed"] = dict(itertools.izip(files,
+                                                                 changes))
 
     def __getattr__(self, key):
 
-        if key not in self._repository_data:
+        if key not in self._commit_data:
             raise AttributeError
 
-        value = self._repository_data[key]
+        value = self._commit_data[key]
         value = unicode(value, "utf-8")
 
         return value
 
     def __repr__(self):
-        return str(self._repository_data)
+        return str(self._commit_data)
 
     def url(self):
         return "http://commits.kde.org/{0}/{1}".format( self.repository.uid,
