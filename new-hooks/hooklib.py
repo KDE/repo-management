@@ -428,8 +428,6 @@ class EmailNotifier(object):
     def __init__(self, repository):
 
         self.repository = repository
-        self.file_notes = dict()
-        self.forced_cc = list()
 
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
@@ -488,15 +486,9 @@ class EmailNotifier(object):
 
         """Send an email of the commit."""
 
-        # Check for problems in this commit.
+        # Check for problems in this commit
         checker = CommitChecker(commit, diff)
         checker.check_commit_problems()
-
-        if checker.license_problem or checker.commit_problem:
-            self.forced_cc.append(commit)
-
-        # Get the file notes for this commit
-        self.file_notes[commit.sha1] = checker.commit_notes
 
         # Build keywords
         keyword_info = self.__parse_keywords(commit)
@@ -524,7 +516,7 @@ class EmailNotifier(object):
         summary = [firstline, pushed_by]
         for info in diffinfo:
             filename, added, removed = info
-            notes = ''.join( self.file_notes[commit.sha1][filename] )
+            notes = ''.join(checker.commit_notes[filename])
             file_change = commit.files_changed.get(filename, None)
 
             if file_change is None:
@@ -538,8 +530,10 @@ class EmailNotifier(object):
 
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
-        if commit.sha1 in self.forced_cc:
-            cc_addresses.append( commit.committer_email )
+
+        # Add the committer to the Cc in case problems have been found
+        if checker.license_problem or checker.commit_problem:
+            cc_addresses.append(commit.committer_email)
 
         if keyword_info['email_gui']:
             cc_addresses.append( 'kde-doc-english@kde.org' )
