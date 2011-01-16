@@ -72,11 +72,9 @@ if not os.path.exists(skip_base + repository.path + ".git/skip-author"):
     auditor.audit_metadata()
 
 # Did we have any commit audit failures?
-if not len(auditor.failures) == 0:
-    for (sha1, failures) in auditor.failures.iteritems():
-        print "Audit Failure - commit " + sha1
-        print "   " + "\n   ".join(failures)
-    exit(1)
+if auditor.audit_failed:
+    print "Push declined - commits failed audit"
+    #exit(1)
 
 #####
 # Pre-acceptance

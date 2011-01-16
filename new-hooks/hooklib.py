@@ -102,14 +102,14 @@ class Repository(object):
              ('D'  , ('%at%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.+)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
-             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(?P<files_changed>(.|\n)*)\x00'))
+             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)\x00'))
             )
         pretty_format = '%xfe' + ''.join([': '.join((i,j[0])) for i,j in l])
         re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
 
         # Get the data we are going to be parsing....
         log_arguments = "--name-status -z --pretty=format:'{0}'".format(pretty_format)
-        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {2} | git log --stdin --no-walk {1}"
+        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {2} | git show --stdin {1}"
         command = command.format(self.old_sha1, log_arguments, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -227,14 +227,14 @@ class CommitAuditor(object):
 
     def __log_failure(self, commit, message):
 
-        message = "Commit {1} - {2}".format(commit, message)
+        message = "Commit {0} - {1}".format(commit, message)
         self.__logger.critical(message)
         self.__failed = True
 
     def __setup_filenames(self):
         self.filename_limits = []
 
-        configuration_file = os.path.join(self.repository_management_directory,
+        configuration_file = os.path.join(self.repository.management_directory,
                                           "config/blockedfiles.cfg")
 
         with open(configuration_file) as configuration:
@@ -266,7 +266,7 @@ class CommitAuditor(object):
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
 
         # Do EOL audit!
-        process = get_change_diff( self.repository, "-p" )
+        process = get_change_diff( self.repository, "-C -p" )
         for line in process.stdout:
             commit_change = re.match( re_commit, line )
             if commit_change:
@@ -351,8 +351,6 @@ class CiaNotifier(object):
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
 
-        self._generate_tree()
-
     def __del__(self):
         self.smtp.quit()
 
@@ -372,15 +370,9 @@ class CiaNotifier(object):
 
         """Send a notification to CIA."""
 
-        # Do we need to sleep at all?
-        if len(self.repository.commits) > 10:
-            big_sleep = True
-
         # Iterate and send....
         for commit in self.repository.commits.values():
             self.__send_cia(commit)
-            if big_sleep:
-                time.sleep(0.5)
 
     def __send_cia(self, commit):
 
@@ -697,8 +689,12 @@ class EmailNotifier(object):
         for info in diffinfo:
             filename, added, removed = info
             notes = ''.join( self.file_notes[commit.sha1][filename] )
+            try:
+                file_change = commit.files_changed[filename]
+            except KeyError:
+                file_change = "I"
             data = "{0} +{1} -{2} {3} {4}".format(
-                commit.files_changed[filename], added, removed,
+                file_change, added, removed,
                 filename, notes )
             summary.append( data )
         summary.append( "\n" + commit.url() + "\n" )
@@ -723,7 +719,7 @@ class EmailNotifier(object):
         message['Subject'] = Header( subject )
         message['From']    = Header( "{0} <{1}>".format(
             commit.committer_name, commit.committer_email ) )
-        message['To']      = Header( self.notification_address() )
+        message['To']      = Header( self.notification_address )
         message['Cc']      = Header( ''.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
@@ -733,7 +729,7 @@ class EmailNotifier(object):
         message['Content-Transfer-Encoding'] = "8bit"
 
         # Send email...
-        to_addresses = cc_addresses + [self.notification_address()]
+        to_addresses = cc_addresses + [self.notification_address]
         self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())
 
     def __parse_keywords(self, commit):
@@ -759,7 +755,7 @@ class EmailNotifier(object):
                 if match:
                     results[name].append( match.group(1).split(",") )
 
-            for (name, regex) in split.iteritems():
+            for (name, regex) in presence.iteritems():
                 if re.match( regex, line ):
                     results[name] = True
 
