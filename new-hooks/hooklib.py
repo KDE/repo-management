@@ -796,12 +796,11 @@ class CommitChecker(object):
                 continue
             
             # Check for invalid encodings...
-            if not encode_violation:
-                try:
-                    unicode(line, "utf-8")
-                except UnicodeDecodeError:
-                    self._commit_notes[filename].append( "[INVALID ENCODING]" )
-                    self._commit_problem = True
+            try:
+                unicode(line, "utf-8")
+            except UnicodeDecodeError:
+                self._commit_notes[filename].append( "[INVALID ENCODING]" )
+                self._commit_problem = True
 
             # Do an incremental check for *.desktop syntax errors....
             if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
