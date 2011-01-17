@@ -221,7 +221,7 @@ class CommitAuditor(object):
     def __log_failure(self, commit, message):
 
         log_message = "Commit {0} - {1}".format(commit, message)
-        self.__logger.critical(message)
+        self.__logger.critical(log_message)
         self.__failed = True
 
     def __setup_filenames(self):
@@ -272,20 +272,23 @@ class CommitAuditor(object):
             file_change = re.match( re_filename, line )
             if file_change:
                 filename = file_change.group(2)
-                violation = False
-                continue
-
-            # Don't complain about the same file twice...
-            if violation:
+                eol_violation = encode_violation = False
                 continue
 
             # Unless they added it, ignore it
             if not line.startswith("+"):
                 continue
+            
+            if not encode_violation:
+                try:
+                    unicode(line, "utf-8")
+                except UnicodeDecodeError:
+                    encode_violation = True
+                    self.__log_failure(commit, "Encoding - " + filename);
 
-            if re.search( blocked_eol, line ):
+            if re.search( blocked_eol, line ) and not eol_violation:
                 # Failure has been found... handle it
-                violation = True
+                eol_violation = True
                 self.__log_failure(commit, "End Of Line Style - " + filename);
 
     def audit_filename(self):
@@ -480,7 +483,7 @@ class EmailNotifier(object):
                 commit = commit_change.group(1)
                 continue
 
-            diff.append( line )
+            diff.append( unicode(line, "utf-8", 'replace') )
 
     def __send_email(self, commit, diff, diffinfo):
 
@@ -504,10 +507,10 @@ class EmailNotifier(object):
         commit_directories = list( set(commit_directories) )
 
         # Build up the needed parts of the message....
-        firstline = "Git commit {0} by {1}".format( commit.sha1,
+        firstline = unicode("Git commit {0} by {1}").format( commit.sha1,
                                                    commit.committer_name )
         if commit.author_name != commit.committer_name:
-            firstline = firstline + " on behalf of " + commit.author_name
+            firstline += " on behalf of " + commit.author_name
 
         pushed_by = "Pushed by {0} into {1} {2}".format(
             self.repository.push_user, self.repository.ref_type,
@@ -541,14 +544,14 @@ class EmailNotifier(object):
         # Build the subject and body...
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
-        body = unicode( '\n'.join( summary ), "utf-8" )
+        body = '\n'.join( summary )
         if diff and len(diff) < 8000:
-            body = body + "\n" + ''.join( diff )
+            body += "\n" + unicode('', "utf-8").join(diff)
 
         # Handle the normal mailing list mails....
-        message = MIMEText( body, 'plain', 'utf-8' )
+        message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
         message['Subject'] = Header( subject )
-        message['From']    = Header( "{0} <{1}>".format(
+        message['From']    = Header( unicode("{0} <{1}>").format(
             commit.committer_name, commit.committer_email ) )
         message['To']      = Header( self.notification_address )
         message['Cc']      = Header( ''.join(cc_addresses) )
@@ -581,7 +584,7 @@ class EmailNotifier(object):
             for (name, regex) in split.iteritems():
                 match = re.match( regex, line )
                 if match:
-                    results[name].append( match.group(1).split(",") )
+                    results[name] += match.group(1).split(",")
 
             for (name, regex) in presence.iteritems():
                 if re.match( regex, line ):
@@ -596,6 +599,7 @@ class Commit(object):
     def __init__(self, repository, commit_data):
         self.repository = repository
         self._commit_data = commit_data
+        self._raw_properties = ["files_changed"]
 
         # Create file changed list and replace the original value
         clean_list = re.split("\x00", self._commit_data["files_changed"])
@@ -608,11 +612,11 @@ class Commit(object):
 
         if key not in self._commit_data:
             raise AttributeError
+        if key in self._raw_properties:
+            return self._commit_data[key]
 
         value = self._commit_data[key]
-        value = unicode(value, "utf-8")
-
-        return value
+        return unicode(value, "utf-8")
 
     def __repr__(self):
         return str(self._commit_data)
@@ -792,7 +796,7 @@ class CommitChecker(object):
             if file_change:
                 # Are we changing file? If so, we have the full diff, so do a license check....
                 if filename != "" and self.commit.files_changed[ filename ] == 'A':
-                    self.check_license_problems(filename, ''.join(filediff))
+                    self.check_commit_license(filename, ''.join(filediff))
 
                 filediff = list()
                 filename = file_change.group(2)

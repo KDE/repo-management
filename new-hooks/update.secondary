@@ -74,7 +74,7 @@ if not os.path.exists(skip_base + repository.path + ".git/skip-author"):
 # Did we have any commit audit failures?
 if auditor.audit_failed:
     print "Push declined - commits failed audit"
-    #exit(1)
+    exit(1)
 
 #####
 # Pre-acceptance
@@ -107,7 +107,7 @@ if repository.repo_type != RepoType.Sysadmin:
     else:
         print "In a few minutes the last commit in the series will be available for viewing at:"
     
-    print repository.commits[ repository.new_sha1 ].url()
+    print repository.commits[ repository.new_sha1 ].url
     
 # Notify CIA...
 cia_allowed = [RepoType.Normal, RepoType.Website]
