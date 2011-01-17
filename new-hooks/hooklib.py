@@ -376,6 +376,9 @@ class CiaNotifier(object):
 
         # Build the <files> section for the template...
         files = E.files()
+        
+        commit_msg = commit.message.strip()
+        commit_msg = re.sub(r'[\x00-\x09\x0B-\x1f\x7f-\xff]', '', commit_msg)
 
         for filename in commit.files_changed:
 
@@ -399,7 +402,7 @@ class CiaNotifier(object):
         commit_data.append(E.author(commit.author_name))
         commit_data.append(E.revision(commit.sha1))
         commit_data.append(files)
-        commit_data.append(E.log(commit.message.strip()))
+        commit_data.append(E.log(commit_msg))
         commit_data.append(E.url(commit.url))
 
         body.append(commit_data)
