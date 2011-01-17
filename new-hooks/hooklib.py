@@ -272,19 +272,12 @@ class CommitAuditor(object):
             file_change = re.match( re_filename, line )
             if file_change:
                 filename = file_change.group(2)
-                eol_violation = encode_violation = False
+                eol_violation = False
                 continue
 
             # Unless they added it, ignore it
             if not line.startswith("+"):
                 continue
-            
-            if not encode_violation:
-                try:
-                    unicode(line, "utf-8")
-                except UnicodeDecodeError:
-                    encode_violation = True
-                    self.__log_failure(commit, "Encoding - " + filename);
 
             if re.search( blocked_eol, line ) and not eol_violation:
                 # Failure has been found... handle it
@@ -801,10 +794,19 @@ class CommitChecker(object):
                 filediff = list()
                 filename = file_change.group(2)
                 continue
+            
+            # Check for invalid encodings...
+            if not encode_violation:
+                try:
+                    unicode(line, "utf-8")
+                except UnicodeDecodeError:
+                    self._commit_notes[filename].append( "[INVALID ENCODING]" )
+                    self._commit_problem = True
 
             # Do an incremental check for *.desktop syntax errors....
             if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
                 self._commit_notes[filename].append( "[TRAILING SPACE]" )
+                self._commit_problem = True
 
             # Check for things which are unsafe...
             safety_check = line
@@ -817,6 +819,8 @@ class CommitChecker(object):
                 if match:
                     self._commit_notes[filename].append( "[POSSIBLY UNSAFE: "
                                                         + match.group(1) + "]")
+                    self._commit_problem = True
+
             # Store the diff....
             filediff.append(line)
 
