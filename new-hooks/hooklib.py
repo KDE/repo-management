@@ -448,8 +448,6 @@ class EmailNotifier(object):
 
         """Send an email notification of the commit."""
 
-        # Initialisation
-
         # Retrieve diff-stats...
         diffinfo = defaultdict(list)
         process = get_change_diff( self.repository, "--numstat" )
@@ -473,6 +471,7 @@ class EmailNotifier(object):
             if commit_change and diff:
                 self.__send_email(self.repository.commits[commit], diff,
                                   diffinfo[commit])
+                commit = ""
                 diff = list()
 
             if commit_change:
@@ -480,6 +479,10 @@ class EmailNotifier(object):
                 continue
 
             diff.append( unicode(line, "utf-8", 'replace') )
+            
+        if commit:
+            self.__send_email(self.repository.commits[commit], diff, 
+                              diffinfo[commit])
 
     def __send_email(self, commit, diff, diffinfo):
 
@@ -797,13 +800,6 @@ class CommitChecker(object):
                 filediff = list()
                 filename = file_change.group(2)
                 continue
-            
-            # Check for invalid encodings...
-            try:
-                unicode(line, "utf-8")
-            except UnicodeDecodeError:
-                self._commit_notes[filename].append( "[INVALID ENCODING]" )
-                self._commit_problem = True
 
             # Do an incremental check for *.desktop syntax errors....
             if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
