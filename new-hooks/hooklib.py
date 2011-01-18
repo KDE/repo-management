@@ -105,8 +105,12 @@ class Repository(object):
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
              ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)'))
             )
-        pretty_format = '%xfe' + ''.join([': '.join((i,j[0])) for i,j in l])
-        re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
+
+        pretty_format_data = (': '.join((outer, inner[0])) for outer, inner in l)
+        pretty_format = '%xfe' + ''.join(pretty_format_data)
+
+        re_format_data = (': '.join((outer, inner[1])) for outer, inner in l)
+        re_format = '^' + ''.join(re_format_data) + '$'
 
         # Get the list of revisions
         command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {1}"
@@ -116,9 +120,9 @@ class Repository(object):
         revisions = process.stdout.readlines()
 
         # If we have no revisions... don't continue
-        if revisions == []:
+        if not revisions:
             return
-        
+
         # Extract information about commits....
         command = "git show --stdin --name-status -z --pretty=format:'{0}'".format(pretty_format)
         process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
@@ -127,7 +131,7 @@ class Repository(object):
         # Pass on the commits for it to show, and read in all information
         for sha1 in revisions:
             process.stdin.write(sha1)
-        process.stdin.close()       
+        process.stdin.close()
         output = process.stdout.read()
 
         # Parse time!
@@ -390,7 +394,7 @@ class CiaNotifier(object):
 
         # Build the <files> section for the template...
         files = E.files()
-        
+
         commit_msg = commit.message.strip()
         commit_msg = re.sub(r'[\x00-\x09\x0B-\x1f\x7f-\xff]', '', commit_msg)
 
@@ -441,7 +445,7 @@ class EmailNotifier(object):
     def __init__(self, repository):
 
         self.repository = repository
-        
+
         svnpath = repository.management_directory + "/repo-configs/email/" + repository.path + ".git/svnpath"
         with open(svnpath, "r") as svnpath_file:
             self.directory_prefix = svnpath_file.readline().strip()
@@ -497,9 +501,9 @@ class EmailNotifier(object):
                 continue
 
             diff.append( unicode(line, "utf-8", 'replace') )
-            
+
         if commit:
-            self.__send_email(self.repository.commits[commit], diff, 
+            self.__send_email(self.repository.commits[commit], diff,
                               diffinfo[commit])
 
     def __send_email(self, commit, diff, diffinfo):
@@ -523,7 +527,7 @@ class EmailNotifier(object):
         # Remove all duplicates...
         commit_directories = list( set(commit_directories) )
         full_commit_dirs = [self.directory_prefix + cdir for cdir in commit_directories]
-        
+
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
 
@@ -537,7 +541,7 @@ class EmailNotifier(object):
         # Build the subject....
         lowest_common_path = os.path.commonprefix( commit_directories )
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
-        
+
         # Build up the body of the message...
         firstline = unicode("Git commit {0} by {1}").format( commit.sha1,
                                                    commit.committer_name )
@@ -583,7 +587,7 @@ class EmailNotifier(object):
         # Send email...
         to_addresses = cc_addresses + [self.notification_address]
         self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())
-        
+
         # Handle bugzilla....
         bugs_changed = keyword_info['bug_fixed'] + keyword_info['bug_cc']
         for bug in bugs_changed:
@@ -593,7 +597,7 @@ class EmailNotifier(object):
                 bug_body.append( "@bug_status = RESOLVED" )
                 bug_body.append( "@resolution = FIXED" )
             bug_body.append( '\n'.join( summary ) )
-            
+
             body = unicode('\n', "utf-8").join( bug_body )
             message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
             message['Subject'] = Header( subject )
