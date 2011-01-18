@@ -52,7 +52,7 @@ if repository.ref_type == RefType.Backup:
     exit(1)
 elif repository.ref_type == RefType.Unknown:
     print "Sorry, but the ref you are trying to push to could not be recognised."
-    print "Only pushes to branches and tags are supported."
+    print "Only pushes to branches, tags and notes are supported."
     exit(1)
 elif repository.ref_name == "HEAD":
     print "Creating refs which conflict with internally used names is not permitted."
@@ -101,7 +101,7 @@ if push_user in post_exceptions:
     exit(0)
     
 # Output a helpful url....
-if repository.repo_type != RepoType.Sysadmin:
+if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in repository.commits:
     if len(repository.commits) == 1:
         print "In a few minutes this commit will be available for viewing at:"
     else:
@@ -111,13 +111,13 @@ if repository.repo_type != RepoType.Sysadmin:
     
 # Notify CIA...
 cia_allowed = [RepoType.Normal, RepoType.Website]
-if repository.repo_type in cia_allowed:
+if repository.repo_type in cia_allowed and repository.commits:
     cia = CiaNotifier(repository)
     cia.notify()
 
 # Send email based notifications (email, bugzilla, reviewboard)
 email_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
-if repository.repo_type in email_allowed:
+if repository.repo_type in email_allowed and repository.commits:
     email = EmailNotifier(repository)
     email.notify()
 
