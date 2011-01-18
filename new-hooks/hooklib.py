@@ -59,7 +59,7 @@ class Repository(object):
             self.management_directory = os.getenv('HOME') + "/repo-management"
 
         # Set path and id....
-        path_match = re.match("^/home/ben/sysadmin/(.+).git$", os.getcwd())
+        path_match = re.match("^/srv/kdegit/repositories/(.+).git$", os.getcwd())
         self.path = path_match.group(1)
         self.uid = self.__get_repo_id()
         self.__write_metadata()
