@@ -561,6 +561,24 @@ class EmailNotifier(object):
         # Send email...
         to_addresses = cc_addresses + [self.notification_address]
         self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())
+        
+        # Handle bugzilla....
+        bugs_changed = keyword_info['bug_fixed'] + keyword_info['bug_cc']
+        for bug in bugs_changed:
+            bug_body = list()
+            bug_body.append( "@bug_id = " + bug )
+            if bug in keyword_info['bug_fixed']:
+                bug_body.append( "@bug_status = RESOLVED" )
+                bug_body.append( "@resolution = FIXED" )
+            bug_body.append( '\n'.join( summary ) )
+            
+            body = unicode('', "utf-8").join( bug_body )
+            message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
+            message['Subject'] = Header( subject )
+            message['From']    = Header( unicode("{0} <{1}>").format(
+                commit.committer_name, commit.committer_email ) )
+            message['To']      = Header( "bugs-control@bugs.kde.org" )
+            self.smtp.sendmail(commit.committer_email, ["bugs-control@bugs.kde.org"], message.as_string())
 
     def __parse_keywords(self, commit):
 
