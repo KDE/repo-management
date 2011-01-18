@@ -103,7 +103,7 @@ class Repository(object):
              ('D'  , ('%at%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.+)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
-             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)\x00'))
+             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)'))
             )
         pretty_format = '%xfe' + ''.join([': '.join((i,j[0])) for i,j in l])
         re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
@@ -272,7 +272,7 @@ class CommitAuditor(object):
 
         # Regex's....
         re_commit = re.compile("^\x00(.+)\x00$")
-        re_filename = re.compile("^diff --git a\/(\S+) b\/(\S+)$")
+        re_filename = re.compile("^diff --(cc |git a\/.+ b\/)(.+)$")
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
 
         # Do EOL audit!
@@ -644,8 +644,9 @@ class Commit(object):
         clean_list = re.split("\x00", self._commit_data["files_changed"])
         files = clean_list[1::2]
         changes = clean_list[::2]
-        self._commit_data["files_changed"] = dict(itertools.izip(files,
-                                                                 changes))
+        self._commit_data["files_changed"] = dict(itertools.izip(files,changes))
+        if "" in self.files_changed:
+            del self.files_changed[""]
 
     def __getattr__(self, key):
 
