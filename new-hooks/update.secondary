@@ -2,8 +2,10 @@
 
 # Load dependencies
 import os
+import subprocess
 import sys
-from hooklib import Repository, Commit, CommitAuditor, CiaNotifier, EmailNotifier, RepoType, ChangeType, RefType
+
+from hooklib import Repository, CommitAuditor, CiaNotifier, EmailNotifier, RepoType, ChangeType, RefType
 
 def usage():
     print "Information needed to run could not be gathered successfully."
@@ -22,12 +24,13 @@ def maintenance():
 #####
 
 # Read arguments...
-try:
-    ref_name = sys.argv[1]
-    old_sha1 = sys.argv[2]
-    new_sha1 = sys.argv[3]
-except IndexError:
+
+if len(sys.argv) != 4:
     usage()
+
+ref_name = sys.argv[1]
+old_sha1 = sys.argv[2]
+new_sha1 = sys.argv[3]
 
 # Read needed environment variables
 git_dir = os.getenv('GIT_DIR')
@@ -110,13 +113,13 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
     print repository.commits[ repository.new_sha1 ].url
     
 # Notify CIA...
-cia_allowed = [RepoType.Normal, RepoType.Website]
+cia_allowed = (RepoType.Normal, RepoType.Website)
 if repository.repo_type in cia_allowed and repository.commits:
     cia = CiaNotifier(repository)
     cia.notify()
 
 # Send email based notifications (email, bugzilla, reviewboard)
-email_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
+email_allowed = (RepoType.Normal, RepoType.Website, RepoType.Sysadmin)
 if repository.repo_type in email_allowed and repository.commits:
     email = EmailNotifier(repository)
     email.notify()
