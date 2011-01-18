@@ -108,12 +108,26 @@ class Repository(object):
         pretty_format = '%xfe' + ''.join([': '.join((i,j[0])) for i,j in l])
         re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
 
-        # Get the data we are going to be parsing....
-        log_arguments = "--name-status -z --pretty=format:'{0}'".format(pretty_format)
-        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {2} | git show --stdin {1}"
-        command = command.format(self.old_sha1, log_arguments, revision_span)
+        # Get the list of revisions
+        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {1}"
+        command = command.format(self.old_sha1, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
+        revisions = process.stdout.readlines()
+
+        # If we have no revisions... don't continue
+        if revisions == []:
+            return
+        
+        # Extract information about commits....
+        command = "git show --stdin --name-status -z --pretty=format:'{0}'".format(pretty_format)
+        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # Pass on the commits for it to show, and read in all information
+        for sha1 in revisions:
+            process.stdin.write(sha1)
+        process.stdin.close()       
         output = process.stdout.read()
 
         # Parse time!
@@ -559,7 +573,8 @@ class EmailNotifier(object):
         message['From']    = Header( unicode("{0} <{1}>").format(
             commit.committer_name, commit.committer_email ) )
         message['To']      = Header( self.notification_address )
-        message['Cc']      = Header( ''.join(cc_addresses) )
+        if cc_addresses != []:
+            message['Cc']      = Header( ','.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
         message['X-Commit-Directories'] = Header( "(0) " + ' '.join(full_commit_dirs) )
@@ -578,7 +593,7 @@ class EmailNotifier(object):
                 bug_body.append( "@resolution = FIXED" )
             bug_body.append( '\n'.join( summary ) )
             
-            body = unicode('', "utf-8").join( bug_body )
+            body = unicode('\n', "utf-8").join( bug_body )
             message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
             message['Subject'] = Header( subject )
             message['From']    = Header( unicode("{0} <{1}>").format(
