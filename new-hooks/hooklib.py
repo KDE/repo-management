@@ -428,7 +428,7 @@ class EmailNotifier(object):
 
         self.repository = repository
         
-        svnpath = repository.management_directory + "/repo-configs/email/" + repository.path + "/svnpath"
+        svnpath = repository.management_directory + "/repo-configs/email/" + repository.path + ".git/svnpath"
         with open(svnpath, "r") as svnpath_file:
             self.directory_prefix = svnpath_file.readline().strip()
 
@@ -500,7 +500,6 @@ class EmailNotifier(object):
         keyword_info = self.__parse_keywords(commit)
 
         # Build list for X-Commit-Directories...
-        cdir_prefix = ' ' + self.directory_prefix
         commit_directories = list()
         for filename in commit.files_changed:
             # Seperate out the directory...
@@ -509,8 +508,23 @@ class EmailNotifier(object):
 
         # Remove all duplicates...
         commit_directories = list( set(commit_directories) )
+        full_commit_dirs = [self.directory_prefix + cdir for cdir in commit_directories]
+        
+        # Build a list of addresses to Cc,
+        cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
 
-        # Build up the needed parts of the message....
+        # Add the committer to the Cc in case problems have been found
+        if checker.license_problem or checker.commit_problem:
+            cc_addresses.append(commit.committer_email)
+
+        if keyword_info['email_gui']:
+            cc_addresses.append( 'kde-doc-english@kde.org' )
+
+        # Build the subject....
+        lowest_common_path = os.path.commonprefix( commit_directories )
+        subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
+        
+        # Build up the body of the message...
         firstline = unicode("Git commit {0} by {1}").format( commit.sha1,
                                                    commit.committer_name )
         if commit.author_name != commit.committer_name:
@@ -520,7 +534,7 @@ class EmailNotifier(object):
             self.repository.push_user, self.repository.ref_type,
             self.repository.ref_name)
 
-        summary = [firstline, pushed_by]
+        summary = [firstline, pushed_by, '', commit.message.strip(), '']
         for info in diffinfo:
             filename, added, removed = info
             notes = ''.join(checker.commit_notes[filename])
@@ -535,19 +549,6 @@ class EmailNotifier(object):
             summary.append( data )
         summary.append( "\n" + commit.url + "\n" )
 
-        # Build a list of addresses to Cc,
-        cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
-
-        # Add the committer to the Cc in case problems have been found
-        if checker.license_problem or checker.commit_problem:
-            cc_addresses.append(commit.committer_email)
-
-        if keyword_info['email_gui']:
-            cc_addresses.append( 'kde-doc-english@kde.org' )
-
-        # Build the subject and body...
-        lowest_common_path = os.path.commonprefix( commit_directories )
-        subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
         body = '\n'.join( summary )
         if diff and len(diff) < 8000:
             body += "\n" + unicode('', "utf-8").join(diff)
@@ -561,7 +562,7 @@ class EmailNotifier(object):
         message['Cc']      = Header( ''.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
-        message['X-Commit-Directories'] = Header( "(0) " + cdir_prefix.join(commit_directories) )
+        message['X-Commit-Directories'] = Header( "(0) " + ' '.join(full_commit_dirs) )
 
         # Send email...
         to_addresses = cc_addresses + [self.notification_address]
