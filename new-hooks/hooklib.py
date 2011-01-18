@@ -577,6 +577,7 @@ class EmailNotifier(object):
             message['Cc']      = Header( ','.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
+        message['X-Commit-Folders']     = Header( ' '.join(commit_directories) )
         message['X-Commit-Directories'] = Header( "(0) " + ' '.join(full_commit_dirs) )
 
         # Send email...
