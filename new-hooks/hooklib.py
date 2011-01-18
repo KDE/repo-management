@@ -146,7 +146,7 @@ class Repository(object):
 
         """Write repository metatdata."""
 
-        clone_url = os.path.join(os.getenv('GIT_DIR', 'cloneurl'))
+        clone_url = os.path.join(os.getenv('GIT_DIR'), 'cloneurl'))
 
         with open(clone_url, "w") as metadata:
 
