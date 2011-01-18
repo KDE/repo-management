@@ -427,6 +427,10 @@ class EmailNotifier(object):
     def __init__(self, repository):
 
         self.repository = repository
+        
+        svnpath = repository.management_directory + "/repo-configs/email/" + repository.path + "/svnpath"
+        with open(svnpath, "r") as svnpath_file:
+            self.directory_prefix = svnpath_file.readline().strip()
 
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
@@ -496,6 +500,7 @@ class EmailNotifier(object):
         keyword_info = self.__parse_keywords(commit)
 
         # Build list for X-Commit-Directories...
+        cdir_prefix = ' ' + self.directory_prefix
         commit_directories = list()
         for filename in commit.files_changed:
             # Seperate out the directory...
@@ -556,7 +561,7 @@ class EmailNotifier(object):
         message['Cc']      = Header( ''.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
-        message['X-Commit-Directories'] = Header( "(0) " + ' '.join(commit_directories) )
+        message['X-Commit-Directories'] = Header( "(0) " + cdir_prefix.join(commit_directories) )
 
         # Send email...
         to_addresses = cc_addresses + [self.notification_address]
@@ -601,7 +606,7 @@ class EmailNotifier(object):
             for (name, regex) in split.iteritems():
                 match = re.match( regex, line )
                 if match:
-                    results[name] += match.group(1).split(",")
+                    results[name] += [result.strip() for result in match.group(1).split(",")]
 
             for (name, regex) in presence.iteritems():
                 if re.match( regex, line ):
