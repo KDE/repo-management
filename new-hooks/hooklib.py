@@ -579,7 +579,7 @@ class EmailNotifier(object):
         message['From']    = Header( unicode("{0} <{1}>").format(
             commit.committer_name, commit.committer_email ) )
         message['To']      = Header( self.notification_address )
-        if cc_addresses != []:
+        if cc_addresses:
             message['Cc']      = Header( ','.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
@@ -606,7 +606,8 @@ class EmailNotifier(object):
             message['From']    = Header( unicode("{0} <{1}>").format(
                 commit.committer_name, commit.committer_email ) )
             message['To']      = Header( "bugs-control@bugs.kde.org" )
-            self.smtp.sendmail(commit.committer_email, ["bugs-control@bugs.kde.org"], message.as_string())
+            self.smtp.sendmail(commit.committer_email, ["bugs-control@bugs.kde.org"],
+                               message.as_string())
 
     def __parse_keywords(self, commit):
 
@@ -855,7 +856,8 @@ class CommitChecker(object):
 
             # Check for things which are unsafe...
             safety_check = line
-            unsafe = None
+
+            #TODO: The following regexps need to be ported to a Python syntax
             #$current =~ s/\"[^\"]*\"//g;
             #$current =~ s/\/\*.*\*\///g;
             #$current =~ s,//.*,,g;
@@ -882,7 +884,7 @@ def get_change_diff( repository, log_arguments ):
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Pass on the commits for it to show...
-    for sha1 in repository.commits.keys():
+    for sha1 in repository.commits:
         process.stdin.write(sha1 + "\n")
     process.stdin.close()
     return process
