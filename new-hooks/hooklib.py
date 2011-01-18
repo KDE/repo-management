@@ -146,11 +146,13 @@ class Repository(object):
 
         """Write repository metatdata."""
 
-        metadata = file(os.getenv('GIT_DIR') + "/cloneurl", "w")
-        metadata.write( "Pull (read-only): git://anongit.kde.org/" + self.path + "\n" )
-        metadata.write( "Pull (read-only): http://anongit.kde.org/" + self.path + "\n" )
-        metadata.write( "Pull+Push (read+write): git@git.kde.org:" + self.path + "\n" )
-        metadata.close()
+        clone_url = os.path.join(os.getenv('GIT_DIR', 'cloneurl'))
+
+        with open(clone_url, "w") as metadata:
+
+            metadata.write( "Pull (read-only): git://anongit.kde.org/" + self.path + "\n" )
+            metadata.write( "Pull (read-only): http://anongit.kde.org/" + self.path + "\n" )
+            metadata.write( "Pull+Push (read+write): git@git.kde.org:" + self.path + "\n" )
 
     def __get_repo_id(self):
         base = os.getenv('GIT_DIR')
