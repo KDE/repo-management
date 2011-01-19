@@ -116,8 +116,9 @@ if repository.repo_type in cia_allowed and repository.commits:
     cia.notify()
 
 # Send email based notifications (email, bugzilla, reviewboard)
+email_enabled = os.path.exists(repository.management_directory + "/repo-configs/email/" + repository.path + ".git/svnpath")
 email_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
-if repository.repo_type in email_allowed and repository.commits:
+if repository.repo_type in email_allowed and repository.commits and email_enabled:
     email = EmailNotifier(repository)
     email.notify()
 
