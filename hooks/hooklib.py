@@ -608,7 +608,7 @@ class EmailNotifier(object):
             bug_body.append( '\n'.join( summary ) )
 
             body = unicode('\n', "utf-8").join( bug_body )
-            message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
+            message = MIMEText( body.encode("utf-8"), 'plain' )
             message['Subject'] = Header( subject )
             message['From']    = unicode("{0} <{1}>").format(
                 from_name, commit.committer_email )
