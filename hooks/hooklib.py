@@ -576,12 +576,15 @@ class EmailNotifier(object):
         body = '\n'.join( summary )
         if diff and len(diff) < 8000:
             body += "\n" + unicode('', "utf-8").join(diff)
+            
+        # Build from address as Python gets it wrong....
+        from_name = Header( commit.committer_name ).encode()
 
         # Handle the normal mailing list mails....
         message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
         message['Subject'] = Header( subject )
         message['From']    = Header( unicode("{0} <{1}>").format(
-            commit.committer_name, commit.committer_email ) )
+            from_name, commit.committer_email ) )
         message['To']      = Header( self.notification_address )
         if cc_addresses:
             message['Cc']      = Header( ','.join(cc_addresses) )
