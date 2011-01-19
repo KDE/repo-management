@@ -610,7 +610,7 @@ class EmailNotifier(object):
             message['From']    = Header( unicode("{0} <{1}>").format(
                 commit.committer_name, commit.committer_email ) )
             message['To']      = Header( "bugs-control@bugs.kde.org" )
-            self.smtp.sendmail(commit.committer_email, ["bugs-control@bugs.kde.org"],
+            self.smtp.sendmail(commit.committer_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
 
     def __parse_keywords(self, commit):
