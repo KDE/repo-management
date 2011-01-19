@@ -19,7 +19,7 @@ Jobs (in order):
 ( Post Acceptance )
 + Output a url for the commit to be viewed at
 + Notify CIA
-- Send emails
++ Send emails
 
 Needed tasks to accomplish the jobs:
 
@@ -42,6 +42,7 @@ Needed tasks to accomplish the jobs:
    + List of commits being pushed if type of change is create/update/forced update
 
 + Check to ensure a backup ref is not being tampered with
++ Ensure the name of the ref being created is not named "HEAD"
 + Iterate over the list of commits (which will be empty if the operation is a deletion)
    + Extract metadata of the commit (author name + email, list of changed files)
    + Check EOL style
@@ -54,11 +55,11 @@ Needed tasks to accomplish the jobs:
 + Fill in a template and output the url for the last commit made
 
 - Check if we created/deleted a ref, and send special email notices about it
-- Iterate over the list of new commits
-    - Extract commit metadata (author name + email, commit message, diffstat, file changed list, less than 200 line diff if available)
++ Iterate over the list of new commits
+    + Extract commit metadata (author name + email, commit message, diffstat, file changed list, less than 200 line diff if available)
     + Send notification to CIA, using author details + commit message + file changed list
-    - Look for bugzilla hooks, and send it the author details + commit message
-    - Send single email, including to CCMAIL recipients, with author details + commit message, using diff or diffstat if diff is too big
+    + Look for bugzilla hooks, and send it the author details + commit message
+    + Send single email, including to CCMAIL recipients, with author details + commit message, using diff or diffstat if diff is too big
 
 Design:
 - Wrapper to run git and read entire output into memory

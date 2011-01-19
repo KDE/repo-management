@@ -11,6 +11,7 @@ import smtplib
 from collections import defaultdict
 from email.mime.text import MIMEText
 from email.header import Header
+from email import Charset
 
 import lxml.etree as etree
 from lxml.builder import E
@@ -73,6 +74,9 @@ class Repository(object):
 
         # Final initialisation
         self.__build_commits()
+
+        # Ensure emails get done using the charset encoding method we want, not what Python thinks is best....
+        Charset.add_charset("utf-8", Charset.QP, Charset.QP)
 
     def backup_ref(self):
 
@@ -146,7 +150,7 @@ class Repository(object):
 
         """Write repository metatdata."""
 
-        clone_url = os.path.join(os.getenv('GIT_DIR'), 'cloneurl'))
+        clone_url = os.path.join(os.getenv('GIT_DIR'), 'cloneurl')
 
         with open(clone_url, "w") as metadata:
 
@@ -573,11 +577,14 @@ class EmailNotifier(object):
         if diff and len(diff) < 8000:
             body += "\n" + unicode('', "utf-8").join(diff)
 
+        # Build from address as Python gets it wrong....
+        from_name = Header( commit.committer_name ).encode()
+
         # Handle the normal mailing list mails....
         message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
         message['Subject'] = Header( subject )
         message['From']    = Header( unicode("{0} <{1}>").format(
-            commit.committer_name, commit.committer_email ) )
+            from_name, commit.committer_email ) )
         message['To']      = Header( self.notification_address )
         if cc_addresses:
             message['Cc']      = Header( ','.join(cc_addresses) )
@@ -603,10 +610,10 @@ class EmailNotifier(object):
             body = unicode('\n', "utf-8").join( bug_body )
             message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
             message['Subject'] = Header( subject )
-            message['From']    = Header( unicode("{0} <{1}>").format(
-                commit.committer_name, commit.committer_email ) )
+            message['From']    = Header( Header( unicode("{0} <{1}>").format(
+                from_name, commit.committer_email ) )
             message['To']      = Header( "bugs-control@bugs.kde.org" )
-            self.smtp.sendmail(commit.committer_email, ["bugs-control@bugs.kde.org"],
+            self.smtp.sendmail(commit.committer_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
 
     def __parse_keywords(self, commit):
@@ -823,7 +830,7 @@ class CommitChecker(object):
         license = license.strip()
 
         if license:
-            self._commit_notes[filename].append( "[License: " + license + "]")
+            self._commit_notes[filename].append( (" "*4) + "[License: " + license + "]")
 
     def check_commit_problems(self):
 
