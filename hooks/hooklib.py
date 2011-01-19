@@ -583,8 +583,8 @@ class EmailNotifier(object):
         # Handle the normal mailing list mails....
         message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
         message['Subject'] = Header( subject )
-        message['From']    = Header( unicode("{0} <{1}>").format(
-            from_name, commit.committer_email ) )
+        message['From']    = unicode("{0} <{1}>").format(
+                from_name, commit.committer_email )
         message['To']      = Header( self.notification_address )
         if cc_addresses:
             message['Cc']      = Header( ','.join(cc_addresses) )
@@ -610,9 +610,9 @@ class EmailNotifier(object):
             body = unicode('\n', "utf-8").join( bug_body )
             message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
             message['Subject'] = Header( subject )
-            message['From']    = Header( Header( unicode("{0} <{1}>").format(
-                from_name, commit.committer_email ) )
-            message['To']      = Header( "bugs-control@bugs.kde.org" )
+            message['From']    = unicode("{0} <{1}>").format(
+                from_name, commit.committer_email )
+            message['To']      = Header( "bug-control@bugs.kde.org" )
             self.smtp.sendmail(commit.committer_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
 
