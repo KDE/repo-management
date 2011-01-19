@@ -11,6 +11,7 @@ import smtplib
 from collections import defaultdict
 from email.mime.text import MIMEText
 from email.header import Header
+from email import Charset
 
 import lxml.etree as etree
 from lxml.builder import E
@@ -73,6 +74,9 @@ class Repository(object):
 
         # Final initialisation
         self.__build_commits()
+        
+        # Ensure emails get done using the charset encoding method we want, not what Python thinks is best....
+        Charset.add_charset("utf-8", Charset.QP, Charset.QP)
 
     def backup_ref(self):
 
@@ -146,7 +150,7 @@ class Repository(object):
 
         """Write repository metatdata."""
 
-        clone_url = os.path.join(os.getenv('GIT_DIR'), 'cloneurl'))
+        clone_url = os.path.join(os.getenv('GIT_DIR'), 'cloneurl')
 
         with open(clone_url, "w") as metadata:
 
