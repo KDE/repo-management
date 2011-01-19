@@ -74,7 +74,7 @@ class Repository(object):
 
         # Final initialisation
         self.__build_commits()
-        
+
         # Ensure emails get done using the charset encoding method we want, not what Python thinks is best....
         Charset.add_charset("utf-8", Charset.QP, Charset.QP)
 
@@ -576,7 +576,7 @@ class EmailNotifier(object):
         body = '\n'.join( summary )
         if diff and len(diff) < 8000:
             body += "\n" + unicode('', "utf-8").join(diff)
-            
+
         # Build from address as Python gets it wrong....
         from_name = Header( commit.committer_name ).encode()
 
@@ -830,7 +830,7 @@ class CommitChecker(object):
         license = license.strip()
 
         if license:
-            self._commit_notes[filename].append( "[License: " + license + "]")
+            self._commit_notes[filename].append( (" "*4) + "[License: " + license + "]")
 
     def check_commit_problems(self):
 
