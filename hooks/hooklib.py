@@ -605,6 +605,7 @@ class EmailNotifier(object):
             if bug in keyword_info['bug_fixed']:
                 bug_body.append( "@bug_status = RESOLVED" )
                 bug_body.append( "@resolution = FIXED" )
+            bug_body.append( '' )
             bug_body.append( '\n'.join( summary ) )
 
             body = unicode('\n', "utf-8").join( bug_body )
