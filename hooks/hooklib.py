@@ -69,7 +69,7 @@ class Repository(object):
         self.repo_type = self.__get_repo_type()
         self.ref_type = self.__get_ref_type()
         self.change_type = self.__get_change_type()
-        ref_name_match = re.match("^refs/(.+)/(.+)$", self.ref)
+        ref_name_match = re.match("^refs/(.+?)/(.+)$", self.ref)
         self.ref_name = ref_name_match.group(2)
 
         # Final initialisation
