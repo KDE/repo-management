@@ -546,6 +546,8 @@ class EmailNotifier(object):
 
         # Build the subject....
         lowest_common_path = os.path.commonprefix( commit_directories )
+        if not lowest_common_path:
+            lowest_common_path = "/"
         subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
 
         # Build up the body of the message...
@@ -878,6 +880,8 @@ class CommitChecker(object):
             # Store the diff....
             filediff.append(line)
 
+        if filename != "" and self.commit.files_changed[ filename ] == 'A':
+            self.check_commit_license(filename, ''.join(filediff))
 
 def read_command( command ):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,

@@ -95,11 +95,6 @@ if (repository.path == "kdepim" or repository.path == "kdepim-runtime") and repo
 #####
 # Post acceptance
 #####
-
-# Does this user need a special post-update skip?
-post_exceptions = ["scripty"]
-if push_user in post_exceptions:
-    exit(0)
     
 # Output a helpful url....
 if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in repository.commits:
@@ -109,6 +104,11 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
         print "In a few minutes the last commit in the series will be available for viewing at:"
     
     print repository.commits[ repository.new_sha1 ].url
+    
+# Does this user need a special post-update skip?
+post_exceptions = ["scripty"]
+if push_user in post_exceptions:
+    exit(0)
     
 # Notify CIA...
 cia_allowed = [RepoType.Normal, RepoType.Website]
