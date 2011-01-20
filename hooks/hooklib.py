@@ -561,15 +561,14 @@ class EmailNotifier(object):
         summary = [firstline, pushed_by, '', commit.message.strip(), '']
         for info in diffinfo:
             filename, added, removed = info
-            notes = ''.join(checker.commit_notes[filename])
+            notes = ' '.join(checker.commit_notes[filename])
             file_change = commit.files_changed.get(filename, None)
 
             if file_change is None:
                 file_change = "I"
 
-            data = "{0} +{1} -{2} {3} {4}".format(
-                file_change, added, removed,
-                filename, notes )
+            data = "{0:<2} +{1:<4} -{2:<4} {3}     {4}".format( file_change,
+                added, deleted, filename, notes )
             summary.append( data )
         summary.append( "\n" + commit.url + "\n" )
 
