@@ -568,7 +568,7 @@ class EmailNotifier(object):
                 file_change = "I"
 
             data = "{0:<2} +{1:<4} -{2:<4} {3}     {4}".format( file_change,
-                added, deleted, filename, notes )
+                added, removed, filename, notes )
             summary.append( data )
         summary.append( "\n" + commit.url + "\n" )
 
