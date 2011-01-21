@@ -146,6 +146,15 @@ class Repository(object):
             commit = Commit(self, match.groupdict())
             self.commits[ commit.sha1 ] = commit
 
+        # Extract the commit descriptions....
+        command = "xargs git describe --always"
+        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate(''.join(revisions))
+        descriptions = stdout.split('\n')
+        for rev,desc in itertools.izip(revisions, descriptions):
+            self.commits[ rev.strip() ].description = desc.strip()
+
     def __write_metadata(self):
 
         """Write repository metatdata."""
@@ -428,7 +437,7 @@ class CiaNotifier(object):
 
         commit_data = self.COMMIT()
         commit_data.append(E.author(commit.author_name))
-        commit_data.append(E.revision(commit.sha1))
+        commit_data.append(E.revision(commit.description))
         commit_data.append(files)
         commit_data.append(E.log(commit_msg))
         commit_data.append(E.url(commit.url))
