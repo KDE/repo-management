@@ -342,7 +342,12 @@ class CommitAuditor(object):
 
                 # Ensure they have a valid MX/A entry in DNS....
                 try:
-                    mx_results = dns.resolver.query(domain, 'MX')
+                    dns.resolver.query(domain, "MX")
+                except dns.resolver.NoAnswer:
+                    try:
+                        dns.resolver.query(domain, "A")
+                    except dns.resolver.NoAnswer:
+                        self.__log_failure(commit.sha1, "Email Address - " + email_address)
                 except dns.resolver.NXDOMAIN:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
 
