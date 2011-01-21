@@ -552,7 +552,10 @@ class EmailNotifier(object):
         lowest_common_path = os.path.commonprefix( commit_directories )
         if not lowest_common_path:
             lowest_common_path = "/"
-        subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
+        repo_path = self.repository.path
+        if self.repository.ref_name != "master":
+            repo_path += "/" + self.repository.ref_name
+        subject = "[{0}] {1}".format(repo_path, lowest_common_path)
 
         # Build up the body of the message...
         firstline = unicode("Git commit {0} by {1}").format( commit.sha1,
