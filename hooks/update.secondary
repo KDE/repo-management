@@ -95,7 +95,12 @@ if (repository.path == "kdepim" or repository.path == "kdepim-runtime") and repo
 #####
 # Post acceptance
 #####
-    
+
+# Are post commands supposed to be run?
+if os.path.exists(git_dir + "/kde-hooks-off"):
+    print "Hooks are currently disabled!"
+    exit(0)
+
 # Output a helpful url....
 if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in repository.commits:
     if len(repository.commits) == 1:
