@@ -1,0 +1,162 @@
+#!/bin/sh
+#
+# A hook script that sends commit notifications.
+# Called by git-receive-pack with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, make this file executable by "chmod +x update".
+# copyright this dude http://blog.mwolson.org/tech/a_month_and_a_half_of_git.html
+
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# Safety check
+if [ -z "$GIT_DIR" ]; then
+        echo "Don't run this script from the command line." >&2
+        echo " (if you want, you could supply GIT_DIR then run" >&2
+        echo "  $0 <ref> <oldrev> <newrev>)" >&2
+        exit 1
+fi
+
+if [ -z "$refname" ] || [ -z "$oldrev" ] || [ -z "$newrev" ]; then
+        echo "Usage: $0 <ref> <oldrev> <newrev>" >&2
+        exit 1
+fi
+
+for f in $HOME/.gitolite.down $PWD/.gitolite.down
+  do
+    if [ -f $f ]
+      then
+        echo >&2
+        echo '*** Sorry, the repositories are down for maintenance.' >&2
+        echo '*** Please try again in a short while.' >&2
+        echo >&2
+        cat $f >&2
+        exit 1
+    fi
+done
+
+# Prepare the list of revisions to check, etc
+revdiff="$newrev"
+if [ $oldrev != "0000000000000000000000000000000000000000" ]; then
+    revdiff="$(git merge-base $oldrev $newrev)..$newrev"
+fi
+revlist=""
+if [ $newrev != "0000000000000000000000000000000000000000" ]; then
+  revlist=$(git rev-parse --not --all | grep -v $oldrev | git rev-list --reverse --stdin $revdiff)
+fi
+
+# Generate short unique ID for each repo that can be used for a shortened commit viewing URL
+repouid=$(pwd | sha1sum | cut -c -8)
+if [ ! -f kde-repo-uid ]; then
+    $(echo $repouid > kde-repo-uid)
+fi
+
+if [ -f kde-repo-nick ]; then
+    repouid=$(cat kde-repo-nick)
+fi
+
+# Setup essential variables
+export mgmtdir="/home/git/repo-management"
+currpath=$(pwd)
+repopath=${currpath#/srv/kdegit/repositories/}
+currdir=$(basename $(pwd))
+parentpath=$(cd ..; pwd)
+parentdir=$(cd ..; basename $(pwd))
+seconddir=$(cd ..; cd ..; basename $(pwd))
+thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
+fourthdir=$(cd ..; cd ..; cd ..; cd ..; basename $(pwd))
+
+if [ ! -f commiturl ]; then
+    urlpath=${repopath%.git}
+    cat > cloneurl << EOF
+Pull (read-only): git://anongit.kde.org/$urlpath
+Pull (read-only): http://anongit.kde.org/$urlpath
+Pull+Push (read+write): git@git.kde.org:$urlpath
+EOF
+fi
+
+# Audit the incoming commits
+auditdir=$mgmtdir/repo-configs/audit/$repopath
+if [ -f "$auditdir/skip-eol" ] && [ -f "$auditdir/skip-filename" ] && [ -f "$auditdir/skip-author" ]; then
+    echo "Audits disabled."
+else
+    echo "Auditing commits, please wait ..."
+    auditfail=0
+    for commit_id in $revlist ; do
+        $mgmtdir/bin/audit-commit.pl ${commit_id} ${auditdir}
+        if [ $? -ne 0 ]; then
+            auditfail=1
+        fi
+    done
+    if [ $auditfail -ne 0 ]; then
+        exit 1
+    fi
+fi
+
+# Are post-commit hooks disabled?
+if [ -f $currpath/kde-hooks-off ]; then
+    . $mgmtdir/bin/adc/adc.common-functions
+    get_rights_and_owner $repopath
+    if [ "$perm_delete" == "no" ]; then
+        echo "Repository access DENIED by Sysadmin Policy"
+        echo "Repository post commit hooks are currently disabled"
+        echo "Please contact sysadmin@kde.org for further assistance"
+        exit 1
+    else
+        echo "***** NOTICE *****"
+        echo "** Post commit hooks are DISABLED"
+        echo "** Push access is restricted to repository admins"
+        echo "***** NOTICE *****"
+        exit 0
+    fi
+fi
+
+url=
+if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
+    #do nothing; sysadmin repos private, for now
+    url=
+elif [ $seconddir == "scratch" -o $thirddir == "clones" -o $parentpath == "/srv/kdegit/repositories" ]; then
+    url="http://commits.kde.org/$repouid/$newrev"
+fi
+
+if [ ! -z $url ]; then
+    revcount=$(echo $revlist | wc -w)
+    if [ "$revcount" -eq "1" ]; then
+        echo "In a few minutes this commit will be available for viewing at:"
+    else
+        echo "In a few minutes the last commit in the series will be available for viewing at:"
+    fi
+    echo "$url"
+fi
+
+# Send email
+emaildir=$mgmtdir/repo-configs/email/$repopath
+if [ ! -f $emaildir/skip-email ]; then
+    if [ -f $emaildir/filtername ] && [ -f $emaildir/svnpath ]; then
+        echo "Processing commit message keywords and sending emails ..."
+        for commit_id in $revlist ; do
+            $mgmtdir/bin/email-git ${refname##refs/heads/} ${commit_id} "$(cat $emaildir/filtername)" "$(cat $emaildir/svnpath)"
+        done
+    fi
+fi
+
+# Update CIA
+ciadir=$mgmtdir/repo-configs/cia/$repopath
+skipcia=0
+if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" -o $seconddir == "scratch" -o $thirddir == "clones" -o $fourthdir == "clones" ]; then
+    skipcia=1
+fi
+
+if [ "$skipcia" -eq "0" ]; then
+    if [ ! -f $ciadir/skip-cia ]; then
+        echo "Submitting CIA.vc update ..."
+        for merged in $revlist ; do
+            $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$currdir" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
+        done
+    fi
+fi
+
+# --- Finished
+exit 0
+

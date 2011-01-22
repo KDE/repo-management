@@ -1,162 +1,132 @@
-#!/bin/sh
-#
-# A hook script that sends commit notifications.
-# Called by git-receive-pack with arguments: refname sha1-old sha1-new
-#
-# To enable this hook, make this file executable by "chmod +x update".
-# copyright this dude http://blog.mwolson.org/tech/a_month_and_a_half_of_git.html
+#!/usr/bin/python
 
-refname="$1"
-oldrev="$2"
-newrev="$3"
+# Load dependencies
+import os
+import sys
+import subprocess
+from hooklib import Repository, Commit, CommitAuditor, CiaNotifier, EmailNotifier, RepoType, ChangeType, RefType
 
-# Safety check
-if [ -z "$GIT_DIR" ]; then
-        echo "Don't run this script from the command line." >&2
-        echo " (if you want, you could supply GIT_DIR then run" >&2
-        echo "  $0 <ref> <oldrev> <newrev>)" >&2
-        exit 1
-fi
+def usage():
+    print "Information needed to run could not be gathered successfully."
+    print "Required environment variables: GIT_DIR, GL_USER, HOME"
+    print "Syntax: update.secondary <refname> <oldsha> <newsha>"
+    exit(1)
 
-if [ -z "$refname" ] || [ -z "$oldrev" ] || [ -z "$newrev" ]; then
-        echo "Usage: $0 <ref> <oldrev> <newrev>" >&2
-        exit 1
-fi
+def maintenance():
+    print "Sorry, but the repository you are trying to access is currently unavailable."
+    print "This is to allow for maintenance, we apologise for any inconvience caused."
+    print "If you believe this not to be the case, please contact sysadmin@kde.org."
+    exit(1)
+    
+#####
+# Initialisation
+#####
 
-for f in $HOME/.gitolite.down $PWD/.gitolite.down
-  do
-    if [ -f $f ]
-      then
-        echo >&2
-        echo '*** Sorry, the repositories are down for maintenance.' >&2
-        echo '*** Please try again in a short while.' >&2
-        echo >&2
-        cat $f >&2
-        exit 1
-    fi
-done
+# Read arguments...
+try:
+    ref_name = sys.argv[1]
+    old_sha1 = sys.argv[2]
+    new_sha1 = sys.argv[3]
+except IndexError:
+    usage()
 
-# Prepare the list of revisions to check, etc
-revdiff="$newrev"
-if [ $oldrev != "0000000000000000000000000000000000000000" ]; then
-    revdiff="$(git merge-base $oldrev $newrev)..$newrev"
-fi
-revlist=""
-if [ $newrev != "0000000000000000000000000000000000000000" ]; then
-  revlist=$(git rev-parse --not --all | grep -v $oldrev | git rev-list --reverse --stdin $revdiff)
-fi
+# Read needed environment variables
+git_dir = os.getenv('GIT_DIR')
+push_user = os.getenv('GL_USER')
+user_home = os.getenv('HOME')
+    
+# Check for maintenance mode...
+if os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.gitolite.down"):
+    maintenance()
+    
+# Initialise the repository
+repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 
-# Generate short unique ID for each repo that can be used for a shortened commit viewing URL
-repouid=$(pwd | sha1sum | cut -c -8)
-if [ ! -f kde-repo-uid ]; then
-    $(echo $repouid > kde-repo-uid)
-fi
+#####
+# Auditing
+#####
 
-if [ -f kde-repo-nick ]; then
-    repouid=$(cat kde-repo-nick)
-fi
+# Repository change checks...
+if repository.ref_type == RefType.Backup:
+    print "Pushing to backup refs is not supported for security reasons"
+    print "Push declined - attempted repository integrity violation"
+    exit(1)
+elif repository.ref_type == RefType.Unknown:
+    print "Sorry, but the ref you are trying to push to could not be recognised."
+    print "Only pushes to branches, tags and notes are supported."
+    exit(1)
+elif repository.ref_name == "HEAD":
+    print "Creating refs which conflict with internally used names is not permitted."
+    print "Push declined - attempted repository integrity violation"
+    exit(1)
 
-# Setup essential variables
-export mgmtdir="/home/git/repo-management"
-currpath=$(pwd)
-repopath=${currpath#/srv/kdegit/repositories/}
-currdir=$(basename $(pwd))
-parentpath=$(cd ..; pwd)
-parentdir=$(cd ..; basename $(pwd))
-seconddir=$(cd ..; cd ..; basename $(pwd))
-thirddir=$(cd ..; cd ..; cd ..; basename $(pwd))
-fourthdir=$(cd ..; cd ..; cd ..; cd ..; basename $(pwd))
+# New commits...
+auditor = CommitAuditor( repository )
+skip_base = repository.management_directory + "/repo-configs/audit/"
+if not os.path.exists(skip_base + repository.path + ".git/skip-eol"):
+    auditor.audit_eol()
 
-if [ ! -f commiturl ]; then
-    urlpath=${repopath%.git}
-    cat > cloneurl << EOF
-Pull (read-only): git://anongit.kde.org/$urlpath
-Pull (read-only): http://anongit.kde.org/$urlpath
-Pull+Push (read+write): git@git.kde.org:$urlpath
-EOF
-fi
+if not os.path.exists(skip_base + repository.path + ".git/skip-filename"):
+    auditor.audit_filename()
 
-# Audit the incoming commits
-auditdir=$mgmtdir/repo-configs/audit/$repopath
-if [ -f "$auditdir/skip-eol" ] && [ -f "$auditdir/skip-filename" ] && [ -f "$auditdir/skip-author" ]; then
-    echo "Audits disabled."
-else
-    echo "Auditing commits, please wait ..."
-    auditfail=0
-    for commit_id in $revlist ; do
-        $mgmtdir/bin/audit-commit.pl ${commit_id} ${auditdir}
-        if [ $? -ne 0 ]; then
-            auditfail=1
-        fi
-    done
-    if [ $auditfail -ne 0 ]; then
-        exit 1
-    fi
-fi
+if not os.path.exists(skip_base + repository.path + ".git/skip-author"):
+    auditor.audit_metadata()
 
-# Are post-commit hooks disabled?
-if [ -f $currpath/kde-hooks-off ]; then
-    . $mgmtdir/bin/adc/adc.common-functions
-    get_rights_and_owner $repopath
-    if [ "$perm_delete" == "no" ]; then
-        echo "Repository access DENIED by Sysadmin Policy"
-        echo "Repository post commit hooks are currently disabled"
-        echo "Please contact sysadmin@kde.org for further assistance"
-        exit 1
-    else
-        echo "***** NOTICE *****"
-        echo "** Post commit hooks are DISABLED"
-        echo "** Push access is restricted to repository admins"
-        echo "***** NOTICE *****"
-        exit 0
-    fi
-fi
+# Did we have any commit audit failures?
+if auditor.audit_failed:
+    print "Push declined - commits failed audit"
+    exit(1)
 
-url=
-if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" ]; then
-    #do nothing; sysadmin repos private, for now
-    url=
-elif [ $seconddir == "scratch" -o $thirddir == "clones" -o $parentpath == "/srv/kdegit/repositories" ]; then
-    url="http://commits.kde.org/$repouid/$newrev"
-fi
+#####
+# Pre-acceptance
+#####
 
-if [ ! -z $url ]; then
-    revcount=$(echo $revlist | wc -w)
-    if [ "$revcount" -eq "1" ]; then
-        echo "In a few minutes this commit will be available for viewing at:"
-    else
-        echo "In a few minutes the last commit in the series will be available for viewing at:"
-    fi
-    echo "$url"
-fi
+# Do we need to back it up??
+if repository.change_type == ChangeType.Forced or repository.change_type == ChangeType.Delete:
+    repository.backup_ref()
+    
+# Repository specific special handling....
+# KDE PIM: Add a note to all commits which are new to the Enterprise branch...
+if (repository.path == "kdepim" or repository.path == "kdepim-runtime") and repository.ref_name == "enterprise/e3":
+    for commit in repository.commits:
+        command = "git notes add --message 'PENDING' " + commit
+        subprocess.Popen(command, shell=True).wait()
 
-# Send email
-emaildir=$mgmtdir/repo-configs/email/$repopath
-if [ ! -f $emaildir/skip-email ]; then
-    if [ -f $emaildir/filtername ] && [ -f $emaildir/svnpath ]; then
-        echo "Processing commit message keywords and sending emails ..."
-        for commit_id in $revlist ; do
-            $mgmtdir/bin/email-git ${refname##refs/heads/} ${commit_id} "$(cat $emaildir/filtername)" "$(cat $emaildir/svnpath)"
-        done
-    fi
-fi
+#####
+# Post acceptance
+#####
 
-# Update CIA
-ciadir=$mgmtdir/repo-configs/cia/$repopath
-skipcia=0
-if [ $parentdir == "sysadmin" -o $currdir == "gitolite-admin.git" -o $seconddir == "scratch" -o $thirddir == "clones" -o $fourthdir == "clones" ]; then
-    skipcia=1
-fi
+# Are post commands supposed to be run?
+if os.path.exists(git_dir + "/kde-hooks-off"):
+    print "Hooks are currently disabled!"
+    exit(0)
 
-if [ "$skipcia" -eq "0" ]; then
-    if [ ! -f $ciadir/skip-cia ]; then
-        echo "Submitting CIA.vc update ..."
-        for merged in $revlist ; do
-            $mgmtdir/bin/ciabot_multi.sh ${refname} ${merged} $(echo "$currdir" | sed "s/\.git$//") "http://commits.kde.org/$repouid/"
-        done
-    fi
-fi
+# Output a helpful url....
+if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in repository.commits:
+    if len(repository.commits) == 1:
+        print "In a few minutes this commit will be available for viewing at:"
+    else:
+        print "In a few minutes the last commit in the series will be available for viewing at:"
+    
+    print repository.commits[ repository.new_sha1 ].url
+    
+# Does this user need a special post-update skip?
+post_exceptions = ["scripty"]
+if push_user in post_exceptions:
+    exit(0)
+    
+# Notify CIA...
+cia_allowed = [RepoType.Normal, RepoType.Website]
+if repository.repo_type in cia_allowed and repository.commits:
+    cia = CiaNotifier(repository)
+    cia.notify()
 
-# --- Finished
-exit 0
+# Send email based notifications (email, bugzilla, reviewboard)
+email_enabled = os.path.exists(repository.management_directory + "/repo-configs/email/" + repository.path + ".git/svnpath")
+email_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
+if repository.repo_type in email_allowed and repository.commits and email_enabled:
+    email = EmailNotifier(repository)
+    email.notify()
 
+# Everything is done....
+exit(0)

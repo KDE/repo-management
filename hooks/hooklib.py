@@ -11,6 +11,7 @@ import smtplib
 from collections import defaultdict
 from email.mime.text import MIMEText
 from email.header import Header
+from email import Charset
 
 import lxml.etree as etree
 from lxml.builder import E
@@ -59,7 +60,7 @@ class Repository(object):
             self.management_directory = os.getenv('HOME') + "/repo-management"
 
         # Set path and id....
-        path_match = re.match("^/home/ben/sysadmin/(.+).git$", os.getcwd())
+        path_match = re.match("^/srv/kdegit/repositories/(.+).git$", os.getcwd())
         self.path = path_match.group(1)
         self.uid = self.__get_repo_id()
         self.__write_metadata()
@@ -68,11 +69,14 @@ class Repository(object):
         self.repo_type = self.__get_repo_type()
         self.ref_type = self.__get_ref_type()
         self.change_type = self.__get_change_type()
-        ref_name_match = re.match("^refs/(.+)/(.+)$", self.ref)
+        ref_name_match = re.match("^refs/(.+?)/(.+)$", self.ref)
         self.ref_name = ref_name_match.group(2)
 
         # Final initialisation
         self.__build_commits()
+
+        # Ensure emails get done using the charset encoding method we want, not what Python thinks is best....
+        Charset.add_charset("utf-8", Charset.QP, Charset.QP)
 
     def backup_ref(self):
 
@@ -103,17 +107,35 @@ class Repository(object):
              ('D'  , ('%at%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.+)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
-             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)\x00'))
+             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)'))
             )
-        pretty_format = '%xfe' + ''.join([': '.join((i,j[0])) for i,j in l])
-        re_format = '^' + ''.join([': '.join((i,j[1])) for i,j in l]) + '$'
 
-        # Get the data we are going to be parsing....
-        log_arguments = "--name-status -z --pretty=format:'{0}'".format(pretty_format)
-        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {2} | git show --stdin {1}"
-        command = command.format(self.old_sha1, log_arguments, revision_span)
+        pretty_format_data = (': '.join((outer, inner[0])) for outer, inner in l)
+        pretty_format = '%xfe' + ''.join(pretty_format_data)
+
+        re_format_data = (': '.join((outer, inner[1])) for outer, inner in l)
+        re_format = '^' + ''.join(re_format_data) + '$'
+
+        # Get the list of revisions
+        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {1}"
+        command = command.format(self.old_sha1, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
+        revisions = process.stdout.readlines()
+
+        # If we have no revisions... don't continue
+        if not revisions:
+            return
+
+        # Extract information about commits....
+        command = "git show --stdin --name-status -z --pretty=format:'{0}'".format(pretty_format)
+        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # Pass on the commits for it to show, and read in all information
+        for sha1 in revisions:
+            process.stdin.write(sha1)
+        process.stdin.close()
         output = process.stdout.read()
 
         # Parse time!
@@ -124,15 +146,26 @@ class Repository(object):
             commit = Commit(self, match.groupdict())
             self.commits[ commit.sha1 ] = commit
 
+        # Extract the commit descriptions....
+        command = "xargs git describe --always"
+        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate(''.join(revisions))
+        descriptions = stdout.split('\n')
+        for rev,desc in itertools.izip(revisions, descriptions):
+            self.commits[ rev.strip() ].description = desc.strip()
+
     def __write_metadata(self):
 
         """Write repository metatdata."""
 
-        metadata = file(os.getenv('GIT_DIR') + "/cloneurl", "w")
-        metadata.write( "Pull (read-only): git://anongit.kde.org/" + self.path + "\n" )
-        metadata.write( "Pull (read-only): http://anongit.kde.org/" + self.path + "\n" )
-        metadata.write( "Pull+Push (read+write): git@git.kde.org:" + self.path + "\n" )
-        metadata.close()
+        clone_url = os.path.join(os.getenv('GIT_DIR'), 'cloneurl')
+
+        with open(clone_url, "w") as metadata:
+
+            metadata.write( "Pull (read-only): git://anongit.kde.org/" + self.path + "\n" )
+            metadata.write( "Pull (read-only): http://anongit.kde.org/" + self.path + "\n" )
+            metadata.write( "Pull+Push (read+write): git@git.kde.org:" + self.path + "\n" )
 
     def __get_repo_id(self):
         base = os.getenv('GIT_DIR')
@@ -221,7 +254,7 @@ class CommitAuditor(object):
     def __log_failure(self, commit, message):
 
         log_message = "Commit {0} - {1}".format(commit, message)
-        self.__logger.critical(message)
+        self.__logger.critical(log_message)
         self.__failed = True
 
     def __setup_filenames(self):
@@ -258,7 +291,7 @@ class CommitAuditor(object):
 
         # Regex's....
         re_commit = re.compile("^\x00(.+)\x00$")
-        re_filename = re.compile("^diff --git a\/(\S+) b\/(\S+)$")
+        re_filename = re.compile("^diff --(cc |git a\/.+ b\/)(.+)$")
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
 
         # Do EOL audit!
@@ -272,20 +305,16 @@ class CommitAuditor(object):
             file_change = re.match( re_filename, line )
             if file_change:
                 filename = file_change.group(2)
-                violation = False
-                continue
-
-            # Don't complain about the same file twice...
-            if violation:
+                eol_violation = False
                 continue
 
             # Unless they added it, ignore it
             if not line.startswith("+"):
                 continue
 
-            if re.search( blocked_eol, line ):
+            if re.search( blocked_eol, line ) and not eol_violation:
                 # Failure has been found... handle it
-                violation = True
+                eol_violation = True
                 self.__log_failure(commit, "End Of Line Style - " + filename);
 
     def audit_filename(self):
@@ -322,8 +351,12 @@ class CommitAuditor(object):
 
                 # Ensure they have a valid MX/A entry in DNS....
                 try:
-                    mx_results = dns.resolver.query(domain, 'MX')
-                    a_results  = dns.resolver.query(domain, 'A')
+                    dns.resolver.query(domain, "MX")
+                except dns.resolver.NoAnswer:
+                    try:
+                        dns.resolver.query(domain, "A")
+                    except dns.resolver.NoAnswer:
+                        self.__log_failure(commit.sha1, "Email Address - " + email_address)
                 except dns.resolver.NXDOMAIN:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
 
@@ -381,6 +414,9 @@ class CiaNotifier(object):
         # Build the <files> section for the template...
         files = E.files()
 
+        commit_msg = commit.message.strip()
+        commit_msg = re.sub(r'[\x00-\x09\x0B-\x1f\x7f-\xff]', '', commit_msg)
+
         for filename in commit.files_changed:
 
             file_element = E.file(filename)
@@ -401,9 +437,9 @@ class CiaNotifier(object):
 
         commit_data = self.COMMIT()
         commit_data.append(E.author(commit.author_name))
-        commit_data.append(E.revision(commit.sha1))
+        commit_data.append(E.revision(commit.description))
         commit_data.append(files)
-        commit_data.append(E.log(commit.message.strip()))
+        commit_data.append(E.log(commit_msg))
         commit_data.append(E.url(commit.url))
 
         body.append(commit_data)
@@ -413,7 +449,7 @@ class CiaNotifier(object):
         commit_xml = etree.tostring(cia_message)
 
         # Craft the email....
-        message = MIMEText( commit_xml, 'xml', 'utf-8' )
+        message = MIMEText( commit_xml, 'xml' )
         message['Subject'] = "DeliverXML"
         message['From'] = "sysadmin@kde.org"
         message['To'] = "cia@cia.vc"
@@ -428,6 +464,10 @@ class EmailNotifier(object):
     def __init__(self, repository):
 
         self.repository = repository
+
+        svnpath = repository.management_directory + "/repo-configs/email/" + repository.path + ".git/svnpath"
+        with open(svnpath, "r") as svnpath_file:
+            self.directory_prefix = svnpath_file.readline().strip()
 
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
@@ -448,8 +488,6 @@ class EmailNotifier(object):
     def notify(self):
 
         """Send an email notification of the commit."""
-
-        # Initialisation
 
         # Retrieve diff-stats...
         diffinfo = defaultdict(list)
@@ -474,13 +512,18 @@ class EmailNotifier(object):
             if commit_change and diff:
                 self.__send_email(self.repository.commits[commit], diff,
                                   diffinfo[commit])
+                commit = ""
                 diff = list()
 
             if commit_change:
                 commit = commit_change.group(1)
                 continue
 
-            diff.append( line )
+            diff.append( unicode(line, "utf-8", 'replace') )
+
+        if commit:
+            self.__send_email(self.repository.commits[commit], diff,
+                              diffinfo[commit])
 
     def __send_email(self, commit, diff, diffinfo):
 
@@ -502,31 +545,7 @@ class EmailNotifier(object):
 
         # Remove all duplicates...
         commit_directories = list( set(commit_directories) )
-
-        # Build up the needed parts of the message....
-        firstline = "Git commit {0} by {1}".format( commit.sha1,
-                                                   commit.committer_name )
-        if commit.author_name != commit.committer_name:
-            firstline = firstline + " on behalf of " + commit.author_name
-
-        pushed_by = "Pushed by {0} into {1} {2}".format(
-            self.repository.push_user, self.repository.ref_type,
-            self.repository.ref_name)
-
-        summary = [firstline, pushed_by]
-        for info in diffinfo:
-            filename, added, removed = info
-            notes = ''.join(checker.commit_notes[filename])
-            file_change = commit.files_changed.get(filename, None)
-
-            if file_change is None:
-                file_change = "I"
-
-            data = "{0} +{1} -{2} {3} {4}".format(
-                file_change, added, removed,
-                filename, notes )
-            summary.append( data )
-        summary.append( "\n" + commit.url + "\n" )
+        full_commit_dirs = [self.directory_prefix + cdir for cdir in commit_directories]
 
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
@@ -538,27 +557,82 @@ class EmailNotifier(object):
         if keyword_info['email_gui']:
             cc_addresses.append( 'kde-doc-english@kde.org' )
 
-        # Build the subject and body...
+        # Build the subject....
         lowest_common_path = os.path.commonprefix( commit_directories )
-        subject = "[{0}] {1}".format(self.repository.path, lowest_common_path)
-        body = unicode( '\n'.join( summary ), "utf-8" )
+        if not lowest_common_path:
+            lowest_common_path = "/"
+        repo_path = self.repository.path
+        if self.repository.ref_name != "master":
+            repo_path += "/" + self.repository.ref_name
+        subject = "[{0}] {1}".format(repo_path, lowest_common_path)
+
+        # Build up the body of the message...
+        firstline = unicode("Git commit {0} by {1}").format( commit.sha1,
+                                                   commit.committer_name )
+        if commit.author_name != commit.committer_name:
+            firstline += " on behalf of " + commit.author_name
+
+        pushed_by = "Pushed by {0} into {1} {2}".format(
+            self.repository.push_user, self.repository.ref_type,
+            self.repository.ref_name)
+
+        summary = [firstline, pushed_by, '', commit.message.strip(), '']
+        for info in diffinfo:
+            filename, added, removed = info
+            notes = ' '.join(checker.commit_notes[filename])
+            file_change = commit.files_changed.get(filename, None)
+
+            if file_change is None:
+                file_change = "I"
+
+            data = "{0:<2} +{1:<4} -{2:<4} {3}     {4}".format( file_change,
+                added, removed, filename, notes )
+            summary.append( data )
+        summary.append( "\n" + commit.url + "\n" )
+
+        body = '\n'.join( summary )
         if diff and len(diff) < 8000:
-            body = body + "\n" + ''.join( diff )
+            body += "\n" + unicode('', "utf-8").join(diff)
+
+        # Build from address as Python gets it wrong....
+        from_name = Header( commit.committer_name ).encode()
 
         # Handle the normal mailing list mails....
-        message = MIMEText( body, 'plain', 'utf-8' )
+        message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
         message['Subject'] = Header( subject )
-        message['From']    = Header( "{0} <{1}>".format(
-            commit.committer_name, commit.committer_email ) )
+        message['From']    = unicode("{0} <{1}>").format(
+                from_name, commit.committer_email )
         message['To']      = Header( self.notification_address )
-        message['Cc']      = Header( ''.join(cc_addresses) )
+        if cc_addresses:
+            message['Cc']      = Header( ','.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( self.repository.ref_name )
         message['X-Commit-Project']     = Header( self.repository.path )
-        message['X-Commit-Directories'] = Header( "(0) " + ' '.join(commit_directories) )
+        message['X-Commit-Folders']     = Header( ' '.join(commit_directories) )
+        message['X-Commit-Directories'] = Header( "(0) " + ' '.join(full_commit_dirs) )
 
         # Send email...
         to_addresses = cc_addresses + [self.notification_address]
         self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())
+
+        # Handle bugzilla....
+        bugs_changed = keyword_info['bug_fixed'] + keyword_info['bug_cc']
+        for bug in bugs_changed:
+            bug_body = list()
+            bug_body.append( "@bug_id = " + bug )
+            if bug in keyword_info['bug_fixed']:
+                bug_body.append( "@bug_status = RESOLVED" )
+                bug_body.append( "@resolution = FIXED" )
+            bug_body.append( '' )
+            bug_body.append( '\n'.join( summary ) )
+
+            body = unicode('\n', "utf-8").join( bug_body )
+            message = MIMEText( body.encode("utf-8"), 'plain' )
+            message['Subject'] = Header( subject )
+            message['From']    = unicode("{0} <{1}>").format(
+                from_name, commit.committer_email )
+            message['To']      = Header( "bug-control@bugs.kde.org" )
+            self.smtp.sendmail(commit.committer_email, ["bug-control@bugs.kde.org"],
+                               message.as_string())
 
     def __parse_keywords(self, commit):
 
@@ -581,7 +655,7 @@ class EmailNotifier(object):
             for (name, regex) in split.iteritems():
                 match = re.match( regex, line )
                 if match:
-                    results[name].append( match.group(1).split(",") )
+                    results[name] += [result.strip() for result in match.group(1).split(",")]
 
             for (name, regex) in presence.iteritems():
                 if re.match( regex, line ):
@@ -596,23 +670,25 @@ class Commit(object):
     def __init__(self, repository, commit_data):
         self.repository = repository
         self._commit_data = commit_data
+        self._raw_properties = ["files_changed"]
 
         # Create file changed list and replace the original value
         clean_list = re.split("\x00", self._commit_data["files_changed"])
         files = clean_list[1::2]
         changes = clean_list[::2]
-        self._commit_data["files_changed"] = dict(itertools.izip(files,
-                                                                 changes))
+        self._commit_data["files_changed"] = dict(itertools.izip(files,changes))
+        if "" in self.files_changed:
+            del self.files_changed[""]
 
     def __getattr__(self, key):
 
         if key not in self._commit_data:
             raise AttributeError
+        if key in self._raw_properties:
+            return self._commit_data[key]
 
         value = self._commit_data[key]
-        value = unicode(value, "utf-8")
-
-        return value
+        return unicode(value, "utf-8")
 
     def __repr__(self):
         return str(self._commit_data)
@@ -772,7 +848,7 @@ class CommitChecker(object):
         license = license.strip()
 
         if license:
-            self._commit_notes[filename].append( "[License: " + license + "]")
+            self._commit_notes[filename].append( (" "*4) + "[License: " + license + "]")
 
     def check_commit_problems(self):
 
@@ -792,7 +868,7 @@ class CommitChecker(object):
             if file_change:
                 # Are we changing file? If so, we have the full diff, so do a license check....
                 if filename != "" and self.commit.files_changed[ filename ] == 'A':
-                    self.check_license_problems(filename, ''.join(filediff))
+                    self.check_commit_license(filename, ''.join(filediff))
 
                 filediff = list()
                 filename = file_change.group(2)
@@ -801,10 +877,12 @@ class CommitChecker(object):
             # Do an incremental check for *.desktop syntax errors....
             if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
                 self._commit_notes[filename].append( "[TRAILING SPACE]" )
+                self._commit_problem = True
 
             # Check for things which are unsafe...
             safety_check = line
-            unsafe = None
+
+            #TODO: The following regexps need to be ported to a Python syntax
             #$current =~ s/\"[^\"]*\"//g;
             #$current =~ s/\/\*.*\*\///g;
             #$current =~ s,//.*,,g;
@@ -813,9 +891,13 @@ class CommitChecker(object):
                 if match:
                     self._commit_notes[filename].append( "[POSSIBLY UNSAFE: "
                                                         + match.group(1) + "]")
+                    self._commit_problem = True
+
             # Store the diff....
             filediff.append(line)
 
+        if filename != "" and self.commit.files_changed[ filename ] == 'A':
+            self.check_commit_license(filename, ''.join(filediff))
 
 def read_command( command ):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
@@ -829,7 +911,7 @@ def get_change_diff( repository, log_arguments ):
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Pass on the commits for it to show...
-    for sha1 in repository.commits.keys():
+    for sha1 in repository.commits:
         process.stdin.write(sha1 + "\n")
     process.stdin.close()
     return process

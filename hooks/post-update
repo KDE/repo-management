@@ -4,7 +4,7 @@ mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
 urlpath=${currpath#/srv/kdegit/repositories/}
 
-echo "Poking gitweb for immediate commit URL resolving..."
+# Poking gitweb for immediate commit URL resolving ...
 curl --connect-timeout 1 --max-time 1 http://commitspoke.kde.org/updateRepo/$urlpath 2>1 1>/dev/null
 
 git update-server-info

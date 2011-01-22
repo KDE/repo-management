@@ -28,3 +28,9 @@ mkdir -p $TRASH_CAN/$repo 2>/dev/null || die "failed creating directory in trash
 mv $repo.git $TRASH_CAN/$repo/$TRASH_SUFFIX
 echo "$repo moved to trashcan -- use 'list-trash' to see trash contents."
 echo "Items are removed from the trash after 28 days."
+
+cd $HOME
+PROJECTS_LIST=$(perl -e 'do ".gitolite.rc"; print $PROJECTS_LIST')
+export repo
+perl -ni -e 'print unless /^\Q$ENV{repo}.git\E$/' $PROJECTS_LIST
+
