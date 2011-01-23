@@ -571,12 +571,12 @@ class EmailNotifier(object):
         subject = "[{0}] {1}".format(repo_path, lowest_common_path)
 
         # Build up the body of the message...
-        firstline = unicode("Git commit {0} by {1}").format( commit.sha1,
+        firstline = unicode("Git commit {0} by {1}.").format( commit.sha1,
                                                    commit.committer_name )
         if commit.author_name != commit.committer_name:
             firstline += " on behalf of " + commit.author_name
 
-        pushed_by = "Pushed by {0} into {1} {2}".format(
+        pushed_by = "Pushed by {0} into {1} '{2}'.".format(
             self.repository.push_user, self.repository.ref_type,
             self.repository.ref_name)
 
