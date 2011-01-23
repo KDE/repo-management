@@ -469,6 +469,10 @@ class EmailNotifier(object):
         with open(svnpath, "r") as svnpath_file:
             self.directory_prefix = svnpath_file.readline().strip()
 
+        # Add trailing path separator if needed.
+        if not self.directory_prefix.endswith(os.path.sep):
+            self.directory_prefix += os.path.sep
+
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
 
