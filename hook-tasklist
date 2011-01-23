@@ -20,6 +20,7 @@ Jobs (in order):
 + Output a url for the commit to be viewed at
 + Notify CIA
 + Send emails
++ Close Reviewboard review requests (if any)
 
 Needed tasks to accomplish the jobs:
 
@@ -70,3 +71,20 @@ Design:
     - Email/Bugzilla/CIA
     - Repo identifier/clone info generation
     - Any task which is in general more than 5 lines of logic....
+
+Reviewboard hook design:
+- Depends on python-rest-client
+- Uses Reviewboard's REST API
+- Not meant to be used directly, but forked from the main hook process
+  - This will ensure the hook closes and doesn't hang in case of delayed responses
+- Needs a specific user in Reviewboard
+  - Permissions required:
+    - Can add reviews (the "comments" in Reviewboards are actually reviews)
+    - Can change status of a review request
+  - Username and password are read from a file on local storage (one line with username:password)
+- Hook operation
+  - Accesses the Review API for a specific request (board_url/api/review-requests/$REQUEST_ID/reviews)
+  - Adds via HTTP POST a comment saying that the review has been submitted with commit $COMMIT, by user $USER
+  - Changes, via HTTP PUT (url board_url/api/review-requests/$REQUEST_ID) the status of the review request
+    (by setting "status=submitted" in the PUT request body)
+  - Information, failures and errors are notified to the user via Python's logging module
