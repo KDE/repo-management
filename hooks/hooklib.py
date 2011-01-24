@@ -568,7 +568,8 @@ class EmailNotifier(object):
         repo_path = self.repository.path
         if self.repository.ref_name != "master":
             repo_path += "/" + self.repository.ref_name
-        subject = "[{0}] {1}".format(repo_path, lowest_common_path)
+        short_msg = commit.message.splitlines()[0]
+        subject = unicode("[{0}] {1}: {2}").format(repo_path, lowest_common_path, short_msg)
 
         # Build up the body of the message...
         firstline = unicode("Git commit {0} by {1}.").format( commit.sha1,
@@ -603,7 +604,7 @@ class EmailNotifier(object):
 
         # Handle the normal mailing list mails....
         message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
-        message['Subject'] = Header( subject )
+        message['Subject'] = Header( subject.encode("utf-8"), 'utf-8', 76, 'Subject' )
         message['From']    = unicode("{0} <{1}>").format(
                 from_name, commit.committer_email )
         message['To']      = Header( self.notification_address )
@@ -631,7 +632,7 @@ class EmailNotifier(object):
 
             body = unicode('\n', "utf-8").join( bug_body )
             message = MIMEText( body.encode("utf-8"), 'plain' )
-            message['Subject'] = Header( subject )
+            message['Subject'] = Header( subject.encode("utf-8"), 'utf-8', 76, 'Subject' )
             message['From']    = unicode("{0} <{1}>").format(
                 from_name, commit.committer_email )
             message['To']      = Header( "bug-control@bugs.kde.org" )
