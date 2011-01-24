@@ -51,7 +51,8 @@ def read_credentials():
 
     """
 
-    with open(".mycredential.file") as handle:
+    credential_file = os.getenv('HOME') + "/reviewboard-credentials"
+    with open(credential_file) as handle:
         credentials = handle.readline().strip()
         username, password = credentials.split(":")
 
