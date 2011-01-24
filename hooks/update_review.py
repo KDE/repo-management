@@ -28,7 +28,7 @@ from rest_client import Connection
 
 # Basic constants
 
-REVIEWBOARD_URL = "http://testrb.vidsolbach.de"
+REVIEWBOARD_URL = "http://git.reviewboard.kde.org"
 
 
 def setup_logger():
