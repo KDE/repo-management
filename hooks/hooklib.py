@@ -658,7 +658,7 @@ class EmailNotifier(object):
         split['email_cc']  = re.compile("^\s*CC[-_]?MAIL[:=]\s*(.*)")
         split['email_cc2'] = re.compile("^\s*C[Cc][:=]\s*(.*)")
         split['fixed_in']  = re.compile("^\s*FIXED[-_]?IN[:=]\s*(\d[\d\.-]*)/")
-        split['review']    = re.compile("^\s*REVIEWS?[:=]\s*(\d{4,10})")
+        split['review']    = re.compile("^\s*REVIEWS?[:=]\s*(\d{1,10})")
 
         presence = dict()
         presence['email_gui'] = re.compile("^\s*GUI:")
