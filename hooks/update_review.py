@@ -20,6 +20,7 @@
 import json
 import logging
 import sys
+import os
 import urllib
 import urlparse
 
