@@ -639,6 +639,16 @@ class EmailNotifier(object):
             self.smtp.sendmail(commit.committer_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
 
+        # Handle reviewboard
+
+        if keyword_info['review']:
+            review_id = keyword_info['review']
+            # Call the helper program
+            cmdline = "update_review.py {1} {2} {3}"
+            cmdline = cmdline.format(review_id, commit.sha1, commit.author_name)
+            # Fork into the background - we don't want it to block the hook
+            subprocess.Popen(cmdline, shell=True)
+
     def __parse_keywords(self, commit):
 
         """Parse special keywords in commits to determine further post-commit
@@ -650,6 +660,7 @@ class EmailNotifier(object):
         split['email_cc']  = re.compile("^\s*CC[-_]?MAIL[:=]\s*(.*)")
         split['email_cc2'] = re.compile("^\s*C[Cc][:=]\s*(.*)")
         split['fixed_in']  = re.compile("^\s*FIXED[-_]?IN[:=]\s*(\d[\d\.-]*)/")
+        split['review'] = re.compile("^\s*REVIEWS?[:=]\s*(\d{4,10})")
 
         presence = dict()
         presence['email_gui'] = re.compile("^\s*GUI:")
