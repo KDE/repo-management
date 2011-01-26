@@ -29,6 +29,7 @@ from rest_client import Connection
 # Basic constants
 
 REVIEWBOARD_URL = "http://git.reviewboard.kde.org"
+DEFAULT_LEVEL = logging.INFO
 
 
 def setup_logger():
@@ -82,8 +83,9 @@ def close_review(review_id, commit, committer):
 
     # Logger is a singleton
     logger = logging.getLogger("reviewboard")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(DEFAULT_LEVEL)
 
+    logger.debug("Establishing connection")
     connection = Connection(reviewboard_url, username=username,
                             password=password)
     # HTML-encode the message to avoid unpleasant side effects
@@ -95,6 +97,7 @@ def close_review(review_id, commit, committer):
     reply_resource = "review-requests/%s/reviews/" % review_id
 
     # Post a message announcing the submission
+    logger.debug("Sending comment")
     response = connection.request_post(reply_resource,
                                        body="public=True&body_top=%s" %
                                        message)
@@ -111,6 +114,7 @@ def close_review(review_id, commit, committer):
         return
 
     # Change the actual status
+    logger.debug("Sending status")
     response = connection.request_put(submit_resource,
                                       body="status=submitted")
 
@@ -138,6 +142,10 @@ def main():
     setup_logger()
 
     if len(sys.argv) != 4:
+        logger = logging.getLogger("reviewboard")
+        logger.setLevel(DEFAULT_LEVEL)
+        # Only output information when we're using debug
+        logger.debug(sys.argv)
         usage()
 
     review_id = sys.argv[1]
