@@ -88,3 +88,15 @@ Reviewboard hook design:
   - Changes, via HTTP PUT (url board_url/api/review-requests/$REQUEST_ID) the status of the review request
     (by setting "status=submitted" in the PUT request body)
   - Information, failures and errors are notified to the user via Python's logging module
+    - By default, only information, errors or critical failures are shown, Debug
+      output can be enabled by setting DEFAULT_DLEVEL to logging.DEBUG instead
+      of logging.INFO
+  - In case of changes to RB's URL, it is sufficient to change the
+    REVIEWBOARD_URL constant
+- Caveats
+  - The "proper" way to use Reviewboard's API involves a first GET request to get
+    the "links" attribute - this indicates where the links for specific
+    operations (submit, comment, etc) are done
+  - To save processing time and avoid needless parsing, this part is omitted
+    in the hook, using the direct REST URLs for each operation
+    - In case the Reviewboard API changes, these URLs will need to be adapted as well
