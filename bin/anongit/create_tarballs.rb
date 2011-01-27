@@ -6,9 +6,6 @@ require 'digest/sha1'
 # It uses Ruby to make some things easier and shells out for most of it
 # Found the printAndDescent code on rosettacode and adopted it
 
-# Need a #{ARGV[1]} folder and "thisanongithost" file there, which contains the full name of this particular server
-$thishost = File.read("/home/git/thisanongithost").chomp
-
 #define a recursive function that will traverse the directory tree
 def printAndDescend(pattern, directory=nil)
   #we keep track of the directories, to be used in the second, recursive part of this function
@@ -27,9 +24,9 @@ def printAndDescend(pattern, directory=nil)
         puts "BAILING!"
         Process.exit!(1) 
       end
-      puts "Working on mirrored repository in #{path}"
+      puts "Working on repository in #{path}"
       basename = File.basename(newpath)
-      puts "Will build tarball into #{ARGV[1]}/#{newpath}/#{basename}-latest.tar.gz"
+      puts "Will build tarball into #{ARGV[1]}#{newpath}/#{basename}-latest.tar.gz"
       # TODO: I'm not actually sure the gc is needed; do fresh checkouts take after the server, or will they be
       # compact automatically since they're a fresh write of the refs to the local repo?
       # Need to investigate but since everything right now is already
@@ -37,14 +34,14 @@ def printAndDescend(pattern, directory=nil)
       next if not File.exists?("#{File.expand_path(name)}/git-daemon-export-ok")
       Dir.chdir(File.expand_path(name)){ %x[git gc --auto] }
       Dir.chdir(File.expand_path(name)){ %x[git prune] }
-      Dir.chdir("#{ARGV[1]}/"){ %x[mkdir -p  #{ARGV[1]}/#{newpath}] }
-      Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[git clone -l #{ARGV[0]}/#{newpath}.git #{basename}] }
+      Dir.chdir("#{ARGV[1]}/"){ %x[mkdir -p  #{ARGV[1]}#{newpath}] }
+      Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[git clone -l #{ARGV[0]}#{newpath}.git #{basename}] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[rm -rf .git] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[mv #{basename}/.git .] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[rm -rf #{basename}] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[mkdir #{basename}] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[mv .git #{basename}] }
-      Dir.chdir("#{ARGV[1]}/#{newpath}/#{basename}") { %x[sed -i -e 's/#{$thishost}/anongit.kde.org/g' .git/config] }
+      Dir.chdir("#{ARGV[1]}/#{newpath}/#{basename}") { %x[sed -i -e "s/\\/srv\\/kdegit\\/repositories/http\\:\\/\\/anongit.kde.org/g" .git/config] }
       Dir.chdir("#{ARGV[1]}/#{newpath}/#{basename}") { %x[echo "#!/bin/bash\n\nrm initrepo.sh\n\ngit reset --hard HEAD" > initrepo.sh; chmod +x initrepo.sh] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[rm -rf *.tar.gz] }
       Dir.chdir("#{ARGV[1]}/#{newpath}") { %x[tar -czf #{basename}-latest-stage.tar.gz #{basename}; rm -rf #{basename}] }
