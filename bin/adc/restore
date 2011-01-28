@@ -12,5 +12,5 @@ owner=`cat $TRASH_CAN/$repo/gl-creater 2>/dev/null`
 cd $TRASH_CAN
 realrepo=`dirname $repo`
 [ -d $GL_REPO_BASE_ABS/$realrepo ] && die $realrepo already exists
-mv $repo $GL_REPO_BASE_ABS/$realrepo
+mv $repo $GL_REPO_BASE_ABS/$realrepo.git
 echo $repo restored to $realrepo
