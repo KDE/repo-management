@@ -171,7 +171,7 @@ class Repository(object):
         base = os.getenv('GIT_DIR')
         # Look for kde-repo-nick, then kde-repo-uid and finally generate one if we find neither....
         if not os.path.exists(base + "/kde-repo-uid"):
-            repo_uid = read_command( "echo $GIT_DIR | sha1sum | cut -c -8" )
+            repo_uid = read_command( "echo \"$GIT_DIR `date -R`\" | sha1sum | cut -c -8" )
 
             with open(base + "/kde-repo-uid", "w") as uid_file:
                 uid_file.write(repo_uid + "\n")
