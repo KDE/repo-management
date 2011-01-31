@@ -1,5 +1,12 @@
 #/bin/sh
 
+if [ -e /tmp/update_repo.txt ]; then
+  echo "Lock exists"
+  exit 1;
+else
+  touch /tmp/update_repo.txt
+fi
+
 # First, see if there are any repos that are gone and should be removed. This gets a list of just
 # the items that have been removed from the projects-to-anongit.list file which was put into projects-to-anongit.list.new
 diff ~/projects-to-anongit.list /home/git/projects-to-anongit.list.new | grep "<" | cut -c 3- > ~/diffout
@@ -57,3 +64,6 @@ done
 
 # Copy the metadata over to the repositories
 rsync -avz . /repositories/
+
+rm /tmp/update_repo.txt
+
