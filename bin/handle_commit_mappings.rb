@@ -113,21 +113,6 @@ get '/robots.txt' do
   return "User-agent: *\nDisallow: /"
 end
 
-get %r{/updateRepo/(.*)} do |url|
-  path = '/repositories/' + url
-  if not File.exists?(path) or not File.directory?(path)
-    return 'FAIL'
-  end
-  require 'git'
-  begin
-    repo = Git.bare(path)
-    repo.remote('origin').fetch
-    return 'OK'
-  rescue Exception
-    return 'FAIL'
-  end
-end
-
 # Proper URL format? Find a URL, or redirect to Projects.
 get %r{/([a-zA-Z0-9]+)/([a-zA-Z0-9]+)} do |repoid, changeset|
   url = findGitwebOrRedmineUrl(repoid, changeset)
