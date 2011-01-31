@@ -17,5 +17,5 @@ for dir in `cat projects-list/projects-to-anongit.list`
     echo "$dir/kde-repo-nick" >> anongit-repos-build.tmp
     echo "$dir/kde-repo-uid" >> anongit-repos-build.tmp
 done
-rsync -avz --delete --files-from="/home/git/anongit-repos-build.tmp" /srv/kdegit/repositories /home/git/metadata-tree
+rsync -avz --files-from="/home/git/anongit-repos-build.tmp" /srv/kdegit/repositories /home/git/metadata-tree
 
