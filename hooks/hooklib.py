@@ -176,6 +176,10 @@ class Repository(object):
             with open(base + "/kde-repo-uid", "w") as uid_file:
                 uid_file.write(repo_uid + "\n")
 
+        if not os.path.exists(base + "/kde-repo-nick"):
+            with open(base + "/kde-repo-nick", "w") as uid_file:
+                uid_file.write(self.path + "\n")
+
         if os.path.exists(base + "/kde-repo-nick"):
             repo_id_file = base + "/kde-repo-nick"
         else:
