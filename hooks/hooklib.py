@@ -582,7 +582,7 @@ class EmailNotifier(object):
         if commit.author_name != commit.committer_name:
             firstline += " on behalf of " + commit.author_name
             
-        committed_on = commit.date.strftime("Committed on %d/%m/%y at %H:%M")
+        committed_on = commit.datetime.strftime("Committed on %d/%m/%y at %H:%M")
 
         pushed_by = "Pushed by {0} into {1} '{2}'.".format(
             self.repository.push_user, self.repository.ref_type,
@@ -691,10 +691,10 @@ class Commit(object):
     def __init__(self, repository, commit_data):
         self.repository = repository
         self._commit_data = commit_data
-        self._raw_properties = ["files_changed", "date"]
+        self._raw_properties = ["files_changed", "datetime"]
         
         # Convert the date into something usable...
-        self._commit_date["date"] = datetime.fromtimestamp( self._commit_date["date"] )
+        self._commit_data["datetime"] = datetime.fromtimestamp( float(self._commit_data["date"]) )
 
         # Create file changed list and replace the original value
         clean_list = re.split("\x00", self._commit_data["files_changed"])
