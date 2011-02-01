@@ -8,6 +8,7 @@ import time
 import subprocess
 import dns.resolver
 import smtplib
+from datetime import datetime
 from collections import defaultdict
 from email.mime.text import MIMEText
 from email.header import Header
@@ -580,12 +581,14 @@ class EmailNotifier(object):
                                                    commit.committer_name )
         if commit.author_name != commit.committer_name:
             firstline += " on behalf of " + commit.author_name
+            
+        committed_on = commit.date.strftime("Committed on %d/%m/%y at %H:%M")
 
         pushed_by = "Pushed by {0} into {1} '{2}'.".format(
             self.repository.push_user, self.repository.ref_type,
             self.repository.ref_name)
 
-        summary = [firstline, pushed_by, '', commit.message.strip(), '']
+        summary = [firstline, committed_on, pushed_by, '', commit.message.strip(), '']
         for info in diffinfo:
             filename, added, removed = info
             notes = ' '.join(checker.commit_notes[filename])
@@ -688,7 +691,10 @@ class Commit(object):
     def __init__(self, repository, commit_data):
         self.repository = repository
         self._commit_data = commit_data
-        self._raw_properties = ["files_changed"]
+        self._raw_properties = ["files_changed", "date"]
+        
+        # Convert the date into something usable...
+        self._commit_date["date"] = datetime.fromtimestamp( self._commit_date["date"] )
 
         # Create file changed list and replace the original value
         clean_list = re.split("\x00", self._commit_data["files_changed"])
