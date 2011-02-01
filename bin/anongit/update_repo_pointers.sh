@@ -13,6 +13,8 @@ for repouid in $( find /home/git/metadata-tree -name "kde-repo-uid" ); do
 done
 for reponick in $( find /home/git/metadata-tree -name "kde-repo-nick" ); do
     nick=$(cat $reponick)
+    magic="__NICK-MAGIC__"
+    nick=${nick//\//$magic}
     dir=$(dirname $reponick)
     dir=${dir#/home/git/metadata-tree/}
     echo $dir > $nick
