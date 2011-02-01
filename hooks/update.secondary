@@ -63,6 +63,7 @@ elif repository.ref_name == "HEAD":
 if len(repository.commits) > 100 and not os.path.exists(git_dir + "/kde-hooks-off") and repository.repo_type in push_size_restricted:
     print "More than 100 commits are being pushed"
     print "Push declined - attempted infrastructure abuse"
+    print "Please file a KDE Sysadmin bug to continue"
     exit(1)
 
 # New commits...
