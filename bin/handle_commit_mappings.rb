@@ -103,7 +103,7 @@ helpers do
         return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{sha1}"
       end
     end
-    return "http://gitweb.kde.org/#{path}/commit/#{sha1}"
+    return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
   end
 
 end
