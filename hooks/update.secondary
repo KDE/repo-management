@@ -112,9 +112,9 @@ if os.path.exists(git_dir + "/kde-hooks-off"):
 # Output a helpful url....
 if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in repository.commits:
     if len(repository.commits) == 1:
-        print "In a few minutes this commit will be available for viewing at:"
+        print "This commit is available for viewing at:"
     else:
-        print "In a few minutes the last commit in the series will be available for viewing at:"
+        print "The last commit in this series is available for viewing at:"
     
     print repository.commits[ repository.new_sha1 ].url
     
