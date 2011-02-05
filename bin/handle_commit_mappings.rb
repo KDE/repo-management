@@ -73,7 +73,7 @@ helpers do
     end
 
     # See if the commit exists in Redmine
-    execstring = "select projects.id, identifier, parent_id, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{sha1}';"
+    execstring = "select projects.id AS projectsid, identifier AS id, parent_id AS parentid, url AS url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{sha1}';"
     begin
         res = $pg.exec(execstring)
     rescue PGError
@@ -83,27 +83,27 @@ helpers do
     # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
     # it only checks one DB path, because it assumes one result. Might have to check each DB path in
     # turn until we find the one matching the repository path.
-    if not res[0].nil? and not res[0][0].nil? and not res[0][1].nil? and not res[0][2].nil? and not res[0][3].nil?
+    if not res[0].nil? and not res[0]["projectsid"].nil? and not res[0]["id"].nil? and not res[0]["parentid"].nil? and not res[0]["url"].nil?
       # Create the path that we can use to walk the Redmine DB
       reppath = "/repositories/" + path
       # Check the ASCII value too because for some reason it doesn't always work checking the char
       reppath.chop! if reppath[reppath.length-1] == 47 or reppath[reppath.length-1] == '/'
-      dbpath = res[0][3]
+      dbpath = res[0]["url"]
       dbpath.chop! if dbpath[dbpath.length-1] == 47 or dbpath[dbpath.length-1] == '/'
       # Create our initial final path based on the found identifier
-      finpath = res[0][1]
+      finpath = res[0]["id"]
       if reppath == dbpath
         # Is there a parent?
-        if not res[0][2].nil?
+        if not res[0]["parentid"].nil?
           # Right repo; do recursive walk, adding on parent identifiers to the front of the final path
-          execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
+          execstring = "select id, identifier, parent_id from projects where id = #{res[0]["parentid"]}"
           res = $pg.exec(execstring)
-          until res[0][2].nil?
-            finpath = res[0][1] + '/' + finpath
-            execstring = "select id, identifier, parent_id from projects where id = #{res[0][2]}"
+          until res[0]["parentid"].nil?
+            finpath = res[0]["id"] + '/' + finpath
+            execstring = "select id AS projectid, identifier AS id, parent_id AS parentid from projects where id = #{res[0]["parentid"]}"
             res = $pg.exec(execstring)
           end
-          finpath = res[0][1] + "/" + finpath
+          finpath = res[0]["id"] + "/" + finpath
         end
         return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{sha1}"
       end
