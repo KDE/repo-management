@@ -26,6 +26,8 @@ require 'sinatra'
 require 'grit'
 
 $pg = nil
+$postgresuser = "commitsscript"
+$postgrespass = File.read("/home/git/commit_script_pgpass").chomp
 
 helpers do
 
@@ -33,9 +35,7 @@ helpers do
     # Set up Postgres connection for Redmine. Read in password from a non-public file.
     if not $pg
       require 'postgres'
-      postgresuser = "commitsscript"
-      postgrespass = File.read("/home/git/commit_script_pgpass").chomp
-      $pg = PGconn.connect("projects.kde.org", 5432, '', '', "redmine", postgresuser, postgrespass)
+      $pg = PGconn.connect("projects.kde.org", 5432, '', '', "redmine", $postgresuser, $postgrespass)
     end
     # Every git repository should have a kde-repo-uid file that has a value computed from a hash
     # of its path. In addition, there may be a kde-repo-nick file containing a more friendly name.
@@ -74,7 +74,12 @@ helpers do
 
     # See if the commit exists in Redmine
     execstring = "select projects.id, identifier, parent_id, url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{sha1}';"
-    res = $pg.exec(execstring)
+    begin
+        res = $pg.exec(execstring)
+    rescue PGError
+        $pg = PGconn.connect("projects.kde.org", 5432, '', '', "redmine", $postgresuser, $postgrespass)
+        res = $pg.exec(execstring)
+    end
     # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
     # it only checks one DB path, because it assumes one result. Might have to check each DB path in
     # turn until we find the one matching the repository path.
