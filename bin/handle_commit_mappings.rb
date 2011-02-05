@@ -83,7 +83,7 @@ helpers do
     # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
     # it only checks one DB path, because it assumes one result. Might have to check each DB path in
     # turn until we find the one matching the repository path.
-    if res.nil? or res.length < 1 or res[0].nil? or res[0]["projectsid"].nil? or res[0]["id"].nil? or res[0]["parentid"].nil? or res[0]["url"].nil?
+    if res.nil? or res.ntuples < 1 or res[0].nil? or res[0]["projectsid"].nil? or res[0]["id"].nil? or res[0]["parentid"].nil? or res[0]["url"].nil?
       return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
     end
 
