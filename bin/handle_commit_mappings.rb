@@ -83,32 +83,33 @@ helpers do
     # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
     # it only checks one DB path, because it assumes one result. Might have to check each DB path in
     # turn until we find the one matching the repository path.
-    if not res[0].nil? and not res[0]["projectsid"].nil? and not res[0]["id"].nil? and not res[0]["parentid"].nil? and not res[0]["url"].nil?
-      # Create the path that we can use to walk the Redmine DB
-      reppath = "/repositories/" + path
-      # Check the ASCII value too because for some reason it doesn't always work checking the char
-      reppath.chop! if reppath[reppath.length-1] == 47 or reppath[reppath.length-1] == '/'
-      dbpath = res[0]["url"]
-      dbpath.chop! if dbpath[dbpath.length-1] == 47 or dbpath[dbpath.length-1] == '/'
-      # Create our initial final path based on the found identifier
-      finpath = res[0]["id"]
-      if reppath == dbpath
-        # Is there a parent?
-        if not res[0]["parentid"].nil?
-          # Right repo; do recursive walk, adding on parent identifiers to the front of the final path
+    if res.nil? or res.length < 1 or res[0].nil? or res[0]["projectsid"].nil? or res[0]["id"].nil? or res[0]["parentid"].nil? or res[0]["url"].nil?
+      return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
+    end
+
+    # Create the path that we can use to walk the Redmine DB
+    reppath = "/repositories/" + path
+    # Check the ASCII value too because for some reason it doesn't always work checking the char
+    reppath.chop! if reppath[reppath.length-1] == 47 or reppath[reppath.length-1] == '/'
+    dbpath = res[0]["url"]
+    dbpath.chop! if dbpath[dbpath.length-1] == 47 or dbpath[dbpath.length-1] == '/'
+    # Create our initial final path based on the found identifier
+    finpath = res[0]["id"]
+    if reppath == dbpath
+      # Is there a parent?
+      if not res[0]["parentid"].nil?
+        # Right repo; do recursive walk, adding on parent identifiers to the front of the final path
+        execstring = "select id AS projectsid, identifier AS id, parent_id AS parentid from projects where id = #{res[0]["parentid"]}"
+        res = $pg.exec(execstring)
+        until res[0]["parentid"].nil?
+          finpath = res[0]["id"] + '/' + finpath
           execstring = "select id AS projectsid, identifier AS id, parent_id AS parentid from projects where id = #{res[0]["parentid"]}"
           res = $pg.exec(execstring)
-          until res[0]["parentid"].nil?
-            finpath = res[0]["id"] + '/' + finpath
-            execstring = "select id AS projectsid, identifier AS id, parent_id AS parentid from projects where id = #{res[0]["parentid"]}"
-            res = $pg.exec(execstring)
-          end
-          finpath = res[0]["id"] + "/" + finpath
         end
-        return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{sha1}"
+        finpath = res[0]["id"] + "/" + finpath
       end
+      return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{sha1}"
     end
-    return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
   end
 
 end
