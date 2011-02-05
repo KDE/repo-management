@@ -72,6 +72,8 @@ helpers do
       return nil
     end
 
+    return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
+
     # See if the commit exists in Redmine
     execstring = "select projects.id AS projectsid, identifier AS id, parent_id AS parentid, url AS url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{sha1}';"
     begin
