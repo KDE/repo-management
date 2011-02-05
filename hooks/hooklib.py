@@ -600,6 +600,16 @@ class EmailNotifier(object):
             data = "{0:<2} +{1:<4} -{2:<4} {3}     {4}".format( file_change,
                 added, removed, filename, notes )
             summary.append( data )
+        if checker.license_problem:
+            summary.append( "\nThe files marked with a * at the end have a non valid "
+                "license. Please read: http://techbase.kde.org/Policies/Licensing_Policy "
+                "and use the headers which are listed at that page.\n")        
+        if checker.commit_problem:
+            summary.append( "\nThe files marked with ** at the end have a problem. "
+                "either the file contains a trailing space or the file contains a call to "
+                "a potentially dangerous code. Please read: "
+                "http://community.kde.org/Sysadmin/CommitHooks#Email_notifications "
+                "Either fix the trailing space or review the dangerous code.\n"); 
         summary.append( "\n" + commit.url + "\n" )
 
         body = '\n'.join( summary )
@@ -872,7 +882,9 @@ class CommitChecker(object):
         license = license.strip()
 
         if license:
-            self._commit_notes[filename].append( (" "*4) + "[License: " + license + "]")
+                self._commit_notes[filename].append( (" "*4) + "[License: " + license + "]")
+        if license and self._license_problem:
+                self._commit_notes[filename].append( " *")
 
     def check_commit_problems(self):
 
@@ -900,7 +912,7 @@ class CommitChecker(object):
 
             # Do an incremental check for *.desktop syntax errors....
             if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and not re.match("^#", line):
-                self._commit_notes[filename].append( "[TRAILING SPACE]" )
+                self._commit_notes[filename].append( "[TRAILING SPACE] **" )
                 self._commit_problem = True
 
             # Check for things which are unsafe...
@@ -914,7 +926,7 @@ class CommitChecker(object):
                 match = re.match(safety_match, safety_check)
                 if match:
                     self._commit_notes[filename].append( "[POSSIBLY UNSAFE: "
-                                                        + match.group(1) + "]")
+                                                        + match.group(1) + "] **")
                     self._commit_problem = True
 
             # Store the diff....
