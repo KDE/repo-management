@@ -72,8 +72,6 @@ helpers do
       return nil
     end
 
-    return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
-
     # See if the commit exists in Redmine
     execstring = "select projects.id AS projectsid, identifier AS id, parent_id AS parentid, url AS url from projects LEFT JOIN repositories on projects.id = repositories.project_id LEFT JOIN changesets on changesets.repository_id = repositories.id where changesets.revision = '#{sha1}';"
     begin
@@ -98,11 +96,11 @@ helpers do
         # Is there a parent?
         if not res[0]["parentid"].nil?
           # Right repo; do recursive walk, adding on parent identifiers to the front of the final path
-          execstring = "select id, identifier, parent_id from projects where id = #{res[0]["parentid"]}"
+          execstring = "select id AS projectsid, identifier AS id, parent_id AS parentid from projects where id = #{res[0]["parentid"]}"
           res = $pg.exec(execstring)
           until res[0]["parentid"].nil?
             finpath = res[0]["id"] + '/' + finpath
-            execstring = "select id AS projectid, identifier AS id, parent_id AS parentid from projects where id = #{res[0]["parentid"]}"
+            execstring = "select id AS projectsid, identifier AS id, parent_id AS parentid from projects where id = #{res[0]["parentid"]}"
             res = $pg.exec(execstring)
           end
           finpath = res[0]["id"] + "/" + finpath
