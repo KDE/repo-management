@@ -34,7 +34,7 @@ helpers do
   def findGitwebOrRedmineUrl(repoid, changeset)
     # Set up Postgres connection for Redmine. Read in password from a non-public file.
     if not $pg
-      require 'postgres'
+      require 'pg'
       $pg = PGconn.connect("projects.kde.org", 5432, '', '', "redmine", $postgresuser, $postgrespass)
     end
     # Every git repository should have a kde-repo-uid file that has a value computed from a hash
@@ -83,7 +83,7 @@ helpers do
     # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
     # it only checks one DB path, because it assumes one result. Might have to check each DB path in
     # turn until we find the one matching the repository path.
-    if not res[0].nil?
+    if not res[0].nil? and not res[0][0].nil? and not res[0][1].nil? and not res[0][2].nil? and not res[0][3].nil?
       # Create the path that we can use to walk the Redmine DB
       reppath = "/repositories/" + path
       # Check the ASCII value too because for some reason it doesn't always work checking the char
