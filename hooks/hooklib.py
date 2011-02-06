@@ -568,6 +568,8 @@ class EmailNotifier(object):
 
         # Build the subject....
         lowest_common_path = os.path.commonprefix( commit_directories )
+        if not lowest_common_path.endswith('/'):
+            lowest_common_path = os.path.dirname( lowest_common_path )
         if not lowest_common_path:
             lowest_common_path = "/"
         repo_path = self.repository.path
