@@ -547,11 +547,7 @@ class EmailNotifier(object):
         keyword_info = self.__parse_keywords(commit)
 
         # Build list for X-Commit-Directories...
-        commit_directories = list()
-        for filename in commit.files_changed:
-            # Seperate out the directory...
-            directory = os.path.dirname(filename)
-            commit_directories.append( directory )
+        commit_directories = [os.path.dirname(filename) for filename in commit.files_changed]
 
         # Remove all duplicates...
         commit_directories = list( set(commit_directories) )
