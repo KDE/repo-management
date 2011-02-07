@@ -10,6 +10,7 @@ import dns.resolver
 import smtplib
 from datetime import datetime
 from collections import defaultdict
+from itertools import takewhile
 from email.mime.text import MIMEText
 from email.header import Header
 from email import Charset
@@ -567,11 +568,9 @@ class EmailNotifier(object):
             cc_addresses.append( 'kde-doc-english@kde.org' )
 
         # Build the subject....
-        lowest_common_path = os.path.commonprefix( commit_directories )
-        if not lowest_common_path.endswith('/'):
-            lowest_common_path = os.path.dirname( lowest_common_path )
-        if not lowest_common_path:
-            lowest_common_path = "/"
+        by_levels = zip( *[p.split(os.path.sep) for p in commit_directories] )
+        equal = lambda name: all( n == name[0] for n in name[1:] )
+        lowest_common_path = os.path.sep.join(x[0] for x in takewhile( equal, by_levels ))
         repo_path = self.repository.path
         if self.repository.ref_name != "master":
             repo_path += "/" + self.repository.ref_name
