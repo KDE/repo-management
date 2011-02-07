@@ -571,6 +571,8 @@ class EmailNotifier(object):
         by_levels = zip( *[p.split(os.path.sep) for p in commit_directories] )
         equal = lambda name: all( n == name[0] for n in name[1:] )
         lowest_common_path = os.path.sep.join(x[0] for x in takewhile( equal, by_levels ))
+        if not lowest_common_path:
+            lowest_common_path = "/"
         repo_path = self.repository.path
         if self.repository.ref_name != "master":
             repo_path += "/" + self.repository.ref_name
