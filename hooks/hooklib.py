@@ -588,7 +588,7 @@ class EmailNotifier(object):
         if commit.author_name != commit.committer_name:
             firstline += " on behalf of " + commit.author_name
             
-        committed_on = commit.datetime.strftime("Committed on %d/%m/%y at %H:%M.")
+        committed_on = commit.datetime.strftime("Committed on %d/%m/%Y at %H:%M.")
 
         pushed_by = "Pushed by {0} into {1} '{2}'.".format(
             self.repository.push_user, self.repository.ref_type,
