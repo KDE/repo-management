@@ -28,7 +28,7 @@ from rest_client import Connection
 
 # Basic constants
 
-REVIEWBOARD_URL = "http://git.reviewboard.kde.org"
+REVIEWBOARD_URL = "https://git.reviewboard.kde.org"
 DEFAULT_LEVEL = logging.INFO
 
 
