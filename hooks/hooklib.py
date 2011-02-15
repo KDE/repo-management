@@ -587,7 +587,7 @@ class EmailNotifier(object):
                                                    commit.committer_name )
         if commit.author_name != commit.committer_name:
             firstline += " on behalf of " + commit.author_name
-            
+
         committed_on = commit.datetime.strftime("Committed on %d/%m/%Y at %H:%M.")
 
         pushed_by = "Pushed by {0} into {1} '{2}'.".format(
@@ -609,13 +609,13 @@ class EmailNotifier(object):
         if checker.license_problem:
             summary.append( "\nThe files marked with a * at the end have a non valid "
                 "license. Please read: http://techbase.kde.org/Policies/Licensing_Policy "
-                "and use the headers which are listed at that page.\n")        
+                "and use the headers which are listed at that page.\n")
         if checker.commit_problem:
             summary.append( "\nThe files marked with ** at the end have a problem. "
                 "either the file contains a trailing space or the file contains a call to "
                 "a potentially dangerous code. Please read: "
                 "http://community.kde.org/Sysadmin/CommitHooks#Email_notifications "
-                "Either fix the trailing space or review the dangerous code.\n"); 
+                "Either fix the trailing space or review the dangerous code.\n");
         summary.append( "\n" + commit.url + "\n" )
 
         body = '\n'.join( summary )
@@ -708,7 +708,7 @@ class Commit(object):
         self.repository = repository
         self._commit_data = commit_data
         self._raw_properties = ["files_changed", "datetime"]
-        
+
         # Convert the date into something usable...
         self._commit_data["datetime"] = datetime.fromtimestamp( float(self._commit_data["date"]) )
 
@@ -913,6 +913,14 @@ class CommitChecker(object):
         for line in self.diff:
             file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
             if file_change:
+
+                # Diff headers are bogus
+                diff_header = re.match("@@ -\d+,\d+ \+\d+ @@", line)
+
+                if diff_header:
+                    filediff = list()
+                    continue
+
                 # Are we changing file? If so, we have the full diff, so do a license check....
                 if filename != "" and self.commit.files_changed[ filename ] == 'A':
                     self.check_commit_license(filename, ''.join(filediff))
