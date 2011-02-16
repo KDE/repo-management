@@ -349,11 +349,13 @@ class CommitAuditor(object):
                 extraction = re.match("^(\S+)@(\S+)$", email_address)
                 if not extraction:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
+                    continue
 
                 # Don't allow domains which are disallowed...
                 domain = extraction.group(2)
                 if domain in disallowed_domains:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
+                    continue
 
                 # Ensure they have a valid MX/A entry in DNS....
                 try:
@@ -650,6 +652,8 @@ class EmailNotifier(object):
             if bug in keyword_info['bug_fixed']:
                 bug_body.append( "@bug_status = RESOLVED" )
                 bug_body.append( "@resolution = FIXED" )
+                if keyword_info['fixed_in']:
+                    bug_body.append("@cf_versionfixedin = " + keyword_info['fixed_in'][0])
             bug_body.append( '' )
             bug_body.append( '\n'.join( summary ) )
 
@@ -680,7 +684,7 @@ class EmailNotifier(object):
         split['bug_cc']    = re.compile("^\s*CCBUGS?[:=]\s*(\d{4,10})")
         split['email_cc']  = re.compile("^\s*CC[-_]?MAIL[:=]\s*(.*)")
         split['email_cc2'] = re.compile("^\s*C[Cc][:=]\s*(.*)")
-        split['fixed_in']  = re.compile("^\s*FIXED[-_]?IN[:=]\s*(\d[\d\.-]*)/")
+        split['fixed_in']  = re.compile("^\s*FIXED[-_]?IN[:=]\s*(\d[\d\.-]*)")
         split['review']    = re.compile("^\s*REVIEWS?[:=]\s*(\d{1,10})")
 
         presence = dict()
