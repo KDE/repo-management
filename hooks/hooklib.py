@@ -917,20 +917,17 @@ class CommitChecker(object):
         for line in self.diff:
             file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
             if file_change:
-
-                # Diff headers are bogus
-                diff_header = re.match("@@ -\d+,\d+ \+\d+ @@", line)
-
-                if diff_header:
-                    filediff = list()
-                    continue
-
                 # Are we changing file? If so, we have the full diff, so do a license check....
                 if filename != "" and self.commit.files_changed[ filename ] == 'A':
                     self.check_commit_license(filename, ''.join(filediff))
 
                 filediff = list()
                 filename = file_change.group(2)
+                continue
+
+            # Diff headers are bogus
+            if re.match("@@ -\d+,\d+ \+\d+ @@", line):
+                filediff = list()
                 continue
 
             # Do an incremental check for *.desktop syntax errors....
