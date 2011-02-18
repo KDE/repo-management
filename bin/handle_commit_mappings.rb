@@ -109,6 +109,9 @@ helpers do
         finpath = res[0]["id"] + "/" + finpath
       end
       return "http://projects.kde.org/projects/#{finpath}/repository/revisions/#{sha1}"
+    else
+      # At this point we know the commit exists in the repo but if not found above then it's not in Redmine so return quickgit
+      return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
     end
   end
 
