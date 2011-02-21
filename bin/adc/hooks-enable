@@ -15,6 +15,10 @@ fi
 
 cd $GL_REPO_BASE_ABS
 
+if [ ! -d "$realrepo" ]; then
+    die "No repository found, please specify a valid repo"
+fi
+
 if [ -f $realrepo.git/kde-hooks-off ]; then
     rm $realrepo.git/kde-hooks-off
     echo "Hooks are now enabled"
