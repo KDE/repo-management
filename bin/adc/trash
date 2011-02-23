@@ -30,7 +30,7 @@ echo "$repo moved to trashcan -- use 'list-trash' to see trash contents."
 echo "Items are removed from the trash after 28 days."
 
 cd $HOME
-PROJECTS_LIST=$(perl -e 'do ".gitolite.rc"; print $PROJECTS_LIST')
+PROJECTS_LIST=$($GL_BINDIR/gl-query-rc PROJECTS_LIST)
 export repo
 perl -ni -e 'print unless /^\Q$ENV{repo}.git\E$/' $PROJECTS_LIST
 
