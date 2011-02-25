@@ -43,7 +43,6 @@ else
 fi
 
 get_rights_and_owner $to; to=$repo
-[ -z "$perm_create" ] && die "no create permissions on $repo"
 
 echo "Cloning, please be patient..."
 
