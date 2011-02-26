@@ -584,6 +584,12 @@ class EmailNotifier(object):
         short_msg = commit.message.splitlines()[0]
         subject = unicode("[{0}] {1}: {2}").format(repo_path, lowest_common_path, short_msg)
 
+        if keyword_info['silent']:
+            subject.append( ' (silent)' )
+
+        if keyword_info['notes']:
+            subject.append( ' (silent,notes)' )
+
         # Build up the body of the message...
         firstline = unicode("Git commit {0} by {1}.").format( commit.sha1,
                                                    commit.committer_name )
@@ -690,6 +696,7 @@ class EmailNotifier(object):
         presence = dict()
         presence['email_gui'] = re.compile("^\s*GUI:")
         presence['silent']    = re.compile("(?:CVS|SVN|GIT|SCM).?SILENT")
+        presence['notes']     = re.compile("(?:Notes added by 'git notes add'|Notes removed by 'git notes remove')")
 
         results = defaultdict(list)
         for line in commit.message.split("\n"):
