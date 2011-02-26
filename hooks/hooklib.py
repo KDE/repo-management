@@ -585,10 +585,10 @@ class EmailNotifier(object):
         subject = unicode("[{0}] {1}: {2}").format(repo_path, lowest_common_path, short_msg)
 
         if keyword_info['silent']:
-            subject.append( ' (silent)' )
+            subject += u( ' (silent)' )
 
         if keyword_info['notes']:
-            subject.append( ' (silent,notes)' )
+            subject += u( ' (silent,notes)' )
 
         # Build up the body of the message...
         firstline = unicode("Git commit {0} by {1}.").format( commit.sha1,
