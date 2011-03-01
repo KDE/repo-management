@@ -45,6 +45,12 @@ class Repository(object):
     "Represents a repository, and changes made to it"
     EmptyRef = "0000000000000000000000000000000000000000"
 
+    RepoManagementName = "repo-management"
+    BaseDir = "/srv/kdegit/repositories/"
+    PullBaseUrlHttp = "http://anongit.kde.org/"
+    PullBaseUrlGit = "git://anongit.kde.org/"
+    PushBaseUrl = "git@git.kde.org:"
+
     def __init__(self, ref, old_sha1, new_sha1, push_user):
         "Create a Repository object"
 
@@ -59,10 +65,10 @@ class Repository(object):
         if os.getenv('REPO_MGMT'):
             self.management_directory = os.getenv('REPO_MGMT')
         else:
-            self.management_directory = os.getenv('HOME') + "/repo-management"
+            self.management_directory = os.getenv('HOME') + "/" + Repository.RepoManagementName
 
         # Set path and id....
-        path_match = re.match("^/srv/kdegit/repositories/(.+).git$", os.getcwd())
+        path_match = re.match("^"+Repository.BaseDir+"(.+).git$", os.getcwd())
         self.path = path_match.group(1)
         self.uid = self.__get_repo_id()
         self.__write_metadata()
@@ -165,9 +171,9 @@ class Repository(object):
 
         with open(clone_url, "w") as metadata:
 
-            metadata.write( "Pull (read-only): git://anongit.kde.org/" + self.path + "\n" )
-            metadata.write( "Pull (read-only): http://anongit.kde.org/" + self.path + "\n" )
-            metadata.write( "Pull+Push (read+write): git@git.kde.org:" + self.path + "\n" )
+            metadata.write( "Pull (read-only): " + Repository.PullBaseUrlGit + self.path + "\n" )
+            metadata.write( "Pull (read-only): " + Repository.PullBaseUrlHttp + self.path + "\n" )
+            metadata.write( "Pull+Push (read+write): " + Repository.PushBaseUrl + self.path + "\n" )
 
     def __get_repo_id(self):
         base = os.getenv('GIT_DIR')
@@ -716,6 +722,8 @@ class Commit(object):
 
     "Represents a git commit"
 
+    UrlPattern = "http://commits.kde.org/{0}/{1}"
+
     def __init__(self, repository, commit_data):
         self.repository = repository
         self._commit_data = commit_data
@@ -750,8 +758,7 @@ class Commit(object):
 
         """The URL of the commit at commits.kde.org."""
 
-        return "http://commits.kde.org/{0}/{1}".format( self.repository.uid,
-                                                       self.sha1 )
+        return Commit.UrlPattern.format( self.repository.uid, self.sha1 )
 
 
 class CommitChecker(object):
