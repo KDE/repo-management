@@ -1,4 +1,4 @@
-#/bin/sh
+#/bin/bash
 
 if [ -e /tmp/update_repo.txt ]; then
   echo "Lock exists"
