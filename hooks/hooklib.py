@@ -516,7 +516,7 @@ class EmailNotifier(object):
                 commit = commit_change.group(1)
                 continue
 
-            diff_line = re.match("([0-9]+)\W+([0-9]+)\W+(.+)$", line)
+            diff_line = re.match("(-|[0-9]+)\W+(-|[0-9]+)\W+(.+)$", line)
             if diff_line:
                 file_info = (diff_line.group(3), diff_line.group(1),
                              diff_line.group(2))
