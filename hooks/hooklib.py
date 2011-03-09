@@ -107,6 +107,17 @@ class Repository(object):
                 self.new_sha1, self.old_sha1) )
             revision_span = "{0}..{1}".format(merge_base, self.new_sha1)
 
+        # Get the list of revisions
+        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {1}"
+        command = command.format(self.old_sha1, revision_span)
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        revisions = process.stdout.readlines()
+
+        # If we have no revisions... don't continue
+        if not revisions:
+            return
+            
         # Build the git pretty format + regex.
         l = (
              ('CH' , ('%H%n',  '(?P<sha1>.+)\n')),
@@ -119,21 +130,10 @@ class Repository(object):
             )
 
         pretty_format_data = (': '.join((outer, inner[0])) for outer, inner in l)
-        pretty_format = '%xfe' + ''.join(pretty_format_data)
+        pretty_format = '%xfe%xfa%xfc' + ''.join(pretty_format_data)
 
         re_format_data = (': '.join((outer, inner[1])) for outer, inner in l)
         re_format = '^' + ''.join(re_format_data) + '$'
-
-        # Get the list of revisions
-        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {1}"
-        command = command.format(self.old_sha1, revision_span)
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        revisions = process.stdout.readlines()
-
-        # If we have no revisions... don't continue
-        if not revisions:
-            return
 
         # Extract information about commits....
         command = "git show --stdin --name-status -z --pretty=format:'{0}'".format(pretty_format)
@@ -147,7 +147,7 @@ class Repository(object):
         output = process.stdout.read()
 
         # Parse time!
-        split_out = output.split("\xfe")
+        split_out = output.split("\xfe\xfa\xfc")
         split_out.remove("")
         for commit_data in split_out:
             match = re.match(re_format, commit_data, re.MULTILINE)
