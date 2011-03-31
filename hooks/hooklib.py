@@ -338,6 +338,8 @@ class CommitAuditor(object):
 
         for commit in self.repository.commits.values():
             for filename in commit.files_changed:
+                if commit.files_changed[ filename ] != 'A':
+                    continue
                 for restriction in self.filename_limits:
                     if re.search(restriction, filename):
                         self.__log_failure(commit.sha1, "File Name - " + filename)
