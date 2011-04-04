@@ -11,6 +11,7 @@ for dir in `cat projects-list/projects-to-anongit.list`
     echo "$dir/description" >> anongit-repos-build.tmp
     echo "$dir/git-daemon-export-ok" >> anongit-repos-build.tmp
     echo "$dir/gl-creater" >> anongit-repos-build.tmp
+    echo "$dir/gl-conf" >> anongit-repos-build.tmp
     echo "$dir/gl-owner" >> anongit-repos-build.tmp
     echo "$dir/gl-perms" >> anongit-repos-build.tmp
     echo "$dir/kde-cloned-from" >> anongit-repos-build.tmp
