@@ -355,6 +355,12 @@ class CommitAuditor(object):
         # Iterate over commits....
         disallowed_domains = ["localhost", "localhost.localdomain", "(none)"]
         for commit in self.repository.commits.values():
+            for name in [ commit.committer_name, commit.author_name ]:
+                # Check to see if the name contains spaces - if not - it is probably misconfigured....
+                if " " not in name.strip():
+                    self.__log_failure(commit.sha1, "Name - " + name)
+                    continue
+
             for email_address in [ commit.committer_email, commit.author_email ]:
                 # Extract the email address, and reject them if extraction fails....
                 extraction = re.match("^(\S+)@(\S+)$", email_address)
