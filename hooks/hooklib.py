@@ -609,10 +609,10 @@ class EmailNotifier(object):
             subject += unicode(' (silent,notes)')
 
         # Build up the body of the message...
-        firstline = unicode("Git commit {0} by {1}.").format( commit.sha1,
-                                                   commit.committer_name )
+        firstline = unicode("Git commit {0} by {1}").format( commit.sha1, commit.committer_name )
         if commit.author_name != commit.committer_name:
-            firstline += " on behalf of " + commit.author_name
+            firstline += ", on behalf of " + commit.author_name
+        firstline += "."
 
         committed_on = commit.datetime.strftime("Committed on %d/%m/%Y at %H:%M.")
 
