@@ -155,8 +155,8 @@ class Repository(object):
             self.commits[ commit.sha1 ] = commit
 
         # Extract the commit descriptions....
-        command = "xargs git describe --always"
-        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+        command = ("xargs", "git", "describe", "--always")
+        process = subprocess.Popen(command, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate(''.join(revisions))
         descriptions = stdout.split('\n')
