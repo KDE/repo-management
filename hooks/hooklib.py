@@ -93,7 +93,7 @@ class Repository(object):
 
         # Back ourselves up!
         backup_ref="refs/backups/{0}-{1}-{2}".format(self.ref_type, self.ref_name, int( time.time() ), self.old_sha1)
-        command = ["git", "update-ref", backup_ref, old_sha1]
+        command = ("git", "update-ref", backup_ref, old_sha1)
         process = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
@@ -104,7 +104,7 @@ class Repository(object):
         elif self.change_type == ChangeType.Create:
             revision_span = self.new_sha1
         else:
-            merge_base = read_command(['git', 'merge-base', self.new_sha1, self.old_sha1])
+            merge_base = read_command(('git', 'merge-base', self.new_sha1, self.old_sha1))
             revision_span = "{0}..{1}".format(merge_base, self.new_sha1)
 
         # Get the list of revisions
@@ -233,7 +233,7 @@ class Repository(object):
     def __get_change_type(self):
         # Determine the merge base, to detect if we are experiencing a force or normal push....
         if( self.old_sha1 != self.EmptyRef and self.new_sha1 != self.EmptyRef ):
-            merge_base = read_command(['git', 'merge-base', self.old_sha1, self.new_sha1])
+            merge_base = read_command(('git', 'merge-base', self.old_sha1, self.new_sha1))
 
         # What type of change is happening here?
         if self.old_sha1 == self.EmptyRef:
@@ -692,7 +692,7 @@ class EmailNotifier(object):
         # Handle reviewboard
         for review in keyword_info['review']:
             # Call the helper program
-            cmdline = [self.repository.management_directory + "/hooks/update_review.py", commit.sha1, commit.author_name]
+            cmdline = (self.repository.management_directory + "/hooks/update_review.py", commit.sha1, commit.author_name)
             # Fork into the background - we don't want it to block the hook
             subprocess.Popen(cmdline, shell=False)
 
