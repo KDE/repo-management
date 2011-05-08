@@ -93,7 +93,7 @@ class Repository(object):
 
         # Back ourselves up!
         backup_ref="refs/backups/{0}-{1}-{2}".format(self.ref_type, self.ref_name, int( time.time() ), self.old_sha1)
-        command = ("git", "update-ref", backup_ref, old_sha1)
+        command = ("git", "update-ref", backup_ref, self.old_sha1)
         process = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
 
