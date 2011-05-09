@@ -155,8 +155,8 @@ class Repository(object):
             self.commits[ commit.sha1 ] = commit
 
         # Extract the commit descriptions....
-        command = "xargs git describe --always"
-        process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+        command = ("xargs", "git", "describe", "--always")
+        process = subprocess.Popen(command, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate(''.join(revisions))
         descriptions = stdout.split('\n')
@@ -301,7 +301,7 @@ class CommitAuditor(object):
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
 
         # Do EOL audit!
-        process = get_change_diff( self.repository, "-C -p" )
+        process = get_change_diff( self.repository, ["-C", "-p"] )
         for line in process.stdout:
             commit_change = re.match( re_commit, line )
             if commit_change:
@@ -511,7 +511,7 @@ class EmailNotifier(object):
 
         # Retrieve diff-stats...
         diffinfo = defaultdict(list)
-        process = get_change_diff( self.repository, "--numstat" )
+        process = get_change_diff( self.repository, ["--numstat"] )
         for line in process.stdout:
             commit_change = re.match( "^\x00(.+)\x00$", line)
             if commit_change:
@@ -525,7 +525,7 @@ class EmailNotifier(object):
                 diffinfo[commit].append( file_info )
 
         # We will incrementally send the mails as we gather up the diffs....
-        process = get_change_diff( self.repository, "-p" )
+        process = get_change_diff( self.repository, ["-p"] )
         diff = list()
         for line in process.stdout:
             commit_change = re.match( "^\x00(.+)\x00$", line )
@@ -978,8 +978,9 @@ def read_command( command, shell=False ):
 
 def get_change_diff( repository, log_arguments ):
     # Prepare to run....
-    command = "git show --pretty=format:%x00%H%x00 --stdin " + log_arguments
-    process = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE,
+    command = ["git", "show", "--pretty=format:%x00%H%x00", "--stdin"]
+    command.extend(log_arguments)
+    process = subprocess.Popen(command, stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     # Pass on the commits for it to show...
