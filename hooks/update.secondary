@@ -4,7 +4,7 @@
 import os
 import sys
 import subprocess
-from hooklib import Repository, Commit, CommitAuditor, CiaNotifier, EmailNotifier, RepoType, ChangeType, RefType
+from hooklib import Repository, Commit, CommitAuditor, EmailNotifier, RepoType, ChangeType, RefType
 
 def usage():
     print "Information needed to run could not be gathered successfully."
