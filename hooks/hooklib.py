@@ -575,7 +575,7 @@ class EmailNotifier(object):
             cc_addresses.append( 'kde-doc-english@kde.org' )
             
         if self.repository.repo_type == RepoType.Website:
-            bcc_addresses.append( 'scmupdate@spider.kde.org' )
+            bcc_addresses.append( 'scmupdate@spider-mail.kde.org' )
 
         # Build the subject....
         if len(commit_directories) == 1:
