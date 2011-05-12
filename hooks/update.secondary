@@ -4,7 +4,7 @@
 import os
 import sys
 import subprocess
-from hooklib import Repository, Commit, CommitAuditor, EmailNotifier, RepoType, ChangeType, RefType
+from hooklib import Repository, Commit, CommitAuditor, CiaNotifier, EmailNotifier, RepoType, ChangeType, RefType
 
 def usage():
     print "Information needed to run could not be gathered successfully."
@@ -126,6 +126,12 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
 post_exceptions = ["scripty"]
 if push_user in post_exceptions:
     exit(0)
+
+# Notify CIA...
+cia_allowed = [RepoType.Normal, RepoType.Website]
+if repository.repo_type in cia_allowed and repository.commits:
+    cia = CiaNotifier(repository)
+    cia.notify()
 
 # Send email based notifications (email, bugzilla, reviewboard)
 email_enabled = os.path.exists(repository.management_directory + "/repo-configs/email/" + repository.path + ".git/svnpath")
