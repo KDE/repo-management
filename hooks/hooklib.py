@@ -565,6 +565,7 @@ class EmailNotifier(object):
 
         # Build a list of addresses to Cc,
         cc_addresses = keyword_info['email_cc'] + keyword_info['email_cc2']
+        bcc_addresses = []
 
         # Add the committer to the Cc in case problems have been found
         if checker.license_problem or checker.commit_problem:
@@ -572,6 +573,9 @@ class EmailNotifier(object):
 
         if keyword_info['email_gui']:
             cc_addresses.append( 'kde-doc-english@kde.org' )
+            
+        if self.repository.repo_type == RepoType.Website:
+            bcc_addresses.append( 'scmupdate@spider.kde.org' )
 
         # Build the subject....
         if len(commit_directories) == 1:
@@ -656,7 +660,7 @@ class EmailNotifier(object):
         message['X-Commit-Directories'] = Header( "(0) " + ' '.join(full_commit_dirs) )
 
         # Send email...
-        to_addresses = cc_addresses + [self.notification_address]
+        to_addresses = cc_addresses + bcc_addresses + [self.notification_address]
         self.smtp.sendmail(commit.committer_email, to_addresses, message.as_string())
 
         # Handle bugzilla....
