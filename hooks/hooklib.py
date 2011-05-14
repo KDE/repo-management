@@ -191,7 +191,7 @@ class Repository(object):
         return rid
 
     def __get_repo_type(self):
-        sysadmin_repos = ["gitolite-admin", "repo-management"]
+        sysadmin_repos = ["gitolite-admin"]
 
         # What type of repo have we got???
         if self.path in sysadmin_repos:
