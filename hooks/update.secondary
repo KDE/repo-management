@@ -89,6 +89,9 @@ blocked_commits = {
     'kalgebra': [
         'b60eebf68089341a1f1851c0b747fcd97fb718aa', # master
         '18c432d36e6737dc1d304414e331a76d8a4fec8d' # 4.6
+    ],
+    'kgeography': [
+        '9cea961b5d952fc6e12833f85055a062d987c735' # 4.6
     ]
 }
 if repository.path in blocked_commits:
