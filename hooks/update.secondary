@@ -82,6 +82,23 @@ if not os.path.exists(skip_base + repository.path + ".git/skip-filename"):
 if not os.path.exists(skip_base + repository.path + ".git/skip-author"):
     auditor.audit_metadata()
 
+# Block certain commits from being pushed.
+# This is quite a hack; to be replaced with something better and configurable.
+
+blocked_commits = {
+    'kalgebra': [
+        'b60eebf68089341a1f1851c0b747fcd97fb718aa', # master
+        '18c432d36e6737dc1d304414e331a76d8a4fec8d' # 4.6
+    ]
+}
+if repository.path in blocked_commits:
+    for blocked_commit in blocked_commits[repository.path]:
+        if blocked_commit in repository.commits:
+            print "Push declined - attempted to push pre-reconversion commits"
+            print "Please rebase your changes over the current repository."
+            print "Ask in the kde-edu mailing list if you need help."
+            exit(1)
+
 # Did we have any commit audit failures?
 if auditor.audit_failed:
     print "Push declined - commits failed audit"
