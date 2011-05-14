@@ -15,6 +15,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email import Charset
 
+from ordereddict import OrderedDict
 import lxml.etree as etree
 from lxml.builder import E
 
@@ -60,7 +61,7 @@ class Repository(object):
         self.old_sha1 = old_sha1
         self.new_sha1 = new_sha1
         self.push_user = push_user
-        self.commits = dict()
+        self.commits = OrderedDict()
 
         # Find our configuration directory....
         if os.getenv('REPO_MGMT'):
