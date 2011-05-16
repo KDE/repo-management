@@ -14,6 +14,10 @@ to=$2
 
 [ -z "$from" -o -z "$to" ] && die "This command takes two parameters (from and to)!"
 
+dirup=".."
+[[ "$from" =~ "${dirup}" ]] && die "You are not allowed to traverse to parent directories."
+[[ "$to" =~ "${dirup}" ]] && die "You are not allowed to traverse to parent directories."
+
 oldIFS=$IFS
 IFS="/"
 fromarray=( $from )
