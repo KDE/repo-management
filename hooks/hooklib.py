@@ -952,7 +952,7 @@ class CommitChecker(object):
                 continue
 
             # Do an incremental check for *.desktop syntax errors....
-            if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and line.startswith("+") and not re.match("^+#", line):
+            if re.search("\.desktop$", filename) and re.search("[^=]+=.*[ \t]$", line) and line.startswith("+") and not re.match("^\+#", line):
                 self._commit_notes[filename].append( "[TRAILING SPACE] **" )
                 self._commit_problem = True
 
