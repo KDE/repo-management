@@ -931,6 +931,7 @@ class CommitChecker(object):
         unsafe_matches.append( "\b(KRun::runCommand|K3?ShellProcess|setUseShell|setShellCommand)\b\s*[\(\r\n]" )
         unsafe_matches.append( "\b(system|popen|mktemp|mkstemp|tmpnam|gets|syslog|strptime)\b\s*[\(\r\n]" )
         unsafe_matches.append( "(scanf)\b\s*[\(\r\n]" )
+        valid_filename_regex = "\.(cpp|cc|cxx|C|c\+\+|c|l|y||h|H|hh|hxx|hpp|h\+\+|qml)$"
 
         # Retrieve the diff and do the problem checks...
         filename = ""
@@ -939,7 +940,6 @@ class CommitChecker(object):
             file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
             if file_change:
                 # Are we changing file? If so, we have the full diff, so do a license check....
-                valid_filename_regex = "\.(cpp|cc|cxx|C|c\+\+|c|l|y||h|H|hh|hxx|hpp|h\+\+|qml)$"
                 if filename != "" and self.commit.files_changed[ filename ] == 'A' and re.search(valid_filename_regex, filename):
                     self.check_commit_license(filename, ''.join(filediff))
 
@@ -974,7 +974,7 @@ class CommitChecker(object):
             # Store the diff....
             filediff.append(line)
 
-        if filename != "" and self.commit.files_changed[ filename ] == 'A':
+        if filename != "" and self.commit.files_changed[ filename ] == 'A' and re.search(valid_filename_regex, filename):
             self.check_commit_license(filename, ''.join(filediff))
 
 def read_command( command, shell=False ):
