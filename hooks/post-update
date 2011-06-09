@@ -9,4 +9,11 @@ curl --connect-timeout 1 --max-time 1 http://anongit1.kde.org/updateRepo/$urlpat
 curl --connect-timeout 1 --max-time 1 http://anongit2.kde.org/updateRepo/$urlpath 2>1 1>/dev/null
 curl --connect-timeout 1 --max-time 1 http://anongit3.kde.org/updateRepo/$urlpath 2>1 1>/dev/null
 
+# Initiate remote server update
+remote_update_url=$mgmtdir/repo-configs/remote-update/$urlpath
+if [ -f $remote_update_url ]; then
+    remoteurl=`cat $remote_update_url`
+    git push --mirror -q $remoteurl &> /dev/null &
+fi
+
 git update-server-info
