@@ -13,7 +13,7 @@ curl --connect-timeout 1 --max-time 1 http://anongit3.kde.org/updateRepo/$urlpat
 remote_update_url=$mgmtdir/repo-configs/remote-update/$urlpath
 if [ -f $remote_update_url ]; then
     remoteurl=`cat $remote_update_url`
-    git push --mirror -q $remoteurl &> /dev/null &
+    python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
 fi
 
 git update-server-info
