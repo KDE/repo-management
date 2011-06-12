@@ -60,7 +60,7 @@ def read_credentials():
 
     return username, password
 
-def close_review(review_id, commit, committer):
+def close_review(review_id, commit, committer, changed_ref):
 
     """Close a review request on Reviewboard.
 
@@ -90,7 +90,7 @@ def close_review(review_id, commit, committer):
                             password=password)
     # HTML-encode the message to avoid unpleasant side effects
     message = urllib.quote("This review has been submitted with commit "
-                           "%s by %s." % (commit, committer))
+                           "%s by %s to %s." % (commit, committer, changed_ref))
 
     # Resources for replying and for submitting
     submit_resource = "review-requests/%s" % review_id
@@ -151,8 +151,9 @@ def main():
     review_id = sys.argv[1]
     commit_id = sys.argv[2]
     committer = sys.argv[3]
+    ref_change = sys.argv[4]
 
-    close_review(review_id, commit_id, committer)
+    close_review(review_id, commit_id, committer, ref_change)
     sys.exit(0)
 
 if __name__ == '__main__':

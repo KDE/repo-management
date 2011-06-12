@@ -689,7 +689,8 @@ class EmailNotifier(object):
         # Handle reviewboard
         for review in keyword_info['review']:
             # Call the helper program
-            cmdline = (self.repository.management_directory + "/hooks/update_review.py", review, commit.sha1, commit.author_name)
+            ref_changed = self.repository.ref_type + " " + self.repository.ref_name
+            cmdline = (self.repository.management_directory + "/hooks/update_review.py", review, commit.sha1, commit.author_name, ref_changed)
             # Fork into the background - we don't want it to block the hook
             subprocess.Popen(cmdline, shell=False)
 
