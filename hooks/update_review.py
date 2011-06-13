@@ -141,7 +141,7 @@ def main():
 
     setup_logger()
 
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         logger = logging.getLogger("reviewboard")
         logger.setLevel(DEFAULT_LEVEL)
         # Only output information when we're using debug
