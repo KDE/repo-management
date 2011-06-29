@@ -22,7 +22,7 @@ changes = []
 for ref in refs_changed:
     # Look to see if it is done to a branch or tag....
     # Everything else is not relevant - and should be ignored....
-    match = re.match('^[-|*| ]\t(.*refs/(heads|tags)/\S+)\t(.+)\n', ref)
+    match = re.match('^[-|*| |+]\t(.*refs/(heads|tags)/\S+)\t(.+)\n', ref)
     if match:
         changes.append( match.group(1) )
         continue
