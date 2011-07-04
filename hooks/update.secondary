@@ -156,8 +156,12 @@ post_exceptions = ["scripty"]
 if push_user in post_exceptions:
     exit(0)
 
-# Perform notifications
+# Are we allowed to send notifications on this repo?
 notify_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
+if not repository.repo_type in notify_allowed:
+    exit(0)
+
+# Perform notifications
 cia_allowed = [RepoType.Normal, RepoType.Website]
 notifier = CommitNotifier()
 cia = CiaNotifier(repository)

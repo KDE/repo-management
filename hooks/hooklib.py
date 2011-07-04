@@ -644,7 +644,8 @@ class CiaNotifier(object):
         commit_msg = re.sub(r'[\x00-\x09\x0B-\x1f\x7f-\xff]', '', commit_msg)
 
         for filename in commit.files_changed:
-            file_element = E.file(filename)
+            safe_filename = re.sub(r'[\x00-\x09\x0B-\x1f\x7f-\xff]', '', filename)
+            file_element = E.file(safe_filename)
             files.append(file_element)
 
         # Build the message
@@ -867,8 +868,6 @@ class CommitChecker(object):
         """Check for potential problems in a commit."""
         
         # Initialise
-        self.commit = commit
-        self.diff = diff
         self._license_problem = False
         self._commit_problem = False
         self._commit_notes = defaultdict(list)
@@ -883,11 +882,11 @@ class CommitChecker(object):
         # Retrieve the diff and do the problem checks...
         filename = ""
         filediff = list()
-        for line in self.diff:
+        for line in diff:
             file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
             if file_change:
                 # Are we changing file? If so, we have the full diff, so do a license check....
-                if filename != "" and self.commit.files_changed[ filename ]["change"] in ['A','C'] and re.search(valid_filename_regex, filename):
+                if filename != "" and commit.files_changed[ filename ]["change"] in ['A','C'] and re.search(valid_filename_regex, filename):
                     self.check_commit_license(filename, ''.join(filediff))
 
                 filediff = list()
