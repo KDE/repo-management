@@ -390,6 +390,25 @@ class CommitAuditor(object):
                         self.__log_failure(commit.sha1, "Email Address - " + email_address)
                 except dns.resolver.NXDOMAIN:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
+    
+    def audit_hashes(self, blocked_list):
+        with open(blocked_list, "r") as blockedfile:
+            blocked = blockedfile.readlines()
+    
+        for sha1 in self.repository.commits:
+            if sha1 in blocked:
+                self.__log_failure(commit.sha1, "Blocked commit - " + sha1)
+                
+    def audit_tag(self):
+        if self.repository.change_type == ChangeType.Delete:
+            return
+
+        command = ["git", "cat-file", "-t", self.repository.new_sha1]
+        process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+        sha_type = process.stdout.readline().strip()
+        if sha_type != "tag":
+            self.__log_failure(commit.sha1, "Unannotated tag - " + sha1)
 
 class CommitNotifier(object):
     "Contains items needed to send notifications for commits"
