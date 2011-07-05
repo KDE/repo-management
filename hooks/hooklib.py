@@ -48,7 +48,6 @@ class Repository(object):
     EmptyRef = "0000000000000000000000000000000000000000"
 
     RepoManagementName = "repo-management"
-    BaseDir = "/srv/kdegit/repositories/"
     PullBaseUrlHttp = "http://anongit.kde.org/"
     PullBaseUrlGit = "git://anongit.kde.org/"
     PushBaseUrl = "git@git.kde.org:"
@@ -81,6 +80,11 @@ class Repository(object):
         self.change_type = self.__get_change_type()
         ref_name_match = re.match("^refs/(.+?)/(.+)$", self.ref)
         self.ref_name = ref_name_match.group(2)
+        
+        # Determine commit type for the top most commit
+        command = ["git", "cat-file", "-t", self.new_sha1]
+        process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self.commit_type = process.stdout.readline().strip()
 
         # Final initialisation
         self.__build_commits()
@@ -395,20 +399,10 @@ class CommitAuditor(object):
         with open(blocked_list, "r") as blockedfile:
             blocked = blockedfile.readlines()
     
-        for sha1 in self.repository.commits:
-            if sha1 in blocked:
-                self.__log_failure(commit.sha1, "Blocked commit - " + sha1)
-                
-    def audit_tag(self):
-        if self.repository.change_type == ChangeType.Delete:
-            return
-
-        command = ["git", "cat-file", "-t", self.repository.new_sha1]
-        process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE)
-        sha_type = process.stdout.readline().strip()
-        if sha_type != "tag":
-            self.__log_failure(commit.sha1, "Unannotated tag - " + sha1)
+        for sha1 in blocked:
+            sha1 = sha1.strip()
+            if sha1 in self.repository.commits:
+                self.__log_failure(sha1, "Administratively blocked commit - contact sysadmin@kde.org")
 
 class CommitNotifier(object):
     "Contains items needed to send notifications for commits"
@@ -492,7 +486,11 @@ class CommitNotifier(object):
             subprocess.Popen(cmdline, shell=False)
         
     def handler(self, repository):
-        # We will incrementally send the mails as we gather up the diffs....
+        # If there are no commits -> nothing to notify on :)
+        if len(repository.commits) == 0:
+            return
+        
+        # We will incrementally notify as we gather up the diffs....
         process = get_change_diff( repository, ["-p"] )
         diff = list()
         for line in process.stdout:
@@ -933,7 +931,7 @@ class CommitChecker(object):
             # Store the diff....
             filediff.append(line)
 
-        if filename != "" and self.commit.files_changed[ filename ]["change"] in ['A','C'] and re.search(valid_filename_regex, filename):
+        if filename != "" and commit.files_changed[ filename ]["change"] in ['A','C'] and re.search(valid_filename_regex, filename):
             self.check_commit_license(filename, ''.join(filediff))
 
 def read_command( command, shell=False ):
