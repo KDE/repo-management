@@ -425,7 +425,7 @@ class CommitNotifier(object):
         bcc_addresses = []
 
         # Add the committer to the Cc in case problems have been found
-        if builder.checker.license_problem or builder.checker.commit_problem:
+        if builder.checker and (builder.checker.license_problem or builder.checker.commit_problem):
             cc_addresses.append( builder.commit.committer_email )
 
         if builder.keywords['email_gui']:
@@ -576,14 +576,15 @@ class MessageBuilder(object):
             if "source" in info.keys():
                 temporary = "[from: {0} - {1}% similarity]".format(info["source"], info["similarity"])
                 data.append( temporary )
-            data.extend( self.checker.commit_notes[filename] )
+            if self.checker:
+                data.extend( self.checker.commit_notes[filename] )
             summary.append( ' '.join(data) )
             
-        if self.checker.license_problem:
+        if self.checker and self.checker.license_problem:
             summary.append( "\nThe files marked with a * at the end have a non valid "
                 "license. Please read: http://techbase.kde.org/Policies/Licensing_Policy "
                 "and use the headers which are listed at that page.\n")
-        if self.checker.commit_problem:
+        if self.checker and self.checker.commit_problem:
             summary.append( "\nThe files marked with ** at the end have a problem. "
                 "either the file contains a trailing space or the file contains a call to "
                 "a potentially dangerous code. Please read: "
