@@ -512,11 +512,12 @@ class CommitNotifier(object):
 class MessageBuilder(object):
     """Creates the components needed to send emails and other notifications"""
         
-    def __init__(self, repository, commit, checker = None):
+    def __init__(self, repository, commit, checker = None, include_url = True):
         self.repository = repository
         self.commit = commit
         self.checker = checker
         self.keywords = defaultdict(list)
+        self.include_url = include_url
         
         # Generate directories affected by the commit
         commit_directories = [os.path.dirname(filename) for filename in commit.files_changed]
@@ -589,9 +590,10 @@ class MessageBuilder(object):
                 "either the file contains a trailing space or the file contains a call to "
                 "a potentially dangerous code. Please read: "
                 "http://community.kde.org/Sysadmin/CommitHooks#Email_notifications "
-                "Either fix the trailing space or review the dangerous code.\n");
-        summary.append( "\n" + commit.url + "\n" )
-        return '\n'.join( summary )
+                "Either fix the trailing space or review the dangerous code.\n")
+        if self.include_url:
+            summary.append( "\n" + commit.url )
+        return '\n'.join( summary ) + '\n'
         
     def determine_keywords(self):
         """Parse special keywords in commits to determine further post-commit
