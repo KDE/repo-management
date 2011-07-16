@@ -439,7 +439,7 @@ class CommitNotifier(object):
             body += "\n" + unicode('', "utf-8", 'replace').join(diff)
 
         # Handle the normal mailing list mails....
-        message = MIMEText( body, 'plain', 'utf-8' )
+        message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
         message['Subject'] = Header( builder.subject, 'utf-8', 76, 'Subject' )
         message['From']    = builder.from_header()
         message['To']      = Header( notification_address )
@@ -469,7 +469,7 @@ class CommitNotifier(object):
             bug_body.append( builder.body )
 
             body = unicode('\n', "utf-8").join( bug_body )
-            message = MIMEText( body, 'plain', 'utf-8' )
+            message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
             message['Subject'] = Header( builder.subject, 'utf-8', 76, 'Subject' )
             message['From']    = builder.from_header()
             message['To']      = Header( "bug-control@bugs.kde.org" )
