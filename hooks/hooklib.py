@@ -172,7 +172,7 @@ class Repository(object):
         # Retrieve number of changed lines, and merge in the type of change
         process = get_change_diff( self, ["--numstat", "-z"] )
         output = process.stdout.read()
-        for sha1, information in re.findall("\xff([0-9a-f]+)\xff(?:\n|\x00)([^\xff]*)\x00", output):
+        for sha1, information in re.findall("\xff([0-9a-f]+)\xff(?:\n|\x00|)([^\xff]*)(?:\x00|)", output):
             stats = defaultdict(dict)
             file_stats = re.findall("([0-9]+|-)\t([0-9]+|-)\t(?:(?=\x00)\x00([^\x00]+)\x00|)([^\x00]+)", information)
             for added, removed, source_file, changed_file in file_stats:
