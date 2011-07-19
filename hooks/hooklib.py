@@ -452,7 +452,7 @@ class CommitNotifier(object):
 
         # Send email...
         to_addresses = cc_addresses + bcc_addresses + [notification_address]
-        self.smtp.sendmail(builder.commit.committer_email, to_addresses, message.as_string())
+        self.smtp.sendmail("null@kde.org", to_addresses, message.as_string())
         
     def notify_bugzilla(self, builder):
         bugs_changed = builder.keywords['bug_fixed'] + builder.keywords['bug_cc']
