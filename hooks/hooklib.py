@@ -82,9 +82,12 @@ class Repository(object):
         self.ref_name = ref_name_match.group(2)
         
         # Determine commit type for the top most commit
-        command = ["git", "cat-file", "-t", self.new_sha1]
-        process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        self.commit_type = process.stdout.readline().strip()
+        if self.change_type == ChangeType.Delete:
+            self.commit_type = "commit"
+        else:
+            command = ["git", "cat-file", "-t", self.new_sha1]
+            process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            self.commit_type = process.stdout.readline().strip()
 
         # Final initialisation
         self.__build_commits()
