@@ -122,6 +122,11 @@ if os.path.exists(git_dir + "/kde-hooks-off"):
     print "Hooks are currently disabled!"
     exit(0)
 
+# Does this user need a special post-update skip?
+post_exceptions = ["scripty"]
+if push_user in post_exceptions:
+    exit(0)
+
 # Output a helpful url....
 if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in repository.commits:
     if len(repository.commits) == 1:
@@ -130,11 +135,6 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
         print "The last commit in this series is available for viewing at:"
     
     print repository.commits[ repository.new_sha1 ].url
-    
-# Does this user need a special post-update skip?
-post_exceptions = ["scripty"]
-if push_user in post_exceptions:
-    exit(0)
 
 # Are we allowed to send notifications on this repo?
 notify_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
