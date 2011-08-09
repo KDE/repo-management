@@ -254,7 +254,7 @@ class Repository(object):
             merge_base = read_command(('git', 'merge-base', self.old_sha1, self.new_sha1))
 
         # What type of change is happening here?
-        if self.old_sha1 == self.EmptyRef:
+        if self.old_sha1 == self.EmptyRef and self.new_sha1 != self.EmptyRef:
             return ChangeType.Create
         elif self.new_sha1 == self.EmptyRef:
             return ChangeType.Delete
