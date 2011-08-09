@@ -910,7 +910,7 @@ class CommitChecker(object):
             file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
             if file_change:
                 # Are we changing file? If so, we have the full diff, so do a license check....
-                if filename != "" and commit.files_changed[ filename ]["change"] in ['A','C'] and re.search(valid_filename_regex, filename):
+                if filename != "" and commit.files_changed[ filename ]["change"] in ['A'] and re.search(valid_filename_regex, filename):
                     self.check_commit_license(filename, ''.join(filediff))
 
                 filediff = list()
