@@ -439,7 +439,10 @@ class CommitNotifier(object):
 
         body = builder.body
         if diff and len(diff) < 8000:
-            body += "\n" + unicode('', "utf-8", 'replace').join(diff)
+            try:
+                body += "\n" + unicode('', "utf-8", 'replace').join(diff)
+            except UnicodeDecodeError:
+                body += "\nError decoding from unicode\n" + diff
 
         # Handle the normal mailing list mails....
         message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
