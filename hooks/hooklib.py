@@ -439,10 +439,7 @@ class CommitNotifier(object):
 
         body = builder.body
         if diff and len(diff) < 8000:
-            try:
-                body += "\n" + unicode('', "utf-8", 'replace').join(diff)
-            except UnicodeDecodeError:
-                body += "\nError decoding from unicode\n" + diff
+            body += "\n" + unicode('', "utf-8", 'replace').join(diff)
 
         # Handle the normal mailing list mails....
         message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
@@ -600,7 +597,7 @@ class MessageBuilder(object):
                 "Either fix the trailing space or review the dangerous code.\n")
         if self.include_url:
             summary.append( "\n" + commit.url )
-        return '\n'.join( summary ) + '\n'
+        return unicode('\n', 'utf-8', 'replace').join( summary ) + '\n'
         
     def determine_keywords(self):
         """Parse special keywords in commits to determine further post-commit
