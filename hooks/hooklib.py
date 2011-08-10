@@ -914,7 +914,7 @@ class CommitChecker(object):
                     self.check_commit_license(filename, ''.join(filediff))
 
                 filediff = list()
-                filename = unicode(file_change.group(2), "utf-8", "replace")
+                filename = file_change.group(2)
                 continue
 
             # Diff headers are bogus
