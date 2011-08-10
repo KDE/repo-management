@@ -180,7 +180,7 @@ class Repository(object):
             file_stats = re.findall("([0-9]+|-)\t([0-9]+|-)\t(?:(?=\x00)\x00([^\x00]+)\x00|)([^\x00]+)", information)
             for added, removed, source_file, changed_file in file_stats:
                 if source_file:
-                    stats[changed_file]["source"] = source_file
+                    stats[changed_file]["source"] = unicode(source_file, "utf-8", "replace")
                 stats[changed_file]["added"] = added
                 stats[changed_file]["removed"] = removed
                 
@@ -192,7 +192,7 @@ class Repository(object):
                     stats[changed_file]["similarity"] = similarity
                 
             # Remove items with invalid data (ie. number of changed lines but no status)
-            data = dict((filename,data) for filename,data in stats.items() if "change" in data and "added" in data)
+            data = dict((unicode(filename, "utf-8", "replace"),data) for filename,data in stats.items() if "change" in data and "added" in data)
             self.commits[sha1].files_changed = data
                 
     def __write_metadata(self):
@@ -554,10 +554,10 @@ class MessageBuilder(object):
         subject = unicode("[{0}] {1}: {2}").format(repo_path, lowest_common_path, short_msg)
 
         if self.keywords['silent']:
-            subject += unicode(' (silent)')
+            subject += ' (silent)'
 
         if self.keywords['notes']:
-            subject += unicode(' (silent,notes)')
+            subject += ' (silent,notes)'
         return subject
             
     @property
@@ -579,7 +579,7 @@ class MessageBuilder(object):
             temporary = "{0:<2} +{1:<4} -{2:<4}".format(info["change"], info["added"], info["removed"])
             data = [temporary, filename]
             if "source" in info.keys():
-                temporary = "[from: {0} - {1}% similarity]".format(info["source"], info["similarity"])
+                temporary = unicode("[from: {0} - {1}% similarity]").format(info["source"], info["similarity"])
                 data.append( temporary )
             if self.checker:
                 data.extend( self.checker.commit_notes[filename] )
@@ -597,7 +597,7 @@ class MessageBuilder(object):
                 "Either fix the trailing space or review the dangerous code.\n")
         if self.include_url:
             summary.append( "\n" + commit.url )
-        return unicode('\n', 'utf-8', 'replace').join( summary ) + '\n'
+        return '\n'.join( summary ) + '\n'
         
     def determine_keywords(self):
         """Parse special keywords in commits to determine further post-commit
@@ -904,7 +904,7 @@ class CommitChecker(object):
         valid_filename_regex = "\.(cpp|cc|cxx|C|c\+\+|c|l|y||h|H|hh|hxx|hpp|h\+\+|qml)$"
 
         # Retrieve the diff and do the problem checks...
-        filename = ""
+        filename = unicode("")
         filediff = list()
         for line in diff:
             file_change = re.match( "^diff --(cc |git a\/.+ b\/)(.+)$", line )
@@ -914,7 +914,7 @@ class CommitChecker(object):
                     self.check_commit_license(filename, ''.join(filediff))
 
                 filediff = list()
-                filename = file_change.group(2)
+                filename = unicode(file_change.group(2), "utf-8", "replace")
                 continue
 
             # Diff headers are bogus
