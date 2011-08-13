@@ -185,7 +185,7 @@ class Repository(object):
                 stats[changed_file]["removed"] = removed
                 
             # Parse the way files changed
-            status = re.findall("(?:\x00|^)(A|C|D|M|R|T|U|X)(?:(?<=C|R)([0-9]+)\x00([^\x00]+)|)\x00([^\x00]+)?", self.commits[sha1].files_changed)
+            status = re.findall("\x00?(A|C|D|M|R|T|U|X)(?:(?<=C|R)([0-9]+)\x00([^\x00]+)|)\x00([^\x00]+)?", self.commits[sha1].files_changed)
             for change, similarity, source_file, changed_file in status:
                 stats[changed_file]["change"] = change
                 if source_file:
@@ -193,6 +193,7 @@ class Repository(object):
                 
             # Remove items with invalid data (ie. number of changed lines but no status)
             data = dict((unicode(filename, "utf-8", "replace"),data) for filename,data in stats.items() if "change" in data and "added" in data)
+            data = dict((filename,data) for filename,data in data.items() if "source" not in data or ("source" in data and "similarity" in data))
             self.commits[sha1].files_changed = data
                 
     def __write_metadata(self):
