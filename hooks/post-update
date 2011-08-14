@@ -17,4 +17,10 @@ if [ -f $remote_update_url ]; then
     python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
 fi
 
+# Kickoff a Jenkins build....
+jenkinsauth=`cat ${HOME}/jenkins-credentials`
+cleanpath=${urlpath/\/-}
+curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}/build?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" 2>1 1>/dev/null
+
+# Update local information
 git update-server-info
