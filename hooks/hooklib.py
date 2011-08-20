@@ -190,10 +190,13 @@ class Repository(object):
                 stats[changed_file]["change"] = change
                 if source_file:
                     stats[changed_file]["similarity"] = similarity
+                    
+            for filename, data in stats.iteritems():
+                if "source" in data.keys() and "similarity" not in data.keys():
+                    del data["source"]
                 
             # Remove items with invalid data (ie. number of changed lines but no status)
             data = dict((unicode(filename, "utf-8", "replace"),data) for filename,data in stats.items() if "change" in data and "added" in data)
-            data = dict((filename,data) for filename,data in data.items() if "source" not in data or ("source" in data and "similarity" in data))
             self.commits[sha1].files_changed = data
                 
     def __write_metadata(self):
