@@ -902,10 +902,10 @@ class CommitChecker(object):
 
         # Unsafe regex checks...
         unsafe_matches = list()
-        unsafe_matches.append( "\b(KRun::runCommand|K3?ShellProcess|setUseShell|setShellCommand)\b\s*[\(\r\n]" )
-        unsafe_matches.append( "\b(system|popen|mktemp|mkstemp|tmpnam|gets|syslog|strptime)\b\s*[\(\r\n]" )
-        unsafe_matches.append( "(scanf)\b\s*[\(\r\n]" )
-        valid_filename_regex = "\.(cpp|cc|cxx|C|c\+\+|c|l|y||h|H|hh|hxx|hpp|h\+\+|qml)$"
+        unsafe_matches.append( r"\b(KRun::runCommand|K3?ShellProcess|setUseShell|setShellCommand)\b\s*[\(\r\n]" )
+        unsafe_matches.append( r"\b(system|popen|mktemp|mkstemp|tmpnam|gets|syslog|strptime)\b\s*[\(\r\n]" )
+        unsafe_matches.append( r"(scanf)\b\s*[\(\r\n]" )
+        valid_filename_regex = r"\.(cpp|cc|cxx|C|c\+\+|c|l|y||h|H|hh|hxx|hpp|h\+\+|qml)$"
 
         # Retrieve the diff and do the problem checks...
         filename = unicode("")
