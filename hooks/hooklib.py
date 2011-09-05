@@ -8,6 +8,7 @@ import time
 import subprocess
 import dns.resolver
 import smtplib
+import operator
 from datetime import datetime
 from collections import defaultdict
 from itertools import takewhile
@@ -196,7 +197,7 @@ class Repository(object):
                     del data["source"]
                 
             # Remove items with invalid data (ie. number of changed lines but no status)
-            data = dict((unicode(filename, "utf-8", "replace"),data) for filename,data in stats.items() if "change" in data and "added" in data)
+            data = OrderedDict((unicode(filename, "utf-8", "replace"), data) for filename, data in sorted(stats.items(), key=operator.itemgetter(0)) if "change" in data and "added" in data)
             self.commits[sha1].files_changed = data
                 
     def __write_metadata(self):
