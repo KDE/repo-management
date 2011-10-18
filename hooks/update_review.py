@@ -24,7 +24,7 @@ import os
 import urllib
 import urlparse
 
-from rest_client import Connection
+import requests
 
 # Basic constants
 
@@ -85,10 +85,6 @@ def close_review(review_id, commit, committer, changed_ref):
     logger = logging.getLogger("reviewboard")
     logger.setLevel(DEFAULT_LEVEL)
 
-    logger.debug("Establishing connection")
-    connection = Connection(reviewboard_url, username=username,
-                            password=password)
-    # HTML-encode the message to avoid unpleasant side effects
     message = urllib.quote("This review has been submitted with commit "
                            "%s by %s to %s." % (commit, committer, changed_ref))
 
@@ -96,13 +92,19 @@ def close_review(review_id, commit, committer, changed_ref):
     submit_resource = "review-requests/%s" % review_id
     reply_resource = "review-requests/%s/reviews/" % review_id
 
+    submit_url = urlparse.urljoin(reviewboard_url, submit_resource)
+    reply_url = urlparse.urljoin(reviewboard_url, reply_resource)
+
     # Post a message announcing the submission
     logger.debug("Sending comment")
-    response = connection.request_post(reply_resource,
-                                       body="public=True&body_top=%s" %
-                                       message)
+
+    post_reply = dict(public=True, body_top=message)
+
+    request = requests.post(reply_url, auth=(username, password),
+            params=post_reply) 
+
     try:
-        response = json.loads(response["body"])
+        response = json.loads(request.content)
     except ValueError:
         logging.critical("Malformed response received from Reviewboard."
                          " Contact the KDE sysadmins.")
@@ -115,11 +117,12 @@ def close_review(review_id, commit, committer, changed_ref):
 
     # Change the actual status
     logger.debug("Sending status")
-    response = connection.request_put(submit_resource,
-                                      body="status=submitted")
+
+    status_request = requests.put(submit_url, auth=(username, password),
+            params=dict(body="status=submitted"))
 
     try:
-        response = json.loads(response["body"])
+        response = json.loads(status_request.content)
     except ValueError:
         logging.critical("Malformed response received from Reviewboard."
                          " Contact the KDE sysadmins.")
