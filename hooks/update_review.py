@@ -103,6 +103,11 @@ def close_review(review_id, commit, committer, changed_ref):
     request = requests.post(reply_url, auth=(username, password),
             params=post_reply) 
 
+    if request.status.code != requests.codes.ok:
+        logging.error("Communication problem with Reviewboard. "
+                "Please contact the KDE sysadmins.")
+        return
+
     try:
         response = json.loads(request.content)
     except ValueError:
@@ -120,6 +125,13 @@ def close_review(review_id, commit, committer, changed_ref):
 
     status_request = requests.put(submit_url, auth=(username, password),
             params=dict(body="status=submitted"))
+
+
+    if status_request.status.code != requests.codes.ok:
+        logging.error("Communication problem with Reviewboard. "
+                "Please contact the KDE sysadmins.")
+        return
+
 
     try:
         response = json.loads(status_request.content)
