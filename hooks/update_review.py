@@ -124,7 +124,7 @@ def close_review(review_id, commit, committer, changed_ref):
     logger.debug("Sending status")
 
     status_request = requests.put(submit_url, auth=(username, password),
-            params=dict(body="status=submitted"))
+            params=dict(status="submitted")
 
 
     if status_request.status.code != requests.codes.ok:
