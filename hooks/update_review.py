@@ -101,7 +101,7 @@ def close_review(review_id, commit, committer, changed_ref):
     post_reply = dict(public=True, body_top=message)
 
     request = requests.post(reply_url, auth=(username, password),
-            params=post_reply) 
+            params=post_reply)
 
     if request.status.code != requests.codes.ok:
         logging.error("Communication problem with Reviewboard. "
@@ -124,7 +124,7 @@ def close_review(review_id, commit, committer, changed_ref):
     logger.debug("Sending status")
 
     status_request = requests.put(submit_url, auth=(username, password),
-            params=dict(status="submitted")
+            params=dict(status="submitted"))
 
 
     if status_request.status.code != requests.codes.ok:
