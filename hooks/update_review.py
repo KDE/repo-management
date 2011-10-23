@@ -104,17 +104,17 @@ def close_review(review_id, commit, committer, changed_ref):
             params=post_reply)
 
     if request.status_code != requests.codes.ok:
-        logging.error("Communication problem with Reviewboard. "
+        logger.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
-        logging.info("Please report the following:")
-        logging.info("Request URL: %s" % reply_url)
-        logging.info("Status code: %s" % request.status_code)
+        logger.info("Please report the following:")
+        logger.info("Request URL: %s" % reply_url)
+        logger.info("Status code: %s" % request.status_code)
         return
 
     try:
         response = json.loads(request.content)
     except ValueError:
-        logging.critical("Malformed response received from Reviewboard."
+        logger.critical("Malformed response received from Reviewboard."
                          " Contact the KDE sysadmins.")
         return
 
@@ -131,18 +131,18 @@ def close_review(review_id, commit, committer, changed_ref):
 
 
     if status_request.status_code != requests.codes.ok:
-        logging.error("Communication problem with Reviewboard. "
+        logger.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
-        logging.info("Please report the following:")
-        logging.info("Request URL: %s" % submit_url)
-        logging.info("Status code: %s" % request.status_code)
+        logger.info("Please report the following:")
+        logger.info("Request URL: %s" % submit_url)
+        logger.info("Status code: %s" % request.status_code)
         return
 
 
     try:
         response = json.loads(status_request.content)
     except ValueError:
-        logging.critical("Malformed response received from Reviewboard."
+        logger.critical("Malformed response received from Reviewboard."
                          " Contact the KDE sysadmins.")
         return
 
