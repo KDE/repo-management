@@ -103,7 +103,7 @@ def close_review(review_id, commit, committer, changed_ref):
     request = requests.post(reply_url, auth=(username, password),
             params=post_reply)
 
-    if request.status.code != requests.codes.ok:
+    if request.status_code != requests.codes.ok:
         logging.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
         return
@@ -127,7 +127,7 @@ def close_review(review_id, commit, committer, changed_ref):
             params=dict(status="submitted"))
 
 
-    if status_request.status.code != requests.codes.ok:
+    if status_request.status_code != requests.codes.ok:
         logging.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
         return
