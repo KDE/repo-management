@@ -106,6 +106,9 @@ def close_review(review_id, commit, committer, changed_ref):
     if request.status_code != requests.codes.ok:
         logging.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
+        logging.info("Please report the following:")
+        logging.info("Request URL: %s" % reply_url)
+        logging.info("Status code: %s" % request.status_code)
         return
 
     try:
@@ -130,6 +133,9 @@ def close_review(review_id, commit, committer, changed_ref):
     if status_request.status_code != requests.codes.ok:
         logging.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
+        logging.info("Please report the following:")
+        logging.info("Request URL: %s" % submit_url)
+        logging.info("Status code: %s" % request.status_code)
         return
 
 
