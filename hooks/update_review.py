@@ -77,7 +77,8 @@ def close_review(review_id, commit, committer, changed_ref):
         - committer - the committer's username
     """
 
-    reviewboard_url = urlparse.urljoin(REVIEWBOARD_URL, "api")
+    # The slash is important or urljoin will mess up
+    reviewboard_url = urlparse.urljoin(REVIEWBOARD_URL, "api/")
 
     username, password = read_credentials()
 
@@ -85,8 +86,8 @@ def close_review(review_id, commit, committer, changed_ref):
     logger = logging.getLogger("reviewboard")
     logger.setLevel(DEFAULT_LEVEL)
 
-    message = urllib.quote("This review has been submitted with commit "
-                           "%s by %s to %s." % (commit, committer, changed_ref))
+    message =  ("This review has been submitted with commit "
+            "%s by %s to %s." % (commit, committer, changed_ref))
 
     # Resources for replying and for submitting
     submit_resource = "review-requests/%s" % review_id
@@ -103,7 +104,9 @@ def close_review(review_id, commit, committer, changed_ref):
     request = requests.post(reply_url, auth=(username, password),
             params=post_reply)
 
-    if request.status_code != requests.codes.ok:
+    # Reviewboard generates a 201 created response for this
+    if (request.status_code != requests.codes.ok or
+        request.status_code != requests.codes.created):
         logger.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
         logger.info("Please report the following:")
