@@ -90,7 +90,7 @@ def close_review(review_id, commit, committer, changed_ref):
             "%s by %s to %s." % (commit, committer, changed_ref))
 
     # Resources for replying and for submitting
-    submit_resource = "review-requests/%s" % review_id
+    submit_resource = "review-requests/%s/" % review_id
     reply_resource = "review-requests/%s/reviews/" % review_id
 
     submit_url = urlparse.urljoin(reviewboard_url, submit_resource)
@@ -102,11 +102,10 @@ def close_review(review_id, commit, committer, changed_ref):
     post_reply = dict(public=True, body_top=message)
 
     request = requests.post(reply_url, auth=(username, password),
-            params=post_reply)
+            data=post_reply)
 
     # Reviewboard generates a 201 created response for this
-    if (request.status_code != requests.codes.ok or
-        request.status_code != requests.codes.created):
+    if request.status_code not in (requests.codes.created, requests.codes.ok):
         logger.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
         logger.info("Please report the following:")
@@ -130,15 +129,14 @@ def close_review(review_id, commit, committer, changed_ref):
     logger.debug("Sending status")
 
     status_request = requests.put(submit_url, auth=(username, password),
-            params=dict(status="submitted"))
-
+            data=dict(status="submitted"))
 
     if status_request.status_code != requests.codes.ok:
         logger.error("Communication problem with Reviewboard. "
                 "Please contact the KDE sysadmins.")
         logger.info("Please report the following:")
         logger.info("Request URL: %s" % submit_url)
-        logger.info("Status code: %s" % request.status_code)
+        logger.info("Status code: %s" % status_request.status_code)
         return
 
 
