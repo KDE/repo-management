@@ -21,7 +21,11 @@ fi
 jenkinsauth=`cat ${HOME}/jenkins-credentials`
 cleanpath=${urlpath/\/-}
 cleanpath=${cleanpath/.git/}
-curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}/polling?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" 2>1 1>/dev/null
+for ref; do
+    updatedref=${ref#refs/heads/}
+    updatedref=${updatedref/\/-}
+    curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}-${updatedref}/polling?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" 2>1 1>/dev/null
+done
 
 # Update local information
 git update-server-info
