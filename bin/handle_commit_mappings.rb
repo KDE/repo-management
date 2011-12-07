@@ -43,6 +43,7 @@ helpers do
     # populate the files in /home/git/repo-uid-mappings, which map an identifier to the actual 
     # directory, offset from /repositories, that contains the git directory. This path can then
     # be used in the query in the Redmine DB or directly in the Gitweb URL.
+    repoid = repoid.downcase
     if not File.exists?("/home/git/repo-uid-mappings/#{repoid}")
       # Something is wrong, bail
       return nil
