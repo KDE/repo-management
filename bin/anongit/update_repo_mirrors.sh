@@ -20,8 +20,8 @@ if [ -s ~/diffout ]
         echo "Removing repository $line"
         rm -rf $line
     done
-    rm ~/diffout
 fi
+rm ~/diffout
 
 # Now, update this to our local copy in ~git
 cp /home/git/projects-to-anongit.list.new ~/projects-to-anongit.list
