@@ -463,7 +463,8 @@ class CommitNotifier(object):
         self.smtp.sendmail("null@kde.org", to_addresses, message.as_string())
         
     def notify_bugzilla(self, builder):
-        commit_msg = re.sub("^\s*((CC)?BUGS?|FEATURE)[:=]\s*(\d{4,10})", "Related: bug \g<3>", builder.body, flags=re.MULTILINE)
+        commit_regex = re.compile("^\s*((CC)?BUGS?|FEATURE)[:=]\s*(\d{4,10})", re.MULTILINE)
+        commit_msg = re.sub(commit_regex, "Related: bug \g<3>", builder.body)
         bugs_changed = builder.keywords['bug_fixed'] + builder.keywords['bug_cc']
         for bug in bugs_changed:
             # Prepare the Bugzilla specific message body portion...
