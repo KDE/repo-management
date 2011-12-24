@@ -463,6 +463,7 @@ class CommitNotifier(object):
         self.smtp.sendmail("null@kde.org", to_addresses, message.as_string())
         
     def notify_bugzilla(self, builder):
+        commit_msg = re.sub("^\s*((CC)?BUGS?|FEATURE)[:=]\s*(\d{4,10})", "Related: bug \g<3>", builder.body, flags=re.MULTILINE)
         bugs_changed = builder.keywords['bug_fixed'] + builder.keywords['bug_cc']
         for bug in bugs_changed:
             # Prepare the Bugzilla specific message body portion...
@@ -474,7 +475,7 @@ class CommitNotifier(object):
                 if builder.keywords['fixed_in']:
                     bug_body.append("@cf_versionfixedin = " + builder.keywords['fixed_in'][0])
             bug_body.append( '' )
-            bug_body.append( builder.body )
+            bug_body.append( commit_msg )
 
             body = unicode('\n', "utf-8").join( bug_body )
             message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
