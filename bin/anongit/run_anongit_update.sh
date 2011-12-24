@@ -6,7 +6,7 @@ rsync -avz git.kde.org::projects-list/projects-to-anongit.list /home/git/project
 chmod 755 /home/git/projects-to-anongit.list.new
 
 rm -rf /home/git/metadata-tree/*
-rsync -avz git.kde.org::metadata-tree/ /home/git/metadata-tree/
+rsync -avz --delete git.kde.org::metadata-tree/ /home/git/metadata-tree/
 
 cd /home/git/repo-management; git pull
 
