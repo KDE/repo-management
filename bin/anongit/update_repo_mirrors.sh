@@ -38,8 +38,7 @@ for line in `cat ~/projects-to-anongit.list`; do
     if [ -e $bname -a -e $bname/HEAD ]
       then
         cd $bname
-        git remote update
-        git remote prune origin
+        git remote update -p
         git update-server-info
       else
         rm -rf $bname
