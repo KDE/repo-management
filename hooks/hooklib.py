@@ -468,7 +468,9 @@ class CommitNotifier(object):
         for bug in bugs_changed:
             # Prepare the customised Bugzilla comment
             related_bugs = ["bug " + entry for entry in bugs_changed if entry != bug]
-            commit_msg = re.sub(commit_regex, "Related: " + ', '.join(related_bugs) + "\n", builder.body, 1)
+            commit_msg = builder.body
+            if related_bugs:
+	        commit_msg = re.sub(commit_regex, "Related: " + ', '.join(related_bugs) + "\n", commit_msg, 1)
             commit_msg = re.sub(commit_regex, "", commit_msg)
 
             # Prepare the Bugzilla specific message body portion...
