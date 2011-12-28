@@ -611,12 +611,14 @@ class MessageBuilder(object):
         actions."""
 
         split = dict()
-        split['bug_fixed'] = re.compile("^\s*(?:BUGS?|FEATURE)[:=]\s*(\d{4,10})")
-        split['bug_cc']    = re.compile("^\s*CCBUGS?[:=]\s*(\d{4,10})")
         split['email_cc']  = re.compile("^\s*CC[-_]?MAIL[:=]\s*(.*)")
         split['email_cc2'] = re.compile("^\s*C[Cc][:=]\s*(.*)")
         split['fixed_in']  = re.compile("^\s*FIXED[-_]?IN[:=]\s*(.*)")
-        split['review']    = re.compile("^\s*REVIEWS?[:=]\s*(\d{1,10})")
+
+        numeric = dict()
+        numeric['bug_fixed'] = re.compile("^\s*(?:BUGS?|FEATURE)[:=]\s*(.+)")
+        numeric['bug_cc']    = re.compile("^\s*CCBUGS?[:=]\s*(.+)")
+        numeric['review']    = re.compile("^\s*REVIEWS?[:=]\s*(.+)")
 
         presence = dict()
         presence['email_gui'] = re.compile("^\s*GUI:")
@@ -629,6 +631,11 @@ class MessageBuilder(object):
                 match = re.match( regex, line )
                 if match:
                     results[name] += [result.strip() for result in match.group(1).split(",")]
+
+            for (name, regex) in numeric.iteritems():
+                match = re.match( regex, line )
+                if match:
+                    results[name] += re.findall("(\d{1,10})", match.group(1))
 
             for (name, regex) in presence.iteritems():
                 if re.match( regex, line ):
