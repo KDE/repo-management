@@ -64,5 +64,22 @@ done
 # Copy the metadata over to the repositories
 rsync -avz . /repositories/
 
+
+# In case we have extra metadata left over, having these directories on disk that don't really exist confuse the xml builder, so clean things up
+cd /kdegit/repositories
+for line in $( find -mindepth 1 -maxdepth 1 -type d -name "*.git" ); do if [ ! -e $line/HEAD ]; then rm -rf $line; fi; done
+
+cd /kdegit/repositories/sysadmin
+for line in $( find -mindepth 1 -maxdepth 1 -type d -name "*.git" ); do if [ ! -e $line/HEAD ]; then rm -rf $line; fi; done
+
+cd /kdegit/repositories/websites
+for line in $( find -mindepth 1 -maxdepth 1 -type d -name "*.git" ); do if [ ! -e $line/HEAD ]; then rm -rf $line; fi; done
+
+cd /kdegit/repositories/scratch
+for line in $( find -mindepth 2 -maxdepth 2 -type d -name "*.git" ); do if [ ! -e $line/HEAD ]; then rm -rf $line; fi; done
+
+cd /kdegit/repositories/clones
+for line in $( find -mindepth 3 -maxdepth 3 -type d -name "*.git" ); do if [ ! -e $line/HEAD ]; then rm -rf $line; fi; done
+
 rm /tmp/update_repo.txt
 
