@@ -1,6 +1,13 @@
 #!/bin/bash
 
 # This creates the list of files to rsync down to the anon mirror. These files are metadata living in the various git repository directories.
+
+# First, clean out what's there
+cd ~git/metadata-tree
+for file in $( find -type f ); do if [ ! -e /srv/kdegit/repositories/$file ]; then rm $file; fi; done
+for dir in $( find -type d ); do if [ -z "$(ls -A $dir)" ]; then rmdir $dir; fi; done
+
+# Now actually do the list
 cd ~git
 cp projects.list projects-list/projects-to-anongit.list
 chmod 755 projects-list/projects-to-anongit.list
