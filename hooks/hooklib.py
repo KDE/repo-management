@@ -27,6 +27,7 @@ class RepoType(object):
     Website = 3
     Scratch = 4
     Clone = 5
+    Others = 6
 
 class ChangeType(object):
     "Enum type - indicates the type of change to a ref"
@@ -235,6 +236,8 @@ class Repository(object):
             return RepoType.Scratch
         elif re.match("^clones/(.+)$", self.path):
             return RepoType.Clone
+        elif re.match("^others/(.+)$", self.path):
+	    return RepoType.Others
         else:
             return RepoType.Normal
 

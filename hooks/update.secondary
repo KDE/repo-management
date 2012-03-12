@@ -48,7 +48,7 @@ repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 #####
 
 # Repository change checks...
-push_size_restricted = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
+push_size_restricted = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin, RepoType.Others]
 if repository.ref_type == RefType.Backup:
     print "Pushing to backup refs is not supported for security reasons"
     print "Push declined - attempted repository integrity violation"
@@ -137,12 +137,12 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
     print repository.commits[ repository.new_sha1 ].url
 
 # Are we allowed to send notifications on this repo?
-notify_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
+notify_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin, RepoType.Others]
 if not repository.repo_type in notify_allowed:
     exit(0)
 
 # Perform notifications
-cia_allowed = [RepoType.Normal, RepoType.Website]
+cia_allowed = [RepoType.Normal, RepoType.Website, RepoType.Others]
 notifier = CommitNotifier()
 cia = CiaNotifier(repository)
 checker = CommitChecker()
