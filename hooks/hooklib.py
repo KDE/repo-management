@@ -137,7 +137,7 @@ class Repository(object):
              ('D'  , ('%at%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.+)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.+)\n')),
-             ('MSG', ('%B%xff','(?P<message>(.|\n)+)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)'))
+             ('MSG', ('%B%xff','(?P<message>(.|\n)*)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)'))
             )
 
         pretty_format_data = (': '.join((outer, inner[0])) for outer, inner in l)
