@@ -276,7 +276,7 @@ class CommitAuditor(object):
 
     """Performs all audits on commits"""
 
-    ALLOWED_EOL_FILENAMES = set(("text/vcard","text/directory"))
+    ALLOWED_EOL_MIMETYPES = set(("text/vcard","text/directory"))
 
     def __init__(self, repository):
         self.repository = repository
@@ -359,7 +359,7 @@ class CommitAuditor(object):
                 if guessed_type is None:
                     continue
                 
-                if guessed_type.name() in self.ALLOWED_EOL_FILENAMES:
+                if guessed_type.name() in self.ALLOWED_EOL_MIMETYPES:
                     eol_allowed = True
                 else:
                     eol_allowed = False
