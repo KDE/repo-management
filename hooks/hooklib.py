@@ -276,7 +276,7 @@ class CommitAuditor(object):
 
     """Performs all audits on commits"""
 
-    ALLOWED_EOL_FILENAMES = set("text/vcard",)
+    ALLOWED_EOL_FILENAMES = set("text/vcard","text/directory")
 
     def __init__(self, repository):
         self.repository = repository
