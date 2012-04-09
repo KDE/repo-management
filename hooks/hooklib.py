@@ -354,6 +354,11 @@ class CommitAuditor(object):
                 # If so, we ignore EOL violations
 
                 guessed_type = mime.MimeType.fromName(filename)
+
+                # Guess failed, fail silently
+                if guessed_type is None:
+                    continue
+                
                 if guessed_type.name() in self.ALLOWED_EOL_FILENAMES:
                     eol_allowed = True
                 else:
