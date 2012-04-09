@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email import Charset
 
+import mime
 from ordereddict import OrderedDict
 import lxml.etree as etree
 from lxml.builder import E
@@ -82,7 +83,7 @@ class Repository(object):
         self.change_type = self.__get_change_type()
         ref_name_match = re.match("^refs/(.+?)/(.+)$", self.ref)
         self.ref_name = ref_name_match.group(2)
-        
+
         # Determine commit type for the top most commit
         if self.change_type == ChangeType.Delete:
             self.commit_type = "commit"
@@ -127,7 +128,7 @@ class Repository(object):
         # If we have no revisions... don't continue
         if not revisions:
             return
-            
+
         # Build the git pretty format + regex.
         l = (
              ('CH' , ('%H%n',  '(?P<sha1>.+)\n')),
@@ -185,22 +186,22 @@ class Repository(object):
                     stats[changed_file]["source"] = unicode(source_file, "utf-8", "replace")
                 stats[changed_file]["added"] = added
                 stats[changed_file]["removed"] = removed
-                
+
             # Parse the way files changed
             status = re.findall("\x00?(A|C|D|M|R|T|U|X)(?:(?<=C|R)([0-9]+)\x00([^\x00]+)|)\x00([^\x00]+)?", self.commits[sha1].files_changed)
             for change, similarity, source_file, changed_file in status:
                 stats[changed_file]["change"] = change
                 if source_file:
                     stats[changed_file]["similarity"] = similarity
-                    
+
             for filename, data in stats.iteritems():
                 if "source" in data.keys() and "similarity" not in data.keys():
                     del data["source"]
-                
+
             # Remove items with invalid data (ie. number of changed lines but no status)
             data = OrderedDict((unicode(filename, "utf-8", "replace"), data) for filename, data in sorted(stats.items(), key=operator.itemgetter(0)) if "change" in data and "added" in data)
             self.commits[sha1].files_changed = data
-                
+
     def __write_metadata(self):
 
         """Write repository metatdata."""
@@ -218,7 +219,7 @@ class Repository(object):
         if not os.path.exists(nick_path):
             with open(nick_path, "w") as rid_file:
                 rid_file.write(self.path + "\n")            
-                
+
         with open(nick_path, "r") as rid_file:
             return rid_file.readline().strip()
 
@@ -275,6 +276,8 @@ class CommitAuditor(object):
 
     """Performs all audits on commits"""
 
+    ALLOWED_EOL_FILENAMES = set("text/vcard",)
+
     def __init__(self, repository):
         self.repository = repository
         self.__failed = False
@@ -330,6 +333,10 @@ class CommitAuditor(object):
         re_filename = re.compile("^diff --(cc |git a\/.+ b\/)(.+)$")
         blocked_eol = re.compile(r"(?:\r\n|\n\r|\r)$")
 
+        # Bool to allow special files such as vcards to bypass the check
+        eol_allowed = False
+
+
         # Do EOL audit!
         process = get_change_diff( self.repository, ["-p"] )
         for line in process.stdout:
@@ -342,6 +349,16 @@ class CommitAuditor(object):
             if file_change:
                 filename = file_change.group(2)
                 eol_violation = False
+
+                # Check if it's an allowed mimetype
+                # If so, we ignore EOL violations
+
+                guessed_type = mime.MimeType.fromName(filename)
+                if guessed_type.name() in self.ALLOWED_EOL_FILENAMES:
+                    eol_allowed = True
+                else:
+                    eol_allowed = False
+
                 continue
 
             # Unless they added it, ignore it
@@ -349,6 +366,12 @@ class CommitAuditor(object):
                 continue
 
             if re.search( blocked_eol, line ) and not eol_violation:
+
+                # Is this an allowed filename?
+
+                if eol_allowed:
+                    continue
+
                 # Failure has been found... handle it
                 eol_violation = True
                 self.__log_failure(commit, "End Of Line Style - " + filename);
@@ -405,11 +428,11 @@ class CommitAuditor(object):
                         self.__log_failure(commit.sha1, "Email Address - " + email_address)
                 except dns.resolver.NXDOMAIN:
                     self.__log_failure(commit.sha1, "Email Address - " + email_address)
-    
+
     def audit_hashes(self, blocked_list):
         with open(blocked_list, "r") as blockedfile:
             blocked = blockedfile.readlines()
-    
+
         for sha1 in blocked:
             sha1 = sha1.strip()
             if sha1 in self.repository.commits:
@@ -417,7 +440,7 @@ class CommitAuditor(object):
 
 class CommitNotifier(object):
     "Contains items needed to send notifications for commits"
-    
+
     def __init__(self):
         self.smtp = smtplib.SMTP()
         self.smtp.connect()
@@ -441,7 +464,7 @@ class CommitNotifier(object):
 
         if builder.keywords['email_gui']:
             cc_addresses.append( 'kde-doc-english@kde.org' )
-            
+
         if builder.repository.repo_type == RepoType.Website:
             bcc_addresses.append( 'scmupdate@spider-mail.kde.org' )
 
@@ -464,7 +487,7 @@ class CommitNotifier(object):
         # Send email...
         to_addresses = cc_addresses + bcc_addresses + [notification_address]
         self.smtp.sendmail("null@kde.org", to_addresses, message.as_string())
-        
+
     def notify_bugzilla(self, builder):
         commit_regex = re.compile("^\s*((CC)?BUGS?|FEATURE)[:=](.+)\n", re.MULTILINE)
         bugs_changed = builder.keywords['bug_fixed'] + builder.keywords['bug_cc']
@@ -494,7 +517,7 @@ class CommitNotifier(object):
             message['To']      = Header( "bug-control@bugs.kde.org" )
             self.smtp.sendmail(builder.commit.committer_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
-                               
+
     def notify_reviewboard(self, builder):
         for review in builder.keywords['review']:
             # Call the helper program
@@ -504,12 +527,12 @@ class CommitNotifier(object):
                         builder.commit.author_name, ref_changed)
             # Fork into the background - we don't want it to block the hook
             subprocess.Popen(cmdline, shell=False)
-        
+
     def handler(self, repository):
         # If there are no commits -> nothing to notify on :)
         if len(repository.commits) == 0:
             return
-        
+
         # We will incrementally notify as we gather up the diffs....
         process = get_change_diff( repository, ["-p"] )
         diff = list()
@@ -528,26 +551,26 @@ class CommitNotifier(object):
 
         if commit:
             yield(repository.commits[commit], diff)
-        
+
 class MessageBuilder(object):
     """Creates the components needed to send emails and other notifications"""
-        
+
     def __init__(self, repository, commit, checker = None, include_url = True):
         self.repository = repository
         self.commit = commit
         self.checker = checker
         self.keywords = defaultdict(list)
         self.include_url = include_url
-        
+
         # Generate directories affected by the commit
         commit_directories = [os.path.dirname(filename) for filename in commit.files_changed]
         self.commit_directories = list( set(commit_directories) )
-        
+
     def from_header(self):
         """Helper function to construct a From header for emails - as Python stuffs it up"""
         fixed_name = Header( self.commit.committer_name ).encode()
         return unicode("{0} <{1}>").format(fixed_name, self.commit.committer_email)
-        
+
     @property
     def subject(self):
         if len(self.commit_directories) == 1:
@@ -575,7 +598,7 @@ class MessageBuilder(object):
         if self.keywords['notes']:
             subject += ' (silent,notes)'
         return subject
-            
+
     @property
     def body(self):
         commit = self.commit
@@ -600,7 +623,7 @@ class MessageBuilder(object):
             if self.checker:
                 data.extend( self.checker.commit_notes[filename] )
             summary.append( ' '.join(data) )
-            
+
         if self.checker and self.checker.license_problem:
             summary.append( "\nThe files marked with a * at the end have a non valid "
                 "license. Please read: http://techbase.kde.org/Policies/Licensing_Policy "
@@ -614,7 +637,7 @@ class MessageBuilder(object):
         if self.include_url:
             summary.append( "\n" + commit.url )
         return '\n'.join( summary ) + '\n'
-        
+
     def determine_keywords(self):
         """Parse special keywords in commits to determine further post-commit
         actions."""
@@ -651,7 +674,7 @@ class MessageBuilder(object):
                     results[name] = True
 
         self.keywords = results
-            
+
 class CiaNotifier(object):
     "Notifies CIA of changes to a repository"
 
@@ -734,7 +757,7 @@ class CiaNotifier(object):
 class Commit(object):
 
     """Represents a git commit"""
-    
+
     UrlPattern = "http://commits.kde.org/{0}/{1}"
 
     def __init__(self, repository, commit_data):
@@ -754,7 +777,7 @@ class Commit(object):
 
         value = self._commit_data[key]
         return unicode(value, "utf-8", 'replace')
-        
+
     def __setattr__(self, key, value):
         if key not in ['_commit_data', '_raw_properties', 'repository']:
             self._commit_data[key] = value
@@ -763,7 +786,7 @@ class Commit(object):
 
     def __repr__(self):
         return str(self._commit_data)
-        
+
 class CommitChecker(object):
 
     """Checker class for commit information such as licenses, or potentially
@@ -913,7 +936,7 @@ class CommitChecker(object):
     def check_commit_problems(self, commit, diff):
 
         """Check for potential problems in a commit."""
-        
+
         # Initialise
         self._license_problem = False
         self._commit_problem = False
