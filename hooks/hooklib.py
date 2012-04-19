@@ -510,6 +510,7 @@ class CommitNotifier(object):
             if bug in builder.keywords['bug_fixed']:
                 bug_body.append( "@bug_status = RESOLVED" )
                 bug_body.append( "@resolution = FIXED" )
+                bug_body.append( "@cf_commitlink = " + builder.commit.url )
                 if builder.keywords['fixed_in']:
                     bug_body.append("@cf_versionfixedin = " + builder.keywords['fixed_in'][0])
             bug_body.append( '' )
