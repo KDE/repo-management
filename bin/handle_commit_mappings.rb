@@ -73,7 +73,7 @@ helpers do
         sha1 = commit.sha
       end
     rescue Exception
-      logger.info( "Encountered error creating grit object"  
+      logger.info( "Encountered error creating grit object" )
       return nil
     end
 
