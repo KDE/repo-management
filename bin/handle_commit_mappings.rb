@@ -29,6 +29,8 @@ $pg = nil
 $postgresuser = "commitsscript"
 $postgrespass = File.read("/home/git/commit_script_pgpass").chomp
 
+enable :logging
+
 helpers do
 
   def findGitwebOrRedmineUrl(repoid, changeset)
@@ -43,19 +45,19 @@ helpers do
     # populate the files in /home/git/repo-uid-mappings, which map an identifier to the actual 
     # directory, offset from /repositories, that contains the git directory. This path can then
     # be used in the query in the Redmine DB or directly in the Gitweb URL.
-    repoid = repoid.downcase
     if not File.exists?("/home/git/repo-uid-mappings/#{repoid}")
-      # Something is wrong, bail
+      logger.info( "Cannot find repoid, was looking for /home/git/repo-uid-mappings/#{repoid}" )
       return nil
     end
     path = File.read("/home/git/repo-uid-mappings/#{repoid}").chomp
     if not File.exists?("/repositories/#{path}")
-      # Can't find the repository specified by the UID, bail
+      logger.info( "Cannot find the repository specified by the UID" )
       return nil
     end
 
     # Grit doesn't properly check that SHA1s aren't actually too big
     if changeset.length > 40
+      logger.info( "SHA size is too big" )
       return nil
     end
 
@@ -65,11 +67,13 @@ helpers do
       repo = Grit::Repo.new("/repositories/#{path}")
       commit = repo.commit("#{sha1}")
       if commit.nil?
+        logger.info( "Could not find commit" )
         return nil
       else
         sha1 = commit.sha
       end
     rescue Exception
+      logger.info( "Encountered error creating grit object"  
       return nil
     end
 
@@ -127,6 +131,7 @@ end
 get /^\/(([a-zA-Z0-9][a-zA-Z0-9_\.\-]+[a-zA-Z0-9]\/)+)([a-fA-F0-9]+)/ do |repoid, lastval, changeset|
   # repoid will match with a / at the end, so chop it
   # substitute the magic value used in place of / in the path since the repo-uid mapping directory is flat
+  repoid.downcase!
   url = findGitwebOrRedmineUrl(repoid.chop.gsub(/\//, "__NICK-MAGIC__"), changeset)
   if url.nil?
     return '<HTML><HEAD><META HTTP-EQUIV="refresh" CONTENT="3;URL=http://projects.kde.org"></HEAD><BODY>The repo/commit cannot be found or the commit is non-unique. Redirecting to <a href="http://projects.kde.org">KDE Projects</a>...</BODY></HTML>' 
@@ -137,5 +142,5 @@ end
 
 # Anything else, redirect to Projects.
 get '*' do
-  return '<HTML><HEAD><META HTTP-EQUIV="refresh" CONTENT="3;URL=http://projects.kde.org"></HEAD><BODY>The repo/commit cannot be found or the commit is non-unique. Redirecting to <a href="http://projects.kde.org">KDE Projects</a>...</BODY></HTML>' 
+  return '<HTML><HEAD><META HTTP-EQUIV="refresh" CONTENT="3;URL=http://projects.kde.org"></HEAD><BODY>Invalid URL. Redirecting to <a href="http://projects.kde.org">KDE Projects</a>...</BODY></HTML>' 
 end
