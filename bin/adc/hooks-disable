@@ -5,7 +5,7 @@
 realrepo=$1
 get_rights_and_owner "gitolite-admin.git"
 
-if [ "$perm_create" == "no" ]; then
+if [ "$perm_write" != "yes" ]; then
     die "You have no permissions. Goodbye"
 fi
 
