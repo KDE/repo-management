@@ -62,7 +62,7 @@ for file in `find -name "description"`; do
 done
 
 # Copy the metadata over to the repositories
-rsync -avz . /repositories/
+rsync -az . /repositories/
 
 # In case we have extra metadata left over, having these directories on disk that don't really exist prevents us from re-syncing the repository again
 cd /repositories
