@@ -8,6 +8,7 @@ urlpath=${currpath#/srv/kdegit/repositories/}
 curl --connect-timeout 1 --max-time 1 http://anongit1.kde.org/updateRepo/$urlpath &>/dev/null
 curl --connect-timeout 1 --max-time 1 http://anongit2.kde.org/updateRepo/$urlpath &>/dev/null
 curl --connect-timeout 1 --max-time 1 http://anongit4.kde.org/updateRepo/$urlpath &>/dev/null
+curl --connect-timeout 1 --max-time 1 http://anongit5.kde.org/updateRepo/$urlpath &>/dev/null
 
 # Initiate remote server update
 remote_update_url=$mgmtdir/repo-configs/remote-update/$urlpath
