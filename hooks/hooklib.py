@@ -521,7 +521,7 @@ class CommitNotifier(object):
             message['Subject'] = Header( builder.subject, 'utf-8', 76, 'Subject' )
             message['From']    = builder.from_header()
             message['To']      = Header( "bug-control@bugs.kde.org" )
-            self.smtp.sendmail(builder.commit.committer_email, ["bug-control@bugs.kde.org"],
+            self.smtp.sendmail(builder.commit.author_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
 
     def notify_reviewboard(self, builder):
