@@ -131,7 +131,7 @@ end
 get /^\/(([a-zA-Z0-9][a-zA-Z0-9_\.\-]+[a-zA-Z0-9]\/)+)([a-fA-F0-9]+)/ do |repoid, lastval, changeset|
   # repoid will match with a / at the end, so chop it
   # substitute the magic value used in place of / in the path since the repo-uid mapping directory is flat
-  repoid.downcase!
+  #repoid.downcase!
   url = findGitwebOrRedmineUrl(repoid.chop.gsub(/\//, "__NICK-MAGIC__"), changeset)
   if url.nil?
     return '<HTML><HEAD><META HTTP-EQUIV="refresh" CONTENT="3;URL=http://projects.kde.org"></HEAD><BODY>The repo/commit cannot be found or the commit is non-unique. Redirecting to <a href="http://projects.kde.org">KDE Projects</a>...</BODY></HTML>' 
