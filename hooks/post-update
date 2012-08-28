@@ -23,7 +23,7 @@ cleanpath=${urlpath/\/-}
 cleanpath=${cleanpath/.git/}
 for ref; do
     updatedref=${ref#refs/heads/}
-    if [[ "$updatedref" != "master" ]] || [[ "$updatedref" != "frameworks" ]]; then
+    if [[ "$updatedref" != "master" ]] && [[ "$updatedref" != "frameworks" ]]; then
         updatedref="stable"
     fi
     curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}_${updatedref}/build?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" 2>1 1>/dev/null
