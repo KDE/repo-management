@@ -229,8 +229,6 @@ class Repository(object):
         # What type of repo have we got???
         if self.path in sysadmin_repos:
             return RepoType.Sysadmin
-        elif re.match("^sysadmin/(.+)$", self.path):
-            return RepoType.Sysadmin
         elif re.match("^websites/(.+)$", self.path):
             return RepoType.Website
         elif re.match("^scratch/(.+)$", self.path):
