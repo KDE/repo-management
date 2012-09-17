@@ -25,7 +25,7 @@ for ref; do
     updatedref=${ref#refs/heads/}
     if [[ "$updatedref" != "master" ]] && [[ "$updatedref" != "frameworks" ]]; then
         updatedref="stable"
-    elif
+    fi
     if [[ "$updatedref" == "KDE/4.10" ]]; then
         updatedref="master"
     fi
