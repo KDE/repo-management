@@ -25,8 +25,8 @@ for ref; do
     updatedref=${ref#refs/heads/}
     if [[ "$updatedref" != "master" ]] && [[ "$updatedref" != "frameworks" ]]; then
         updatedref="stable"
-    fi
-    if [[ "$updatedref" != "KDE/4.10" ]]; then
+    elif
+    if [[ "$updatedref" == "KDE/4.10" ]]; then
         updatedref="master"
     fi
     curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}_${updatedref}/build?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" 2>1 1>/dev/null
