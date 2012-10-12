@@ -752,7 +752,7 @@ class CiaNotifier(object):
         message = MIMEText( commit_xml, 'xml' )
         message['Subject'] = "DeliverXML"
         message['From'] = "sysadmin@kde.org"
-        message['To'] = "cia@cia.vc"
+        message['To'] = "commits@informant.kde.org"
 
         # Send email...
         self.smtp.sendmail("sysadmin@kde.org", ["cia@cia.vc"],
