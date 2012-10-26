@@ -16,7 +16,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from email import Charset
 
-import mime
+import mimetypes
 from ordereddict import OrderedDict
 import lxml.etree as etree
 from lxml.builder import E
@@ -275,6 +275,7 @@ class CommitAuditor(object):
     """Performs all audits on commits"""
 
     ALLOWED_EOL_MIMETYPES = set(("text/vcard","text/x-vcard","text/directory"))
+    ALLOWED_EOL_EXTENSIONS = set((".vcf", ".vcf.ref"))
 
     def __init__(self, repository):
         self.repository = repository
@@ -347,20 +348,20 @@ class CommitAuditor(object):
             if file_change:
                 filename = file_change.group(2)
                 eol_violation = False
+                eol_allowed = False
 
                 # Check if it's an allowed mimetype
-                # If so, we ignore EOL violations
-
-                guessed_type = mime.MimeType.fromName(filename)
-
-                # Guess failed, fail silently
-                if guessed_type is None:
-                    continue
-                
-                if guessed_type.name() in self.ALLOWED_EOL_MIMETYPES:
+                # First - check with the mimetypes system, to see if it can tell
+                guessed_type, _ = mimetypes.guess_type(filename)
+                if guessed_type in self.ALLOWED_EOL_MIMETYPES:
                     eol_allowed = True
-                else:
-                    eol_allowed = False
+                    continue
+
+                # Second check: by file extension
+                # NOTE: This uses the FIRST dot as extension
+                _, extension = filename.split(os.extsep, 1)
+                if extension in self.ALLOWED_EOL_EXTENSIONS:
+                    eol_allowed = True
 
                 continue
 
@@ -369,9 +370,7 @@ class CommitAuditor(object):
                 continue
 
             if re.search( blocked_eol, line ) and not eol_violation:
-
                 # Is this an allowed filename?
-
                 if eol_allowed:
                     continue
 
