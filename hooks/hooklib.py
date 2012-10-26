@@ -359,9 +359,13 @@ class CommitAuditor(object):
 
                 # Second check: by file extension
                 # NOTE: This uses the FIRST dot as extension
-                _, extension = filename.split(os.extsep, 1)
-                if extension in self.ALLOWED_EOL_EXTENSIONS:
-                    eol_allowed = True
+                splitted_filename = filename.split(os.extsep, 1)
+                # Check if there's an extension or not
+                # NOTE This assumes that files use dots for extensions only!
+                if len(splitted_filename) > 1:
+                    extension = splitted_filename[1]
+                    if extension in self.ALLOWED_EOL_EXTENSIONS:
+                        eol_allowed = True
 
                 continue
 
