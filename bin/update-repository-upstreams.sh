@@ -8,7 +8,8 @@ for upstreamrepo in `ls $mgmtdir/repo-configs/upstream/`; do
     git fetch -n "$remoteurl" +refs/heads/*:refs/upstream/heads/* +refs/tags/*:refs/upstream/tags/*
 done
 
-for mirrorrepo in `ls $mgmtdir/repo-configs/mirror/`; do
+cd $mgmtdir/repo-configs/mirror/
+for mirrorrepo in `find -type f`; do
     remoteurl=`cat $mgmtdir/repo-configs/mirror/$mirrorrepo`
     repo=$repobase/$mirrorrepo
     cd $repo
