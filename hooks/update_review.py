@@ -60,7 +60,7 @@ def read_credentials():
 
     return username, password
 
-def close_review(review_id, commit, committer, changed_ref):
+def close_review(review_id, commit, committer, author, changed_ref):
 
     """Close a review request on Reviewboard.
 
@@ -86,8 +86,12 @@ def close_review(review_id, commit, committer, changed_ref):
     logger = logging.getLogger("reviewboard")
     logger.setLevel(DEFAULT_LEVEL)
 
-    message =  ("This review has been submitted with commit "
-            "%s by %s to %s." % (commit, committer, changed_ref))
+    if author == committer:
+        message =  ("This review has been submitted with commit "
+                "%s by %s to %s." % (commit, committer, changed_ref))
+    else:
+        message =  ("This review has been submitted with commit "
+                "%s by %s on behalf of %s to %s." % (commit, committer, author, changed_ref))
 
     # Resources for replying and for submitting
     submit_resource = "review-requests/%s/" % review_id
@@ -173,9 +177,10 @@ def main():
     review_id = sys.argv[1]
     commit_id = sys.argv[2]
     committer = sys.argv[3]
-    ref_change = sys.argv[4]
+    author = sys.argv[4]
+    ref_change = sys.argv[5]
 
-    close_review(review_id, commit_id, committer, ref_change)
+    close_review(review_id, commit_id, committer, author, ref_change)
     sys.exit(0)
 
 if __name__ == '__main__':

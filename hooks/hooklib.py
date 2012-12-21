@@ -534,7 +534,7 @@ class CommitNotifier(object):
             # Call the helper program
             ref_changed = builder.repository.ref_type + " " + builder.repository.ref_name
             review_updater = builder.repository.management_directory + "/hooks/update_review.py"
-            cmdline = (review_updater, review, builder.commit.sha1,
+            cmdline = (review_updater, review, builder.commit.sha1, build.commit.committer_name,
                         builder.commit.author_name, ref_changed)
             # Fork into the background - we don't want it to block the hook
             subprocess.Popen(cmdline, shell=False)
