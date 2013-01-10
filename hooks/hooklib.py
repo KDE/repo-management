@@ -478,6 +478,10 @@ class CommitNotifier(object):
         if any(i18nInfraChange.match(filename) for filename in builder.commit.files_changed):
             cc_addresses.append( 'i18n-infrastructure@kde.org' )
 
+        docbookChange = re.compile("(.*)\.docbook$")
+        if any(docbookChange.match(filename) for filename in builder.commit.files_changed):
+            cc_addresses.append( 'kde-doc-english@kde.org' )
+
         body = builder.body
         if diff and len(diff) < 8000:
             body += "\n" + unicode('', "utf-8", 'replace').join(diff)
