@@ -762,7 +762,7 @@ class CiaNotifier(object):
         message['To'] = "commits@informant.kde.org"
 
         # Send email...
-        self.smtp.sendmail("sysadmin@kde.org", ["commits@informant.kde.org", "cia@cia.vc"],
+        self.smtp.sendmail("sysadmin@kde.org", ["commits@informant.kde.org"],
                            message.as_string())
 
 class Commit(object):
