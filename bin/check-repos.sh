@@ -13,10 +13,7 @@ for repo in $(find -maxdepth 2 -name "*.git" -type d); do
 
     if [ ! -f $repo/gl-creater -a -f $repo/kde-hooks-off ]; then
         # Hooks are off in these tests....
-        if [ $repofilled == 0 ]; then
-            # This case is for repos prior to being filled and is normal
-            DATA="$repo is unused and has hooks disabled.\n$DATA"
-        else
+        if [ $repofilled != 0 ]; then
             # Forgot to switch off after filling...
             DATA="$repo is USED with hooks DISABLED (POLICY VIOLATION)\n$DATA"
         fi
