@@ -454,11 +454,9 @@ class CommitNotifier(object):
     def __del__(self):
         self.smtp.quit()
 
-    def notify_email(self, builder, notification_address, diff, directory_prefix = ""):
+    def notify_email(self, builder, notification_address, diff ):
         # Build list for X-Commit-Directories...
-        if directory_prefix and not directory_prefix.endswith(os.path.sep):
-            directory_prefix += os.path.sep
-        full_commit_dirs = [directory_prefix + cdir for cdir in builder.commit_directories]
+        full_commit_dirs = [cdir for cdir in builder.commit_directories]
 
         # Build a list of addresses to Cc,
         cc_addresses = builder.keywords['email_cc'] + builder.keywords['email_cc2']

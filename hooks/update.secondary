@@ -158,20 +158,12 @@ for (commit, diff) in notifier.handler(repository):
     if repository.repo_type in cia_allowed:
         cia.notify(builder)
     
-    # Read the repository prefix - if it exists.
-    svnpath = repository.management_directory + "/repo-configs/email/" + repository.path + ".git/svnpath"
-    if not os.path.exists(svnpath):
-        continue
-    
-    with open(svnpath, "r") as svnpath_file:
-        directory_prefix = svnpath_file.readline().strip()
-
     if repository.repo_type == RepoType.Sysadmin:
         notify_address = "sysadmin-svn@kde.org"
     else:
         notify_address = "kde-commits@kde.org"
         
-    notifier.notify_email( builder, notify_address, diff, directory_prefix )
+    notifier.notify_email( builder, notify_address, diff )
             
     # Handle Bugzilla and Reviewboard
     notifier.notify_bugzilla( builder )
