@@ -17,7 +17,7 @@ for dir in $(cat projects-list/projects-to-anongit.list)
     [ -e /srv/kdegit/repositories/$dir/cloneurl ] && echo "$dir/cloneurl" >> anongit-repos-build.tmp
     [ -e /srv/kdegit/repositories/$dir/description ] && echo "$dir/description" >> anongit-repos-build.tmp
     [ -e /srv/kdegit/repositories/$dir/git-daemon-export-ok ] && echo "$dir/git-daemon-export-ok" >> anongit-repos-build.tmp
-    [ -e /srv/kdegit/repositories/$dir/gl-creater ] && echo "$dir/gl-creater" >> anongit-repos-build.tmp
+    [ -e /srv/kdegit/repositories/$dir/gl-creator ] && echo "$dir/gl-creator" >> anongit-repos-build.tmp
     [ -e /srv/kdegit/repositories/$dir/gl-conf ] && echo "$dir/gl-conf" >> anongit-repos-build.tmp
     [ -e /srv/kdegit/repositories/$dir/gl-owner ] && echo "$dir/gl-owner" >> anongit-repos-build.tmp
     [ -e /srv/kdegit/repositories/$dir/gl-perms ] && echo "$dir/gl-perms" >> anongit-repos-build.tmp
