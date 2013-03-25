@@ -7,6 +7,13 @@ else
   touch /tmp/update_repo.txt
 fi
 
+~/repo-management/bin/verify_new_projects_list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
+if [ $? -ne 0 ]
+then
+  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin@kde.org" -s "WARNING: projects.list problem on $HOST" sysadmin@kde.org
+  exit 1
+fi
+
 # First, see if there are any repos that are gone and should be removed. This gets a list of just
 # the items that have been removed from the projects-to-anongit.list file which was put into projects-to-anongit.list.new
 diff ~/projects-to-anongit.list /home/git/projects-to-anongit.list.new | grep "<" | cut -c 3- > ~/diffout
@@ -18,7 +25,7 @@ if [ -s ~/diffout ]
     # Remove each of the specified repos
     for line in `cat ~/diffout`; do
         echo "Removing repository $line"
-        rm -rf $line
+        mv $line /deleted-repos/$(date +%Y-%m-%d)_$line
     done
 fi
 rm ~/diffout
@@ -44,6 +51,12 @@ for line in `cat ~/projects-to-anongit.list`; do
         rm -rf $bname
         git clone --mirror git://git.kde.org/$line $bname
         cd $bname
+        git fsck $bname
+        if [ $? -ne 0 ]
+          then
+            echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin@kde.org" -s "WARNING: git fsck problem on $HOST" sysadmin@kde.org
+            exit 1
+        fi
         git update-server-info
     fi
 done

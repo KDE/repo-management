@@ -10,5 +10,10 @@ rsync -az --delete git.kde.org::metadata-tree/ /home/git/metadata-tree/
 cd /home/git/repo-management; git pull
 
 bin/anongit/update_repo_mirrors.sh
+
+if [ $? -ne 0 ]
+  then
+    echo "Mirror updating failed, not continuing"
+fi
 bin/anongit/update_repo_pointers.sh
 
