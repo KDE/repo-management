@@ -25,7 +25,7 @@ if [ -s ~/diffout ]
     # Remove each of the specified repos
     for line in `cat ~/diffout`; do
         echo "Removing repository $line"
-        mv $line /deleted-repos/$(date +%Y-%m-%d)_$line
+        mv $line /deleted-repos/$(date +%Y-%m-%d)_$(basename $line)
     done
 fi
 rm ~/diffout
@@ -51,7 +51,7 @@ for line in `cat ~/projects-to-anongit.list`; do
         rm -rf $bname
         git clone --mirror git://git.kde.org/$line $bname
         cd $bname
-        git fsck $bname
+        git fsck
         if [ $? -ne 0 ]
           then
             echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin@kde.org" -s "WARNING: git fsck problem on $HOST" sysadmin@kde.org
