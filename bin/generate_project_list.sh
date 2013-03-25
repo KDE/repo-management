@@ -4,7 +4,7 @@
 
 if [ $? -ne 0 ]
 then
-  echo "Projects list file may have changed too much; not replacing current list" | mail -r "sysadmin@kde.org" -s "WARNING: projects.list problem on $HOST" sysadmin@kde.org
+  echo "Projects list file may have changed too much; not replacing current list" | mail -r "sysadmin@kde.org" -s "WARNING: projects.list problem on $HOSTNAME" sysadmin@kde.org
   exit 1
 fi
 

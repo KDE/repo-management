@@ -10,7 +10,7 @@ fi
 ~/repo-management/bin/verify_new_projects_list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
 if [ $? -ne 0 ]
 then
-  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin@kde.org" -s "WARNING: projects.list problem on $HOST" sysadmin@kde.org
+  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin@kde.org" -s "WARNING: projects.list problem on $HOSTNAME" sysadmin@kde.org
   exit 1
 fi
 
@@ -54,7 +54,7 @@ for line in `cat ~/projects-to-anongit.list`; do
         git fsck
         if [ $? -ne 0 ]
           then
-            echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin@kde.org" -s "WARNING: git fsck problem on $HOST" sysadmin@kde.org
+            echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin@kde.org" -s "WARNING: git fsck problem on $HOSTNAME" sysadmin@kde.org
             exit 1
         fi
         git update-server-info
