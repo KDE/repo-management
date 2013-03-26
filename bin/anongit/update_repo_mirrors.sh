@@ -11,6 +11,7 @@ fi
 if [ $? -ne 0 ]
 then
   echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin@kde.org" -s "WARNING: projects.list problem on $HOSTNAME" sysadmin@kde.org
+  rm /tmp/update_repo.txt
   exit 1
 fi
 
@@ -55,6 +56,7 @@ for line in `cat ~/projects-to-anongit.list`; do
         if [ $? -ne 0 ]
           then
             echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin@kde.org" -s "WARNING: git fsck problem on $HOSTNAME" sysadmin@kde.org
+            rm /tmp/update_repo.txt
             exit 1
         fi
         git update-server-info
