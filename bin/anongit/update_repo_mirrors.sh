@@ -46,6 +46,7 @@ for line in `cat ~/projects-to-anongit.list`; do
     if [ -e $bname -a -e $bname/HEAD ]
       then
         cd $bname
+        git config transfer.fsckObjects true
         git remote update -p
         git update-server-info
       else
@@ -53,6 +54,7 @@ for line in `cat ~/projects-to-anongit.list`; do
         git clone --mirror git://git.kde.org/$line $bname
         cd $bname
         git fsck
+        git config transfer.fsckObjects true
         if [ $? -ne 0 ]
           then
             echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin@kde.org" -s "WARNING: git fsck problem on $HOSTNAME" sysadmin@kde.org
