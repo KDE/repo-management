@@ -12,7 +12,7 @@ hostname=$(cat /home/git/thisanongithost)
 ~/repo-management/bin/verify_new_projects_list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
 if [ $? -ne 0 ]
 then
-  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin@kde.org" -s "WARNING: projects.list problem on $hostname" sysadmin@kde.org
+  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin@kde.org" -s "ERROR: projects.list problem on $hostname" sysadmin@kde.org
   rm /tmp/update_repo.txt
   exit 1
 fi
