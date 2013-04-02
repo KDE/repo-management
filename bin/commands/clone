@@ -68,8 +68,6 @@ fi
 # the help message for 'gitolite access'.
 # ----------------------------------------------------------------------
 
-gitolite access -q "$to"   $GL_USER ^C any || die "'$to' already exists or you are not allowed to create it"
-
 echo "Cloning, please be patient..."
 
 # clone $from to $to
