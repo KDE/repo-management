@@ -12,7 +12,7 @@ hostname=$(cat /home/git/thisanongithost)
 ~/repo-management/bin/verify_new_projects_list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
 if [ $? -ne 0 ]
 then
-  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin@kde.org" -s "ERROR: projects.list problem on $hostname" sysadmin@kde.org
+  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin-systems@kde.org" -s "ERROR: projects.list problem on $hostname" sysadmin-systems@kde.org
   rm /tmp/update_repo.txt
   exit 1
 fi
@@ -31,7 +31,7 @@ if [ -s ~/diffout ]
         suffix=$(mktemp -u XXXXXXX)
         newpath="/deleted-repos/$(date +%Y-%m-%d)_$(basename $line)_$suffix"
         mv $line $newpath
-        echo "Repository $line moved to $newpath on $hostname" | mail -r "sysadmin@kde.org" -s "REPO DELETION: $line" sysadmin@kde.org
+        echo "Repository $line moved to $newpath on $hostname" | mail -r "sysadmin-systems@kde.org" -s "REPO DELETION: $line" sysadmin-systems@kde.org
     done
 fi
 rm ~/diffout
@@ -62,7 +62,7 @@ for line in `cat ~/projects-to-anongit.list`; do
         git config transfer.fsckObjects true
         if [ $? -ne 0 ]
           then
-            echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin@kde.org" -s "WARNING: git fsck problem on $hostname" sysadmin@kde.org
+            echo "Fresh mirror clone of git://git.kde.org/$line failed git fsck, not following through with rest of update" | mail -r "sysadmin-systems@kde.org" -s "WARNING: git fsck problem on $hostname" sysadmin-systems@kde.org
             rm /tmp/update_repo.txt
             exit 1
         fi

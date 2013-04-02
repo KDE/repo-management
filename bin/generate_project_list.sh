@@ -4,7 +4,7 @@
 
 if [ $? -ne 0 ]
 then
-  echo "Projects list file may have changed too much; not replacing current list" | mail -r "sysadmin@kde.org" -s "ERROR: projects.list problem on git.kde.org" sysadmin@kde.org
+  echo "Projects list file may have changed too much; not replacing current list" | mail -r "sysadmin-systems@kde.org" -s "ERROR: projects.list problem on git.kde.org" sysadmin-systems@kde.org
   exit 1
 fi
 
