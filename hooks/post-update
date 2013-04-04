@@ -2,7 +2,7 @@
 
 mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
-urlpath=${currpath#/srv/kdegit/repositories/}
+urlpath=${currpath#/home/git/repositories/}
 
 # Poking anongit mirrors to cause immediate update
 curl --connect-timeout 1 --max-time 1 http://anongit1.kde.org/updateRepo/$urlpath &>/dev/null
