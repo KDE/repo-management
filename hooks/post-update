@@ -6,7 +6,8 @@ urlpath=${currpath#/srv/kdegit/repositories/}
 
 # Poking anongit mirrors to cause immediate update
 for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
-       curl --connect-timeout 1 --max-time 1 --resolve $mirror:80:anongit.kde.org http://anongit.kde.org/updateRepo/$urlpath &>/dev/null
+       mirror=$(dig +short $mirror)
+       curl --connect-timeout 1 --max-time 1 --resolve anongit.kde.org:80:$mirror http://anongit.kde.org/updateRepo/$urlpath &>/dev/null
 done
 
 # Initiate remote server update
