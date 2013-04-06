@@ -5,11 +5,9 @@ currpath=$(pwd)
 urlpath=${currpath#/srv/kdegit/repositories/}
 
 # Poking anongit mirrors to cause immediate update
-curl --connect-timeout 1 --max-time 1 http://anongit1.kde.org/updateRepo/$urlpath &>/dev/null
-curl --connect-timeout 1 --max-time 1 http://anongit2.kde.org/updateRepo/$urlpath &>/dev/null
-curl --connect-timeout 1 --max-time 1 http://anongit5.kde.org/updateRepo/$urlpath &>/dev/null
-curl --connect-timeout 1 --max-time 1 http://anongit6.kde.org/updateRepo/$urlpath &>/dev/null
-curl --connect-timeout 1 --max-time 1 http://anongit7.kde.org/updateRepo/$urlpath &>/dev/null
+for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
+       curl --connect-timeout 1 --max-time 1 --resolve $mirror:80:anongit.kde.org http://anongit.kde.org/updateRepo/$urlpath &>/dev/null
+done
 
 # Initiate remote server update
 remote_update_url=$mgmtdir/repo-configs/remote-update/$urlpath
