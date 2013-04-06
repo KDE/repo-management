@@ -18,11 +18,11 @@ if ($wcdiff > 1.0) {
 
 # Higher tolerance on these checks since diff outputs diff output
 
-if ($diffprev > 0.02) {
+if ($diffprev > 0.05) {
   exit(2);
 }
 
-if ($diffcandidate > 0.02) {
+if ($diffcandidate > 0.05) {
   exit(3);
 }
 
