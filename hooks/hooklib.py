@@ -758,7 +758,7 @@ class CiaNotifier(object):
         commit_xml = etree.tostring(cia_message)
 
         # Craft the email....
-        message = MIMEText( commit_xml, 'xml' )
+        message = MIMEText( commit_xml, 'xml', 'utf-8' )
         message['Subject'] = "DeliverXML"
         message['From'] = "sysadmin@kde.org"
         message['To'] = "commits@informant.kde.org"
