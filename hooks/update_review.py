@@ -106,7 +106,7 @@ def close_review(review_id, commit, committer, author, changed_ref):
     post_reply = dict(public=True, body_top=message)
 
     request = requests.post(reply_url, auth=(username, password),
-            data=post_reply)
+            data=post_reply, headers={'Content-type': 'text/plain'})
 
     # Reviewboard generates a 201 created response for this
     if request.status_code not in (requests.codes.created, requests.codes.ok):
