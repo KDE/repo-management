@@ -37,7 +37,7 @@ helpers do
     # Set up Postgres connection for Redmine. Read in password from a non-public file.
     if not $pg
       require 'pg'
-      $pg = PGconn.connect("projects.kde.org", 5432, '', '', "redmine", $postgresuser, $postgrespass)
+      $pg = PGconn.connect("127.0.0.1", 5432, '', '', "chiliproject", $postgresuser, $postgrespass)
     end
     # Every git repository should have a kde-repo-uid file that has a value computed from a hash
     # of its path. In addition, there may be a kde-repo-nick file containing a more friendly name.
@@ -82,7 +82,7 @@ helpers do
     begin
         res = $pg.exec(execstring)
     rescue PGError
-        $pg = PGconn.connect("projects.kde.org", 5432, '', '', "redmine", $postgresuser, $postgrespass)
+        $pg = PGconn.connect("127.0.0.1", 5432, '', '', "chiliproject", $postgresuser, $postgrespass)
         res = $pg.exec(execstring)
     end
     # TODO: Not sure that this will properly handle finding the *right* repository with a clone...
