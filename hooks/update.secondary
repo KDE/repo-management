@@ -2,6 +2,7 @@
 
 # Load dependencies
 import os
+import re
 import sys
 import subprocess
 from hooklib import Repository, Commit, CommitAuditor, CommitNotifier, MessageBuilder, CommitChecker, CiaNotifier, RepoType, ChangeType, RefType
