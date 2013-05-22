@@ -66,7 +66,7 @@ elif repository.ref_name == "HEAD":
     print "Creating refs which conflict with internally used names is not permitted."
     print "Push declined - attempted repository integrity violation"
     exit(1)
-elif re.match("^origin/(.+)$", repository.ref_name):
+elif repository.change_type == ChangeType.Create and re.match("^origin/(.+)$", repository.ref_name):
     print "Creating refs starting with the name origin/ is not permitted."
     print "This is usually caused by incorrectly pushing a branch or tag."
     print "Please ensure your remote branch name does not contain 'origin/' at the beginning"
