@@ -1,5 +1,5 @@
 mgmtdir="/home/git/repo-management"
-repobase="/srv/kdegit/repositories"
+repobase="/srv/git/repositories"
 
 for upstreamrepo in `ls $mgmtdir/repo-configs/upstream/`; do
     remoteurl=`cat $mgmtdir/repo-configs/upstream/$upstreamrepo`

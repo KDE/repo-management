@@ -41,7 +41,7 @@ if os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.
     maintenance()
     
 # Initialise the repository
-Repository.BaseDir = "/srv/kdegit/repositories/"
+Repository.BaseDir = "/srv/git/repositories/"
 repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 
 #####

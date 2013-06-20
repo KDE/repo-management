@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
-urlpath=${currpath#/srv/kdegit/repositories/}
+urlpath=${currpath#/srv/git/repositories/}
 
 # Poking anongit mirrors to cause immediate update
 for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do

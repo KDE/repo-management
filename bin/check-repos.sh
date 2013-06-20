@@ -1,4 +1,4 @@
-cd /srv/kdegit/repositories/
+cd /srv/git/repositories/
 DATA=''
 for repo in $(find -maxdepth 2 -name "*.git" -type d); do
     export GIT_DIR=$repo/

@@ -1,6 +1,9 @@
 #!/bin/bash
-/home/git/bin/gitolite trigger POST_COMPILE
-/home/git/repo-management/bin/verify_new_projects_list.pl /home/git/projects.list.candidate /home/git/projects.list
+if [ ! -f /home/git/projects.list ]; then
+  exit
+fi
+
+/home/git/repo-management/bin/verify_new_projects_list.pl /home/git/projects.list /home/git/projects-list/projects-to-anongit.list
 
 if [ $? -ne 0 ]
 then
@@ -8,4 +11,4 @@ then
   exit 1
 fi
 
-mv /home/git/projects.list.candidate /home/git/projects.list
+mv /home/git/projects.list /home/git/projects-list/projects-to-anongit.list

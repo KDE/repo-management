@@ -9,9 +9,6 @@ for dir in $( find -type d ); do if [ -z "$(ls -A $dir)" ]; then rmdir $dir; fi;
 
 # Now actually do the list
 cd ~git
-cp projects.list projects-list/projects-to-anongit.list
-chmod 755 projects-list/projects-to-anongit.list
-rm anongit-repos-build.tmp
 for dir in $(cat projects-list/projects-to-anongit.list)
   do
     [ -e /srv/kdegit/repositories/$dir/cloneurl ] && echo "$dir/cloneurl" >> anongit-repos-build.tmp
@@ -26,4 +23,4 @@ for dir in $(cat projects-list/projects-to-anongit.list)
     [ -e /srv/kdegit/repositories/$dir/kde-repo-uid ] && echo "$dir/kde-repo-uid" >> anongit-repos-build.tmp
 done
 rsync -avz --delete --files-from="/home/git/anongit-repos-build.tmp" /srv/kdegit/repositories /home/git/metadata-tree
-
+rm anongit-repos-build.tmp
