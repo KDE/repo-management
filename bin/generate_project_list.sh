@@ -11,4 +11,5 @@ then
   exit 1
 fi
 
+chmod 644 /home/git/projects.list
 mv /home/git/projects.list /home/git/projects-list/projects-to-anongit.list
