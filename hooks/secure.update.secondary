@@ -40,7 +40,7 @@ if os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.
     maintenance()
     
 # Initialise the repository
-Repository.BaseDir = "/home/secure/repositories/"
+Repository.BaseDir = "/srv/sysadmin/"
 repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 
 #####
@@ -96,7 +96,7 @@ for (commit, diff) in notifier.handler(repository):
     # Determine the address to send this private email to - if we can't send it to Sysadmin so it can be fixed
     if repository.path in ["ev-board"]:
         notify_address = "kde-ev-board@kde.org"
-    elif repository.path in ["sysadmin", "relicensing"]:
+    elif repository.path in ["kdeadmin", "relicensing", "gitolite-admin"]:
         notify_address = "sysadmin@kde.org"
     else:
         notify_address = "sysadmin@kde.org"
