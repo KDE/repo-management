@@ -1,3 +1,4 @@
+#!/bin/bash
 cd /srv/git/repositories/
 DATA=''
 for repo in $(find -maxdepth 2 -name "*.git" -type d); do
