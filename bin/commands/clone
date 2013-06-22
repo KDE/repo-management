@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Usage:    ssh git@host clone <repo1> <repo2>
 #
