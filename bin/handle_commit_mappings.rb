@@ -68,7 +68,7 @@ helpers do
       commit = repo.commit("#{sha1}")
       if commit.nil?
         logger.info( "Could not find commit" )
-        return nil
+        return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{sha1}"
       else
         sha1 = commit.sha
       end
