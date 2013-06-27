@@ -32,3 +32,9 @@ done
 
 # Update local information
 git update-server-info
+
+# Repository specific hooks - Trojita
+if [[ "$urlpath" == "trojita.git" ]]; then
+    obsauth=`cat ${HOME}/trojita-obs-credentials`
+    curl --connect-timeout 10 --max-time 10 --user $obsauth -X POST -H 'Content-Length: 0' 'https://api.opensuse.org/source/home:jkt-gentoo:trojita/trojita-nightly/?cmd=runservice' &>/dev/null
+done
