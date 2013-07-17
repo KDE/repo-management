@@ -69,7 +69,7 @@ def buildTarball(repository, gitDirectoryRoot, tarballDirectoryRoot)
     
     # Alter the git repository configuration to use anongit.kde.org, and add the initrepo.sh script
     Dir.chdir("#{tarballPath}/#{repoName}") { 
-        %x[sed -i -e "s/\\/srv\\/kdegit\\/repositories/http\\:\\/\\/anongit.kde.org/g" .git/config]
+        %x[sed -i -e "s/\\/srv\\/git\\/repositories/http\\:\\/\\/anongit.kde.org/g" .git/config]
         %x[echo "#!/bin/sh\n\nrm initrepo.sh\n\ngit reset --hard HEAD" > initrepo.sh; chmod +x initrepo.sh]
     }
 
