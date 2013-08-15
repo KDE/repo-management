@@ -27,5 +27,5 @@ for metadata in remoteMetadata:
         # Update HEAD and stop processing
         remoteHeadBranch = match.group(1)
         command = "git symbolic-ref -q HEAD 'refs/heads/{0}'".format( remoteHeadBranch )
-        subprocess.call(command, shell=True, stdout=subprocess.STDOUT, stderr=subprocess.STDERR)
+        subprocess.call(command, shell=True, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT)
         break
