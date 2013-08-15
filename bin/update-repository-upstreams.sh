@@ -13,5 +13,5 @@ for mirrorrepo in `find -type f`; do
     remoteurl=`cat $mgmtdir/repo-configs/mirror/$mirrorrepo`
     repo=$repobase/$mirrorrepo
     cd $repo
-    git fetch -n "$remoteurl" +refs/heads/*:refs/heads/* +refs/tags/*:refs/tags/*
+    python $mgmtdir/bin/repository-mirror-updater.py "$remoteurl"
 done
