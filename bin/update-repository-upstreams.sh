@@ -6,6 +6,7 @@ for upstreamrepo in `ls $mgmtdir/repo-configs/upstream/`; do
     repo=$repobase/$upstreamrepo
     cd $repo
     git fetch -n "$remoteurl" +refs/heads/*:refs/upstream/heads/* +refs/tags/*:refs/upstream/tags/*
+    $mgmtdir/hooks/post-update
 done
 
 cd $mgmtdir/repo-configs/mirror/
@@ -14,4 +15,5 @@ for mirrorrepo in `find -type f`; do
     repo=$repobase/$mirrorrepo
     cd $repo
     python $mgmtdir/bin/repository-mirror-updater.py "$remoteurl"
+    $mgmtdir/hooks/post-update
 done
