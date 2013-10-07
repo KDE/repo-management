@@ -26,6 +26,9 @@ for ref; do
     if [[ "$updatedref" != "master" ]] && [[ "$updatedref" != "frameworks" ]]; then
         updatedref="stable"
     fi
+    if [[ "$cleanpath" == "calligra" ]] && [[ "$updatedref" == "stable" ]] && [[ "$ref" != "refs/heads/calligra/2.7" ]]; then
+        continue
+    fi
     curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}_${updatedref}/build?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" &>/dev/null
     curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}_${updatedref}_qt5/build?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" &>/dev/null
 done
