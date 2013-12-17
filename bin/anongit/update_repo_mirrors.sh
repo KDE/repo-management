@@ -9,13 +9,13 @@ fi
 
 hostname=$(cat /home/git/thisanongithost)
 
-~/repo-management/bin/verify_new_projects_list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
-if [ $? -ne 0 ]
-then
-  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin-systems@kde.org" -s "ERROR: projects.list problem on $hostname" sysadmin-systems@kde.org
-  rm /tmp/update_repo.txt
-  exit 1
-fi
+#~/repo-management/bin/verify_new_projects_list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
+#if [ $? -ne 0 ]
+#then
+#  echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin-systems@kde.org" -s "ERROR: projects.list problem on $hostname" sysadmin-systems@kde.org
+#  rm /tmp/update_repo.txt
+#  exit 1
+#fi
 
 # First, see if there are any repos that are gone and should be removed. This gets a list of just
 # the items that have been removed from the projects-to-anongit.list file which was put into projects-to-anongit.list.new
