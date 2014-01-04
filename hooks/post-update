@@ -27,7 +27,7 @@ for ref; do
         updatedref="stable"
     fi
     if [[ "$updatedref" == "kf5-port" ]]; then
-        updateref="master"
+        updatedref="master"
     fi
     if [[ "$cleanpath" == "calligra" ]] && [[ "$updatedref" == "stable" ]] && [[ "$ref" != "refs/heads/calligra/2.7" ]]; then
         continue
