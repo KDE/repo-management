@@ -997,7 +997,7 @@ class CommitChecker(object):
             # Store the diff....
             filediff.append(line)
 
-        if filename != "" and commit.files_changed[ filename ]["change"] in ['A','C'] and re.search(valid_filename_regex, filename):
+        if filename != "" and commit.files_changed[ filename ]["change"] in ['A'] and re.search(valid_filename_regex, filename):
             self.check_commit_license(filename, ''.join(filediff))
 
 def read_command( command, shell=False ):
