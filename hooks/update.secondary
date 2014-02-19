@@ -35,13 +35,20 @@ except IndexError:
 git_dir = os.getenv('GIT_DIR')
 push_user = os.getenv('GL_USER')
 user_home = os.getenv('HOME')
-    
+
 # Check for maintenance mode...
 if os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.gitolite.down"):
     maintenance()
-    
+
 # Initialise the repository
-Repository.BaseDir = "/srv/git/repositories/"
+if os.path.exists("/srv/git/repositories"):
+    Repository.BaseDir = "/srv/git/repositories/"
+elif os.path.exists("/home/git/repositories"):
+    Repository.BaseDir = "/home/git/repositories/"
+else:
+    print "Base directory could not be found"
+    exit(1)
+
 repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 
 #####
@@ -110,7 +117,7 @@ if auditor.audit_failed:
 # Do we need to back it up??
 if repository.change_type == ChangeType.Forced or repository.change_type == ChangeType.Delete:
     repository.backup_ref()
-    
+
 # Repository specific special handling....
 # KDE PIM: Add a note to all commits which are new to the Enterprise branch...
 notes_repos = ["kdepim", "kdepim-runtime", "kdepimlibs", "kdelibs"]
@@ -140,7 +147,7 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
         print "This commit is available for viewing at:"
     else:
         print "The last commit in this series is available for viewing at:"
-    
+
     print repository.commits[ repository.new_sha1 ].url
 
 # Are we allowed to send notifications on this repo?
@@ -156,7 +163,7 @@ checker = CommitChecker()
 for (commit, diff) in notifier.handler(repository):
     # Check for license, etc problems in the commit
     checker.check_commit_problems( commit, diff )
-    
+
     # Create the message builder in preperation to send notifications
     builder = MessageBuilder( repository, commit, checker )
     builder.determine_keywords()
@@ -164,14 +171,14 @@ for (commit, diff) in notifier.handler(repository):
     # Do CIA
     if repository.repo_type in cia_allowed:
         cia.notify(builder)
-    
+
     if repository.repo_type == RepoType.Sysadmin:
         notify_address = "sysadmin-svn@kde.org"
     else:
         notify_address = "kde-commits@kde.org"
-        
+
     notifier.notify_email( builder, notify_address, diff )
-            
+
     # Handle Bugzilla and Reviewboard
     notifier.notify_bugzilla( builder )
     notifier.notify_reviewboard( builder )
