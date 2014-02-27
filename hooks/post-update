@@ -23,7 +23,9 @@ cleanpath=${urlpath/\/-}
 cleanpath=${cleanpath/.git/}
 for ref; do
     updatedref=${ref#refs/heads/}
-    if [[ "$updatedref" != "master" ]] && [[ "$updatedref" != "frameworks" ]] && [[ "$updatedref" != "kf5-port" ]]; then
+    if [[ "$updatedref" == "KDE/4.12" ]]; then
+        updatedref="oldstable"
+    elif [[ "$updatedref" != "master" ]] && [[ "$updatedref" != "frameworks" ]] && [[ "$updatedref" != "kf5-port" ]]; then
         updatedref="stable"
     fi
     if [[ "$cleanpath" == "calligra" ]] && [[ "$updatedref" == "stable" ]] && [[ "$ref" != "refs/heads/calligra/2.7" ]]; then
