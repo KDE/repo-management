@@ -275,7 +275,7 @@ class CommitAuditor(object):
     """Performs all audits on commits"""
 
     ALLOWED_EOL_MIMETYPES = set(("text/vcard","text/x-vcard","text/directory"))
-    ALLOWED_EOL_EXTENSIONS = set(("vcf", "vcf.ref"))
+    ALLOWED_EOL_EXTENSIONS = set(("vcf", "vcf.ref", "svg"))
 
     def __init__(self, repository):
         self.repository = repository
@@ -380,7 +380,7 @@ class CommitAuditor(object):
 
                 # Failure has been found... handle it
                 eol_violation = True
-                self.__log_failure(commit, "This file contains wrong line endings, it needs to be linux line endings ( you can look at dos2unix if needed ) : " + filename);
+                self.__log_failure(commit, "End of Line Style (non-Unix): " + filename);
 
     def audit_filename(self):
 
@@ -392,7 +392,7 @@ class CommitAuditor(object):
                     continue
                 for restriction in self.filename_limits:
                     if re.search(restriction, filename):
-                        self.__log_failure(commit.sha1, "This filename is invalid : " + filename)
+                        self.__log_failure(commit.sha1, "Invalid filename: " + filename)
 
     def audit_metadata(self):
 
@@ -408,20 +408,20 @@ class CommitAuditor(object):
             for name in [ commit.committer_name, commit.author_name ]:
                 # Check to see if the name contains spaces - if not - it is probably misconfigured....
                 if " " not in name.strip():
-                    self.__log_failure(commit.sha1, "A full name is needed for a commit, this one does not comply : " + name)
+                    self.__log_failure(commit.sha1, "Non-full name: " + name)
                     continue
 
             for email_address in [ commit.committer_email, commit.author_email ]:
                 # Extract the email address, and reject them if extraction fails....
                 extraction = re.match("^(\S+)@(\S+)$", email_address)
                 if not extraction:
-                    self.__log_failure(commit.sha1, "This email address seems invalid : " + email_address)
+                    self.__log_failure(commit.sha1, "Seemingly invalid email address: " + email_address)
                     continue
 
                 # Don't allow domains which are disallowed...
                 domain = extraction.group(2)
                 if domain in disallowed_domains:
-                    self.__log_failure(commit.sha1, "This email address has an disallowed domain : " + email_address)
+                    self.__log_failure(commit.sha1, "Email address using a blocked domain: " + email_address)
                     continue
 
                 # Ensure they have a valid MX/A entry in DNS....
@@ -431,9 +431,9 @@ class CommitAuditor(object):
                     try:
                         dns.resolver.query(domain, "A")
                     except (dns.resolver.NoAnswer, dns.exception.Timeout, dns.name.EmptyLabel):
-                        self.__log_failure(commit.sha1, "This email address has an invalid domain : " + email_address)
+                        self.__log_failure(commit.sha1, "Email address has an invalid domain : " + email_address)
                 except dns.resolver.NXDOMAIN:
-                    self.__log_failure(commit.sha1, "This email address has an invalid domain : " + email_address)
+                    self.__log_failure(commit.sha1, "Email address has an invalid domain : " + email_address)
 
     def audit_hashes(self, blocked_list):
         with open(blocked_list, "r") as blockedfile:
@@ -442,7 +442,7 @@ class CommitAuditor(object):
         for sha1 in blocked:
             sha1 = sha1.strip()
             if sha1 in self.repository.commits:
-                self.__log_failure(sha1, "Administratively blocked commit - contact sysadmin@kde.org")
+                self.__log_failure(sha1, "Administratively blocked commit: contact sysadmin@kde.org")
 
 class CommitNotifier(object):
     "Contains items needed to send notifications for commits"
