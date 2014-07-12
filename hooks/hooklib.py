@@ -532,9 +532,9 @@ class CommitNotifier(object):
                                message.as_string())
 
             if bug in builder.keywords['bug_fixed']:
-                print "Closing bug %d" % bug
+                print "Closing bug " + bug
             else:
-                print "Posting comment to bug %d" % bug
+                print "Posting comment to bug " + bug
 
     def notify_reviewboard(self, builder):
         for review in builder.keywords['review']:
