@@ -236,7 +236,7 @@ class Repository(object):
         elif re.match("^clones/(.+)$", self.path):
             return RepoType.Clone
         elif re.match("^others/(.+)$", self.path):
-	    return RepoType.Others
+            return RepoType.Others
         else:
             return RepoType.Normal
 
@@ -508,7 +508,7 @@ class CommitNotifier(object):
             related_bugs = ["bug " + entry for entry in bugs_changed if entry != bug]
             commit_msg = builder.body
             if related_bugs:
-	        commit_msg = re.sub(commit_regex, "Related: " + ', '.join(related_bugs) + "\n", commit_msg, 1)
+                commit_msg = re.sub(commit_regex, "Related: " + ', '.join(related_bugs) + "\n", commit_msg, 1)
             commit_msg = re.sub(commit_regex, "", commit_msg)
 
             # Prepare the Bugzilla specific message body portion...
