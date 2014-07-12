@@ -531,6 +531,11 @@ class CommitNotifier(object):
             self.smtp.sendmail(builder.commit.author_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
 
+            if bug in builder.keywords['bug_fixed']:
+                print "Closing bug %d" % bug
+            else:
+                print "Posting comment to bug %d" % bug
+
     def notify_reviewboard(self, builder):
         for review in builder.keywords['review']:
             # Call the helper program
