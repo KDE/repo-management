@@ -23,7 +23,7 @@ cleanpath=${urlpath/\/-}
 cleanpath=${cleanpath/.git/}
 for ref; do
     updatedref=${ref#refs/heads/}
-    if [[ "$updatedref" == "KDE/4.12" ]]; then
+    if [[ "$updatedref" == "KDE/4.13" ]]; then
         updatedref="oldstable"
     elif [[ "$updatedref" != "master" ]] && [[ "$updatedref" != "frameworks" ]] && [[ "$updatedref" != "kf5-port" ]]; then
         updatedref="stable"
