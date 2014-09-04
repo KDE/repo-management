@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "$(pwd)" >> /home/git/post-update.log
-
 mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
@@ -14,14 +12,9 @@ done
 
 # Initiate remote server update
 remote_update_url=$mgmtdir/repo-configs/remote-update/$urlpath
-echo "remote_update_url '${remote_update_url}'"
 if [ -f $remote_update_url ]; then
     remoteurl=`cat $remote_update_url`
-    echo "...updating URL '${remoteurl}'"
-    python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl
-    echo "update finished"
-else
-    echo "won't update remote url, no such file"
+    python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
 fi
 
 # Kickoff a Jenkins build....
