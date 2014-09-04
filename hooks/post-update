@@ -1,6 +1,7 @@
 #!/bin/bash
 
-echo "HELLO" > /home/git/blah.log
+echo "$(pwd)" >> /home/git/post-update.log
+
 mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
