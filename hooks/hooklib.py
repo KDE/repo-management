@@ -44,6 +44,8 @@ class RefType(object):
     Backup = "backup"
     Notes = "notes"
     Upstream = "upstream"
+    Changes = "changes"
+    Meta = "meta"
     Unknown = 0
 
 class Repository(object):
@@ -252,6 +254,10 @@ class Repository(object):
             return RefType.Notes
         elif re.match("^refs/upstream/(.+)$", self.ref):
             return RefType.Upstream
+        elif re.match("^refs/changes/(.+)$", self.ref):
+            return RefType.Changes
+        elif re.match("^refs/meta/(.+)$", self.ref):
+            return RefType.Meta
         else:
             return RefType.Unknown
 
