@@ -96,19 +96,24 @@ if len(repository.commits) > 100 and not os.path.exists(notification_base + repo
     print "Please file a KDE Sysadmin bug to continue"
     exit(1)
 
+auditedRef = True
+# We don't audit commits pushed to the meta ref
+if repository.ref_type == RefType.Meta:
+    auditedRef = False
+
 auditor = CommitAuditor( repository )
 audit_base = repository.management_directory + "/repo-configs/audit/"
-if not os.path.exists(audit_base + repository.path + ".git/skip-eol"):
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-eol"):
     auditor.audit_eol()
 
-if not os.path.exists(audit_base + repository.path + ".git/skip-filename"):
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-filename"):
     auditor.audit_filename()
 
-if not os.path.exists(audit_base + repository.path + ".git/skip-author"):
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-author"):
     auditor.audit_metadata()
 
 blocked_path = repository.management_directory + "/repo-configs/blocked/" + repository.path
-if os.path.exists(blocked_path):
+if auditedRef and os.path.exists(blocked_path):
     auditor.audit_hashes(blocked_path)
 
 # Did we have any commit audit failures?
