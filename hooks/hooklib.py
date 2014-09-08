@@ -42,6 +42,7 @@ class RefType(object):
     Branch = "branch"
     Tag = "tag"
     Backup = "backup"
+    NotesReview = "gerrit-review"
     Notes = "notes"
     Upstream = "upstream"
     Changes = "changes"
@@ -250,6 +251,8 @@ class Repository(object):
             return RefType.Tag
         elif re.match("^refs/backups/(.+)$", self.ref):
             return RefType.Backup
+        elif self.ref == "refs/notes/review"
+            return RefType.NotesReview
         elif re.match("^refs/notes/(.+)$", self.ref):
             return RefType.Notes
         elif re.match("^refs/upstream/(.+)$", self.ref):
