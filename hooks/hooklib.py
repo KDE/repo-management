@@ -251,7 +251,7 @@ class Repository(object):
             return RefType.Tag
         elif re.match("^refs/backups/(.+)$", self.ref):
             return RefType.Backup
-        elif self.ref == "refs/notes/review"
+        elif self.ref == "refs/notes/review":
             return RefType.NotesReview
         elif re.match("^refs/notes/(.+)$", self.ref):
             return RefType.Notes
