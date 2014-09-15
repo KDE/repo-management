@@ -166,8 +166,10 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
 
 # Are we allowed to send notifications on this repo?
 notify_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin, RepoType.Others]
+if not repository.repo_type in notify_allowed:
+    exit(0)
 # Also ignore Gerrit's refs/notes/review
-if not repository.repo_type in notify_allowed or repository.ref_type == RefType.NotesReview:
+if repository.ref_type == RefType.NotesReview:
     exit(0)
 
 # Perform notifications
