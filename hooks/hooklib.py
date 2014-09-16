@@ -122,7 +122,7 @@ class Repository(object):
             revision_span = "{0}..{1}".format(merge_base, self.new_sha1)
 
         # Get the list of revisions
-        command = "git rev-parse --not --all | grep -v {0} | git rev-list --reverse --stdin {1}"
+        command = "git for-each-ref --format='%(refname) ^%(objectname)' | grep -v '^refs/changes/' | cut -d ' ' -f 2 | sort -u | grep -v {0} | git rev-list --reverse --stdin {1}"
         command = command.format(self.old_sha1, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
