@@ -479,8 +479,10 @@ class CommitNotifier(object):
             cc_addresses.append( 'kde-doc-english@kde.org' )
 
         if builder.repository.repo_type == RepoType.Website:
-            bcc_addresses.append( 'scmupdate@spider-mail.kde.org' )
             bcc_addresses.append( 'scmupdate@olios.kde.org' )
+
+        if builder.repository.path == "websites/ev-kde-org":
+            cc_addresses.append( 'kde-ev-board@kde.org' )
 
         i18nInfraChange = re.compile("(.*)Messages.sh$")
         if any(i18nInfraChange.match(filename) for filename in builder.commit.files_changed):
