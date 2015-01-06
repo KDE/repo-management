@@ -54,6 +54,11 @@ done
 # Update local information
 git update-server-info
 
+# Repository specific hooks - websites/build-kde-org
+if [[ "$urlpath" == "websites/build-kde-org.git" ]]; then
+    curl --connect-timeout 10 --max-time 10 "http://73.25.22.252:8080/git/notifyCommit?url=http://anongit.kde.org/websites/build-kde-org" &> /dev/null
+fi
+
 # Repository specific hooks - Trojita
 if [[ "$urlpath" == "trojita.git" ]]; then
     obsauth=`cat ${HOME}/trojita-obs-credentials`
