@@ -368,7 +368,7 @@ class CommitAuditor(object):
 
                 # Second check: by file extension
                 # NOTE: This uses the FIRST dot as extension
-                splitted_filename = filename.split(os.extsep, 1)
+                splitted_filename = filename.split(os.extsep)
                 # Check if there's an extension or not
                 # NOTE This assumes that files use dots for extensions only!
                 if len(splitted_filename) > 1:
