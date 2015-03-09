@@ -87,10 +87,10 @@ def close_review(review_id, commit, committer, author, changed_ref):
     logger.setLevel(DEFAULT_LEVEL)
 
     if author == committer:
-        message =  ("This review has been submitted with commit "
+        message =  ("Submitted with commit "
                 "%s by %s to %s." % (commit, committer, changed_ref))
     else:
-        message =  ("This review has been submitted with commit "
+        message =  ("Submitted with commit "
                 "%s by %s on behalf of %s to %s." % (commit, committer, author, changed_ref))
 
     # Resources for replying and for submitting
@@ -103,38 +103,11 @@ def close_review(review_id, commit, committer, author, changed_ref):
     # Post a message announcing the submission
     logger.debug("Sending comment")
 
-    post_reply = dict(status="submitted", close_description=message)
-
-    request = requests.put(reply_url, auth=(username, password),
-            data=post_reply, headers={'Content-type': 'text/plain'})
-
-    # Reviewboard generates a 201 created response for this
-    if request.status_code not in (requests.codes.created, requests.codes.ok):
-        logger.error("Communication problem with Reviewboard. "
-                "Please contact the KDE sysadmins.")
-        logger.info("Please report the following:")
-        logger.info("Request URL: %s" % reply_url)
-        logger.info("Status code: %s" % request.status_code)
-        return
-
-
-    response = request.json()
-
-    if response is None:
-        logger.critical("Malformed response received from Reviewboard."
-                         " Contact the KDE sysadmins.")
-        return
-
-    if response["stat"] != "ok":
-        logger.error("An error occurred while accessing Reviewboard.")
-        logger.error(response["err"]["msg"])
-        return
-
     # Change the actual status
     logger.debug("Sending status")
 
     status_request = requests.put(submit_url, auth=(username, password),
-            data=dict(status="submitted"))
+            data=dict(status="submitted", close_description=message))
 
     if status_request.status_code != requests.codes.ok:
         logger.error("Communication problem with Reviewboard. "
