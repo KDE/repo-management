@@ -103,7 +103,7 @@ def close_review(review_id, commit, committer, author, changed_ref):
     # Post a message announcing the submission
     logger.debug("Sending comment")
 
-    post_reply = dict(public=True, body_top=message)
+    post_reply = dict(status="submitted", close_description=message)
 
     request = requests.put(reply_url, auth=(username, password),
             data=post_reply, headers={'Content-type': 'text/plain'})
