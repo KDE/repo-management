@@ -1,4 +1,4 @@
-#!/usr/bin/python -W ignore::DeprecationWarning
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 #   Copyright 2011 Luca Beltrame <einar@heavensinferno.net>
@@ -21,8 +21,8 @@ import json
 import logging
 import sys
 import os
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 import requests
 
@@ -78,7 +78,7 @@ def close_review(review_id, commit, committer, author, changed_ref):
     """
 
     # The slash is important or urljoin will mess up
-    reviewboard_url = urlparse.urljoin(REVIEWBOARD_URL, "api/")
+    reviewboard_url = urllib.parse.urljoin(REVIEWBOARD_URL, "api/")
 
     username, password = read_credentials()
 
@@ -97,8 +97,8 @@ def close_review(review_id, commit, committer, author, changed_ref):
     submit_resource = "review-requests/%s/" % review_id
     reply_resource = "review-requests/%s/reviews/" % review_id
 
-    submit_url = urlparse.urljoin(reviewboard_url, submit_resource)
-    reply_url = urlparse.urljoin(reviewboard_url, reply_resource)
+    submit_url = urllib.parse.urljoin(reviewboard_url, submit_resource)
+    reply_url = urllib.parse.urljoin(reviewboard_url, reply_resource)
 
     # Post a message announcing the submission
     logger.debug("Sending comment")
@@ -160,7 +160,7 @@ def close_review(review_id, commit, committer, author, changed_ref):
 
 def usage():
 
-    print "Usage: update_review <review-id> <commit sha1> <committer>"
+    print("Usage: update_review <review-id> <commit sha1> <committer>")
     sys.exit(0)
 
 def main():
