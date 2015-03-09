@@ -105,7 +105,7 @@ def close_review(review_id, commit, committer, author, changed_ref):
 
     post_reply = dict(public=True, body_top=message)
 
-    request = requests.post(reply_url, auth=(username, password),
+    request = requests.put(reply_url, auth=(username, password),
             data=post_reply, headers={'Content-type': 'text/plain'})
 
     # Reviewboard generates a 201 created response for this
@@ -117,9 +117,10 @@ def close_review(review_id, commit, committer, author, changed_ref):
         logger.info("Status code: %s" % request.status_code)
         return
 
-    try:
-        response = json.loads(request.content)
-    except ValueError:
+
+    response = request.json()
+
+    if response is None:
         logger.critical("Malformed response received from Reviewboard."
                          " Contact the KDE sysadmins.")
         return
@@ -144,9 +145,8 @@ def close_review(review_id, commit, committer, author, changed_ref):
         return
 
 
-    try:
-        response = json.loads(status_request.content)
-    except ValueError:
+    response = status_request.json()
+    if response is None:
         logger.critical("Malformed response received from Reviewboard."
                          " Contact the KDE sysadmins.")
         return
