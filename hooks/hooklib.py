@@ -138,7 +138,7 @@ class Repository(object):
              ('CP' , ('%P%n',  '(?P<parents>.*)\n')),
              ('AN' , ('%an%n', '(?P<author_name>.*)\n')),
              ('AE' , ('%ae%n', '(?P<author_email>.*)\n')),
-             ('D'  , ('%at%n', '(?P<date>.+)\n')),
+             ('D'  , ('%ct%n', '(?P<date>.+)\n')),
              ('CN' , ('%cn%n', '(?P<committer_name>.*)\n')),
              ('CE' , ('%ce%n', '(?P<committer_email>.*)\n')),
              ('MSG', ('%B%xff','(?P<message>(.|\n)*)\xff(\n*)(\x00*)(?P<files_changed>(.|\n)*)'))
