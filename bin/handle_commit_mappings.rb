@@ -34,6 +34,16 @@ enable :logging
 helpers do
 
   def findGitwebOrRedmineUrl(repoid, changeset)
+    # For now we are disabling Projects altogether (including its syncing) so *always* use quickgit
+    path = File.read("/home/git/repo-uid-mappings/#{repoid}").chomp
+    if not File.exists?("/repositories/#{path}")
+      logger.info( "Cannot find the repository specified by the UID" )
+      return nil
+    end
+    return "http://quickgit.kde.org/?p=#{path}&a=commit&h=#{changeset}"
+
+    # Original function follows...
+
     # Set up Postgres connection for Redmine. Read in password from a non-public file.
     if not $pg
       require 'pg'
