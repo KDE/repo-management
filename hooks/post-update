@@ -54,10 +54,8 @@ done
 # Update local information
 git update-server-info
 
-# Repository specific hooks - websites/build-kde-org
-if [[ "$urlpath" == "websites/build-kde-org.git" ]]; then
-    curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/git/notifyCommit?url=git://anongit.kde.org/websites/build-kde-org" &> /dev/null
-fi
+# Trigger the new Jenkins to build
+curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/git/notifyCommit?url=git://anongit.kde.org/websites/build-kde-org" &> /dev/null
 
 # Repository specific hooks - kde-build-metadata
 if [[ "$urlpath" == "kde-build-metadata.git" ]]; then
