@@ -20,46 +20,16 @@ if [ -f $remote_update_url ]; then
     python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
 fi
 
-# Kickoff a Jenkins build....
-jenkinsauth=`cat ${HOME}/jenkins-credentials`
-logicgroups="stable-qt4 latest-qt4 kf5-qt5 stable-kf5-qt5"
-cleanpath=${urlpath/\/-}
-cleanpath=${cleanpath/.git/}
-for ref; do
-    updatedref=${ref#refs/heads/}
-    virtualmodulepath=`$kdedevscripts/kde-project-info -f $kdeprojects -p $cleanpath`
-    for logicgroup in $logicgroups; do
-        branchforlogicgroup=`$metadatadir/tools/list_preferred_repo_branch -f $metadatadir/logical-module-structure $logicgroup $virtualmodulepath`
-        if [ "$branchforlogicgroup" = "<nothing set> (use master?)" ]; then
-            branchforlogicgroup=master
-        fi
-        if [ "$branchforlogicgroup" = "$updatedref" ]; then
-            jenkinsname="none"
-            if [ $logicgroup = "stable-qt4" ]; then
-                jenkinsname="stable"
-            elif [ $logicgroup = "latest-qt4" ]; then
-                jenkinsname="master"
-            elif [ $logicgroup = "stable-kf5-qt5" ]; then
-                jenkinsname="stable_qt5"
-            elif [ $logicgroup = "kf5-qt5" ]; then
-                jenkinsname="master_qt5"
-            fi
-            if [ $jenkinsname != "none" ]; then
-                curl --connect-timeout 1 --max-time 1 "http://build.kde.org/job/${cleanpath}_${jenkinsname}/build?token=${jenkinsauth}-${cleanpath}&cause=Triggered%20by%20commit" &>/dev/null
-            fi
-        fi
-    done
-done
-
 # Update local information
 git update-server-info
 
-# Trigger the new Jenkins to build
-curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
+# Trigger Jenkins to build
+jenkinsauth=`cat ${HOME}/jenkins-credentials`
+curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
 
 # Repository specific hooks - kde-build-metadata
 if [[ "$urlpath" == "kde-build-metadata.git" ]]; then
-    curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/job/kde_seed_dsl/build?token=${jenkinsauth}-kde_seed_dsl&cause=Commit%20to%20kde-build-metadata" &> /dev/null
+    curl --connect-timeout 10 --max-time 10 "https://build.kde.org/job/kde_seed_dsl/build?token=${jenkinsauth}-kde_seed_dsl&cause=Commit%20to%20kde-build-metadata" &> /dev/null
 fi
 
 # Repository specific hooks - Trojita
