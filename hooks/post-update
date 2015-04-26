@@ -23,9 +23,9 @@ fi
 # Update local information
 git update-server-info
 
-# Trigger Jenkins to build
+# Trigger Jenkins to build - wait 10s to ensure anongit is synced
 jenkinsauth=`cat ${HOME}/jenkins-credentials`
-curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
+sleep 10s && curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null &
 
 # Repository specific hooks - kde-build-metadata
 if [[ "$urlpath" == "kde-build-metadata.git" ]]; then
