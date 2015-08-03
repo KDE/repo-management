@@ -83,10 +83,10 @@ elif repository.change_type == ChangeType.Create and re.match("^origin/(.+)$", r
     print "Please ensure your remote branch name does not contain 'origin/' at the beginning"
     print "Push declined - attempted repository integrity violation"
     exit(1)
-if repository.ref_type == RefType.Tag and repository.change_type != ChangeType.Delete and repository.commit_type != "tag":
-    print "Pushing an unannotated tag is not permitted."
-    print "Push declined - attempted repository integrity violation"
-    exit(1)
+#if repository.ref_type == RefType.Tag and repository.change_type != ChangeType.Delete and repository.commit_type != "tag":
+#    print "Pushing an unannotated tag is not permitted."
+#    print "Push declined - attempted repository integrity violation"
+#    exit(1)
 if repository.ref_type == RefType.Changes and push_user != "gerrit":
     print "Pushes to changes refs is only permitted by the Gerrit instance"
     print "Push declined - attempted repository integrity violation"
