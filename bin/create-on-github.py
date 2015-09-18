@@ -23,8 +23,14 @@ ORGANISATION = config.get('Github', 'organisation')
 REPO_NAME = sys.argv[1]
 REPO_PATH = sys.argv[2]
 
+# Set a default description
+REPO_DESC = "This repository has no description"
+
 # Load the description from the path
-REPO_DESC = open( REPO_PATH + "/description", "r").read().strip()
+descriptionFile = REPO_PATH + "/description"
+
+if os.path.exists(descriptionFile):
+    REPO_DESC = open( REPO_PATH + "/description", "r").read().strip()
 
 # Set up the requests session
 S = requests.Session()
