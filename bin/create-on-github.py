@@ -36,7 +36,7 @@ repo_info_url = "/".join(("https://api.github.com/repos/" + ORGANISATION, REPO_N
 r = S.get(repo_info_url)
 
 if (r.ok) and ("id" in r.json.keys()):
-    print "GitHub mirror repository is present"
+    #print "GitHub mirror repository is present"
     sys.exit(0)
 
 # It doesn't, so we need to create the repository
@@ -50,14 +50,14 @@ repo_create_payload = {
     "auto_init": False,
 }
 
-print "Creating GitHub mirror repository"
+#print "Creating GitHub mirror repository"
 repo_create_url = "https://api.github.com/orgs/" + ORGANISATION + "/repos"
 r = S.post(repo_create_url, data = json.dumps(repo_create_payload))
 
 # Check if the repo was created successfully and exit accordingly
 if (r.status_code == 201) and ("id" in r.json.keys()):
-    print "GitHub mirror repository created"
+    #print "GitHub mirror repository created"
     sys.exit(0)
 else:
-    print "GitHub mirror repository creation failed"
+    #print "GitHub mirror repository creation failed"
     sys.exit(1)

@@ -100,3 +100,4 @@ Reviewboard hook design:
   - To save processing time and avoid needless parsing, this part is omitted
     in the hook, using the direct REST URLs for each operation
     - In case the Reviewboard API changes, these URLs will need to be adapted as well
+
