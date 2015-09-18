@@ -9,6 +9,11 @@ for line in $( find -mindepth 1 -maxdepth 1 -type d -name "*.git" ); do
     urlpath=${currpath#/srv/git/repositories/}
     reponame=${urlpath%.git}
 
+    # Gitolite-admin is private, skip it
+    if [[ "$urlpath" == "gitolite-admin.git" ]]; then
+        continue
+    fi
+
     # Build the remote URL up
     remoteurl="git@github.com:kde/$reponame"
     # Make sure the repo exists on Github
