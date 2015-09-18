@@ -6,6 +6,7 @@ kdedevscripts="/home/git/kde-dev-scripts/"
 kdeprojects="/home/git/kde_projects.xml"
 currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
+reponame=${urlpath%.git}
 
 # Poking anongit mirrors to cause immediate update
 for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
@@ -18,6 +19,17 @@ remote_update_url=$mgmtdir/repo-configs/remote-update/$urlpath
 if [ -f $remote_update_url ]; then
     remoteurl=`cat $remote_update_url`
     python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
+fi
+
+# Initiate Github update
+# Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
+if [[ $urlpath != *"/"* ]]; then
+    # Build the remote URL up
+    remoteurl="git@github.com:kde/$reponame"
+    # Make sure the repo exists on Github
+    python $mgmtdir/bin/create-on-github.py "$reponame" "/srv/git/repositories/$urlpath"
+    # Now we push it up there
+    python $mgmtbindir/update-repo-mirror.py "$reponame" "$remoteurl"
 fi
 
 # Update local information
