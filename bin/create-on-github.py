@@ -35,7 +35,7 @@ S.headers.update({"Authorization": " ".join(("token", ACCESS_TOKEN))})
 repo_info_url = "/".join(("https://api.github.com/repos/" + ORGANISATION, REPO_NAME))
 r = S.get(repo_info_url)
 
-if (r.ok) and ("id" in r.json().keys()):
+if (r.ok) and ("id" in r.json.keys()):
     print "GitHub mirror repository is present"
     sys.exit(0)
 
