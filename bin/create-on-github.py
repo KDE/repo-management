@@ -55,7 +55,7 @@ repo_create_url = "https://api.github.com/orgs/" + ORGANISATION + "/repos"
 r = S.post(repo_create_url, data = json.dumps(repo_create_payload))
 
 # Check if the repo was created successfully and exit accordingly
-if (r.status_code == 201) and ("id" in r.json().keys()):
+if (r.status_code == 201) and ("id" in r.json.keys()):
     print "GitHub mirror repository created"
     sys.exit(0)
 else:
