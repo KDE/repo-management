@@ -29,7 +29,7 @@ if [[ $urlpath != *"/"* ]]; then
     # Make sure the repo exists on Github
     python $mgmtdir/bin/create-on-github.py "$reponame" "/srv/git/repositories/$urlpath"
     # Now we push it up there
-    python $mgmtbindir/update-repo-mirror.py "$reponame" "$remoteurl"
+    python $mgmtdir/bin/update-repo-mirror.py "$reponame" "$remoteurl"
 fi
 
 # Update local information
