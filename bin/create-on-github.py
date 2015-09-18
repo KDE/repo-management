@@ -24,7 +24,7 @@ REPO_NAME = sys.argv[1]
 REPO_PATH = sys.argv[2]
 
 # Load the description from the path
-REPO_DESC = open( REPO_PATH + "/description", "r").read()
+REPO_DESC = open( REPO_PATH + "/description", "r").read().strip()
 
 # Set up the requests session
 S = requests.Session()
