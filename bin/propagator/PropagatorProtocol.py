@@ -26,46 +26,31 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import git
+# Protocol Description:
+#
+# CREATE reponame - create reponame.git on server and mirrors
+# RENAME oldrepo newrepo - move/rename oldrepo.git to newrepo.git
+# UPDATE reponame - sync reponame.git with its mirrors
+# DELETE reponame - delete reponame.git
+# FLUSH - try to commit all pending updates
 
-def doSync(src, dest, restricted = False):
+import asyncio
 
-    # init the git repo and remote objects first
+class CommandProtocol(asyncio.Protocol):
 
-    repo = git.Repo(src)
-    remote = git.Remote(repo, dest)
+    def connection_made(self, transport):
+        self.transport = transport
 
-    # if we're doing a restricted push, we only update branches and tags.
-    # everything else needs to be ignored
+    def connection_lost(self, exc):
+        self.transport.close()
 
-    refs = []
+    def data_received(self, data):
+        message = data.decode().strip()
+        components = message.split(" ")
 
-    if (restricted):
-        ret = remote.push(("--mirror", "--dry-run"))
-        for info in ret:
-            if type(info.local_ref) in (git.refs.Head, git.refs.TagReference):
-                refs.append("".join(("+", info.local_ref.name, ":", info.remote_ref_string)))
+        command = components[0]
+        if command not in ("CREATE", "RENAME", "UPDATE", "DELETE", "FLUSH"):
+            # log invalid command somewhere
+            return
 
-    # do the push
-
-    ret = None
-
-    if (refspec):
-        ret = remote.push(refspec)
-    else:
-        ret = remote.push("--mirror")
-
-    # analyse the results and return success or failure
-
-    for info in st:
-        if (info.flags & git.PushInfo.ERROR):
-            return False
-    return True
-
-def doFullSync(src, dest):
-
-    return doSync(src, dest, False)
-
-def doRestrictedSync(src, dest):
-
-    return doSync(src, dest, True)
+        # TODO: actually do something useful

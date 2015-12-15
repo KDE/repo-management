@@ -1,0 +1,104 @@
+#!/usr/bin/python3
+#
+# Copyright 2015 Boudhayan Gupta <bgupta@kde.org>
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. Neither the name of KDE e.V. (or its successor approved by the
+#    membership of KDE e.V.) nor the names of its contributors may be used
+#    to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+# NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import socket
+import os
+import sys
+import argparse
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(prog = "mirrorctl")
+    parser.add_argument("-q", "--quiet", action = "store_true", help = "don't display any output when no errors are encountered")
+    subparsers = parser.add_subparsers(dest = "command")
+
+    # create all our subcommands
+
+    pCreate = subparsers.add_parser("create", help = "create repos on mirrors for already existing server repo")
+    pCreate.add_argument("name", type = str, help = "the name of the repo to create, without path or trailing .git")
+
+    pRename = subparsers.add_parser("rename", help = "rename a repo on all mirrors")
+    pRename.add_argument("source", type = str, help = "the source repo, without path or trailing .git")
+    pRename.add_argument("destination", type = str, help = "the destination repo, without path or trailing .git")
+
+    pUpdate = subparsers.add_parser("update", help = "push updates to all repo mirrors")
+    pUpdate.add_argument("name", type = str, help = "the repo to update, without path or trailing .git")
+
+    pDelete = subparsers.add_parser("delete", help = "delete a repo on all mirrors")
+    pDelete.add_argument("name", type = str, help = "the repo to delete, without path or trailing .git")
+
+    pFlush = subparsers.add_parser("flush", help = "try to commit all pending updates to mirrors")
+
+    # parse all arguments
+
+    results = parser.parse_args()
+    if not results.command:
+        parser.print_help()
+        sys.exit(1)
+
+    cmd = results.command.lower()
+    if cmd not in ("create", "rename", "update", "delete", "flush"):
+        parser.print_help()
+        sys.exit(1)
+
+    # TODO: basic sanity checking - check that the repo exists
+
+    # create the client socket to communicate with the propagator daemon
+
+    socketPath = os.path.expanduser("~/.propagator.sock")
+    if not os.path.exists(socketPath):
+        print("ERROR: PropagatorServer is not running. Please notify the KDE Sysadmins", file=sys.stderr)
+        sys.exit(1)
+
+    clientSocket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    clientSocket.connect(socketPath)
+
+    # send our data
+
+    message = None
+
+    if cmd == "create":
+        message = ("CREATE %s\r\n" % results.name)
+    elif cmd == "rename":
+        message = ("RENAME %s %s\r\n" % (results.source, results.destination))
+    elif cmd == "update":
+        message = ("UPDATE %s\r\n" % results.name)
+    elif cmd == "delete":
+        message = ("DELETE %s\r\n" % results.name)
+    elif cmd == "flush":
+        message = "FLUSH\r\n"
+
+    clientSocket.sendall(message.encode())
+    if not results.quiet:
+        print("Successfully sent message to PropagatorServer: %s" % message.strip())
+
+    # close
+
+    clientSocket.close()
+    sys.exit(0)

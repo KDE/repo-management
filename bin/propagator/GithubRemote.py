@@ -1,3 +1,4 @@
+#
 # Copyright 2015 Boudhayan Gupta <bgupta@kde.org>
 #
 # Redistribution and use in source and binary forms, with or without
