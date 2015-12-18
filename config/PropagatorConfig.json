@@ -1,0 +1,21 @@
+{
+    "AnongitServers": [
+        "node4.mneisen.org",
+        "mason.kde.org",
+        "serenity.kde.org",
+        "kde-git.jefferai.org",
+        "probe.kde.org",
+        "mimi.kde.org"
+    ],
+
+    "GithubExcepts": [
+        "gitolite-admin.git",
+        "scratch/*",
+        "websites/*",
+        "clones/*"
+    ],
+    
+    "AnongitExcepts": [
+
+    ]
+}

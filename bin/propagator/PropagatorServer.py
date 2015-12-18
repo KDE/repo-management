@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# This file is part of Propagator, a KDE Sysadmin Project
 #
 # Copyright 2015 Boudhayan Gupta <bgupta@kde.org>
 #
@@ -50,7 +51,7 @@ def main():
     print("PropagatorServer has PID {} and is listening at {}".format(os.getpid(), serverJob.sockets[0].getsockname()))
 
     # define the cleanup handler here
-    def cleanup():
+    def cleanup(signum = None, frame = None):
         print("PropagatorServer is shutting down...")
 
         serverJob.close()

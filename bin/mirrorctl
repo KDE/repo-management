@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# This file is part of Propagator, a KDE Sysadmin Project
 #
 # Copyright 2015 Boudhayan Gupta <bgupta@kde.org>
 #
@@ -41,17 +42,17 @@ if __name__ == "__main__":
     # create all our subcommands
 
     pCreate = subparsers.add_parser("create", help = "create repos on mirrors for already existing server repo")
-    pCreate.add_argument("name", type = str, help = "the name of the repo to create, without path or trailing .git")
+    pCreate.add_argument("name", type = str, help = "the name of the repo to create, without path, with trailing .git")
 
     pRename = subparsers.add_parser("rename", help = "rename a repo on all mirrors")
-    pRename.add_argument("source", type = str, help = "the source repo, without path or trailing .git")
-    pRename.add_argument("destination", type = str, help = "the destination repo, without path or trailing .git")
+    pRename.add_argument("source", type = str, help = "the source repo, without path, with trailing .git")
+    pRename.add_argument("destination", type = str, help = "the destination repo, without path, with trailing .git")
 
     pUpdate = subparsers.add_parser("update", help = "push updates to all repo mirrors")
-    pUpdate.add_argument("name", type = str, help = "the repo to update, without path or trailing .git")
+    pUpdate.add_argument("name", type = str, help = "the repo to update, without path, with trailing .git")
 
     pDelete = subparsers.add_parser("delete", help = "delete a repo on all mirrors")
-    pDelete.add_argument("name", type = str, help = "the repo to delete, without path or trailing .git")
+    pDelete.add_argument("name", type = str, help = "the repo to delete, without path, with trailing .git")
 
     pFlush = subparsers.add_parser("flush", help = "try to commit all pending updates to mirrors")
 

@@ -1,3 +1,4 @@
+# This file is part of Propagator, a KDE Sysadmin Project
 #
 # Copyright 2015 Boudhayan Gupta <bgupta@kde.org>
 #
@@ -55,6 +56,10 @@ class GithubRemote(object):
     def __repr__(self):
 
         return ("<GithubRemote for kde:%s.git>" % self.REPO_NAME)
+
+    def setRepoDescription(self, desc):
+
+        self.REPO_DESC = desc
 
     def repoExisis(self):
 

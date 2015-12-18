@@ -27,42 +27,60 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Protocol Description:
-#
-# CREATE reponame - create reponame.git on server and mirrors
-# RENAME oldrepo newrepo - move/rename oldrepo.git to newrepo.git
-# UPDATE reponame - sync reponame.git with its mirrors
-# DELETE reponame - delete reponame.git
-# FLUSH - try to commit all pending updates
+import subprocess
 
-import asyncio
+class AnongitRemote(object):
 
-from PropagatorWorkers import CreateRepo, RenameRepo, UpdateRepo, DeleteRepo
+    def __init__(self, name, host, desc = "This repository has no description"):
 
-class CommandProtocol(asyncio.Protocol):
+        self.HOST = host
+        self.REPO_NAME = name
+        self.REPO_DESC = desc
 
-    def connection_made(self, transport):
-        self.transport = transport
+    def __repr__(self):
 
-    def connection_lost(self, exc):
-        self.transport.close()
+        return ("<AnongitRemote for %s:%s.git>" % (self.HOST, self.REPO_NAME))
 
-    def data_received(self, data):
-        message = data.decode().strip()
-        components = message.split(" ")
+    def __runSshCommand(self, command):
 
-        command = components[0]
-        if command not in ("CREATE", "RENAME", "UPDATE", "DELETE", "FLUSH"):
-            # log invalid command somewhere
-            return
-        sourceRepo = components[1]
+        cmdContext = ("ssh", self.HOST, command)
+        ssh = subprocess.Popen(cmdContext, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = False)
+        result = ssh.stdout.readlines()
 
-        if command == "CREATE":
-            CreateRepo.delay(sourceRepo)
-        elif command == "RENAME":
-            destRepo = components[2]
-            RenameRepo.delay(sourceRepo, destRepo)
-        elif command == "UPDATE":
-            UpdateRepo.delay(sourceRepo)
-        elif command == "DELETE":
-            DeleteRepo.delay(sourceRepo)
+        if "OK" in result:
+            return True
+        result = ssh.stderr.readlines()
+        return False
+
+    def setRepoDescription(self, desc):
+
+        self.REPO_DESC = desc
+        if self.repoExisis():
+            command = ("SETDESC %s \"%s\"" % self.REPO_NAME, self.REPO_DESC)
+            return self.__runSshCommand(command)
+        return True
+
+    def repoExisis(self):
+
+        command = ("EXISTS %s" % self.REPO_NAME)
+        return self.__runSshCommand(command)
+
+    def createRepo(self):
+
+        command = ("CREATE %s \"%s\"" % self.REPO_NAME, self.REPO_DESC)
+        return self.__runSshCommand(command)
+
+    def deleteRepo(self):
+
+        command = ("DELETE %s" % self.REPO_NAME)
+        return self.__runSshCommand(command)
+
+    def moveRepo(self, newname):
+
+        command = ("CREATE %s" % self.REPO_NAME)
+        ret = self.__runSshCommand(command)
+
+        if ret:
+            self.REPO_NAME = newname
+            return True
+        return False

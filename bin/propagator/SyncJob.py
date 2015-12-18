@@ -1,3 +1,4 @@
+# This file is part of Propagator, a KDE Sysadmin Project
 #
 # Copyright 2015 Boudhayan Gupta <bgupta@kde.org>
 #
@@ -61,11 +62,3 @@ def doSync(src, dest, restricted = False):
         if (info.flags & git.PushInfo.ERROR):
             return False
     return True
-
-def doFullSync(src, dest):
-
-    return doSync(src, dest, False)
-
-def doRestrictedSync(src, dest):
-
-    return doSync(src, dest, True)

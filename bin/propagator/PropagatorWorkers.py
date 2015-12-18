@@ -27,42 +27,54 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Protocol Description:
-#
-# CREATE reponame - create reponame.git on server and mirrors
-# RENAME oldrepo newrepo - move/rename oldrepo.git to newrepo.git
-# UPDATE reponame - sync reponame.git with its mirrors
-# DELETE reponame - delete reponame.git
-# FLUSH - try to commit all pending updates
+import celery
+import os
 
-import asyncio
+from SyncJob import doSync
 
-from PropagatorWorkers import CreateRepo, RenameRepo, UpdateRepo, DeleteRepo
+# some path constants without which we won't be able to get
+# to the configuration
 
-class CommandProtocol(asyncio.Protocol):
+MGMTDIR = "/home/git/repo-management"
+CFGFILE = os.path.join(MGMTDIR, config, "PropagatorConfig.json")
 
-    def connection_made(self, transport):
-        self.transport = transport
+# initialise the celery worker
 
-    def connection_lost(self, exc):
-        self.transport.close()
+app = celery.Celery()
+app.conf.CELERY_TASK_SERIALIZER = "pickle"
+app.conf.CELERY_ACCEPT_CONTENT = ["pickle"]
+app.conf.CELERYD_CONCURRENCY = 2
 
-    def data_received(self, data):
-        message = data.decode().strip()
-        components = message.split(" ")
+# all exported tasks
 
-        command = components[0]
-        if command not in ("CREATE", "RENAME", "UPDATE", "DELETE", "FLUSH"):
-            # log invalid command somewhere
-            return
-        sourceRepo = components[1]
+@app.task(ignore_result = True)
+def CreateRepo(repo):
+    print("Creating Repo")
 
-        if command == "CREATE":
-            CreateRepo.delay(sourceRepo)
-        elif command == "RENAME":
-            destRepo = components[2]
-            RenameRepo.delay(sourceRepo, destRepo)
-        elif command == "UPDATE":
-            UpdateRepo.delay(sourceRepo)
-        elif command == "DELETE":
-            DeleteRepo.delay(sourceRepo)
+@app.task(ignore_result = True)
+def RenameRepo(srcRepo, destRepo):
+    print("Renaming Repo")
+
+@app.task(ignore_result = True)
+def UpdateRepo(repo):
+
+    # start by bringing up a list of all anongit servers
+
+
+@app.task(ignore_result = True)
+def DeleteRepo(repo):
+    print("Deleting Repo")
+
+# non-exported tasks - individual sync jobs, etc
+
+@app.task(ignore_result = True)
+def p_SyncRepo(repo, remote, restricted):
+
+    ret = doSync(repo, remote, restricted)
+    if ret:
+        return
+
+    backoff = 60 * (self.request.retries + 1)
+    if backoff > 1800: # 30 minutes
+        return
+    raise self.retry(countdown = backoff, max_retries = None)
