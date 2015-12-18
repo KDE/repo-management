@@ -1,4 +1,10 @@
 {
+    "RepoRoot": "/srv/git/repositories",
+    "GithubPrefix": "kde",
+    "GithubUser": "git",
+    "AnongitPrefix": "kde",
+    "AnongitUser": "git",
+
     "AnongitServers": [
         "node4.mneisen.org",
         "mason.kde.org",
@@ -14,8 +20,5 @@
         "websites/*",
         "clones/*"
     ],
-    
-    "AnongitExcepts": [
-
-    ]
+    "AnongitExcepts": []
 }

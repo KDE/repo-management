@@ -60,15 +60,18 @@ class GithubRemote(object):
     def setRepoDescription(self, desc):
 
         self.REPO_DESC = desc
+        if self.repoExists():
+            payload = {"description": desc}
+            url = "/".join(("https://api.github.com/repos", self.ORGANISATION, self.REPO_NAME))
+            r = self.SESSION.patch(url, data = json.dumps(payload))
+            return ((r.status_code == 201) and ("id" in r.json.keys()))
+        return True
 
-    def repoExisis(self):
+    def repoExists(self):
 
         url = "/".join(("https://api.github.com/repos", self.ORGANISATION, self.REPO_NAME))
         r = self.SESSION.get(url)
-
-        if (r.ok) and ("id" in r.json.keys()):
-            return True
-        return False
+        return ((r.ok) and ("id" in r.json.keys()))
 
     def createRepo(self):
 
@@ -84,19 +87,14 @@ class GithubRemote(object):
 
         url = "/".join(("https://api.github.com/orgs", self.ORGANISATION, "repos"))
         r = self.SESSION.post(url, data = json.dumps(payload))
-
-        if (r.status_code == 201) and ("id" in r.json.keys()):
-            return True
-        return False
+        return ((r.status_code == 201) and ("id" in r.json.keys()))
 
     def deleteRepo(self):
 
         url = "/".join(("https://api.github.com/repos", self.ORGANISATION, self.REPO_NAME))
         r = self.SESSION.delete(url)
 
-        if (r.status_code == 204):
-            return True
-        return False
+        return (r.status_code == 204)
 
     def moveRepo(self, newname):
 

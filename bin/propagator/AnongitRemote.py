@@ -39,7 +39,7 @@ class AnongitRemote(object):
 
     def __repr__(self):
 
-        return ("<AnongitRemote for %s:%s.git>" % (self.HOST, self.REPO_NAME))
+        return ("<AnongitRemote for %s:%s>" % (self.HOST, self.REPO_NAME))
 
     def __runSshCommand(self, command):
 
@@ -55,12 +55,12 @@ class AnongitRemote(object):
     def setRepoDescription(self, desc):
 
         self.REPO_DESC = desc
-        if self.repoExisis():
+        if self.repoExists():
             command = ("SETDESC %s \"%s\"" % self.REPO_NAME, self.REPO_DESC)
             return self.__runSshCommand(command)
         return True
 
-    def repoExisis(self):
+    def repoExists(self):
 
         command = ("EXISTS %s" % self.REPO_NAME)
         return self.__runSshCommand(command)
