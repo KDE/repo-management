@@ -44,6 +44,7 @@ def doSync(src, dest, restricted = False):
     if (restricted):
         ret = remote.push(("--mirror", "--dry-run"))
         for info in ret:
+            # check if the local ref is either a head or a tag
             if type(info.local_ref) in (git.refs.Head, git.refs.TagReference):
                 refs.append("".join(("+", info.local_ref.name, ":", info.remote_ref_string)))
 

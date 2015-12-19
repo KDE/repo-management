@@ -52,7 +52,7 @@ with open(CFGFILE) as f:
 
 # utility functions
 
-def isExcept(repo, config):
+def isExcluded(repo, config):
 
     for pattern in config:
         p = re.compile(pattern)
@@ -85,20 +85,20 @@ def CreateRepo(repo):
             repoDesc = f.read().strip()
 
     # spawn the create tasks
-    if not isExcept(repo, CFGDATA["GithubExcepts"]):
+    if not isExcluded(repo, CFGDATA["GithubExcepts"]):
         p_CreateRepoGithub.delay(repo, repoDesc)
 
-    if not isExcept(repo, CFGDATA["AnongitExcepts"]):
+    if not isExcluded(repo, CFGDATA["AnongitExcepts"]):
         for server in CFGDATA["AnongitServers"]:
             p_CreateRepoAnongit.delay(repo, server, repoDesc)
 
 @app.task(ignore_result = True)
 def RenameRepo(srcRepo, destRepo):
 
-    if not isExcept(repo, CFGDATA["GithubExcepts"]):
+    if not isExcluded(repo, CFGDATA["GithubExcepts"]):
         p_MoveRepoGithub.delay(srcRepo, destRepo)
 
-    if not isExcept(repo, CFGDATA["AnongitExcepts"]):
+    if not isExcluded(repo, CFGDATA["AnongitExcepts"]):
         for server in CFGDATA["AnongitServers"]:
             p_CreateRepoAnongit.delay(srcRepo, destRepo, server)
 
@@ -112,14 +112,14 @@ def UpdateRepo(repo):
         return
 
     # spawn push to github task first
-    if not isExcept(repo, CFGDATA["GithubExcepts"]):
+    if not isExcluded(repo, CFGDATA["GithubExcepts"]):
         githubPrefix = CFGDATA["GithubPrefix"]
         githubUser = CFGDATA["GithubUser"]
         githubRemote = "%s@github.com:%s/%s" % (githubUser, githubPrefix, repo)
         p_SyncRepo.delay(repoPath, githubRemote, True)
 
     # now spawn all push to anongit tasks
-    if not isExcept(repo, CFGDATA["AnongitExcepts"]):
+    if not isExcluded(repo, CFGDATA["AnongitExcepts"]):
         anonUser = CFGDATA["AnongitUser"]
         anonPrefix = CFGDATA["AnongitPrefix"]
         for server in CFGDATA["AnongitServers"]:
@@ -129,10 +129,10 @@ def UpdateRepo(repo):
 @app.task(ignore_result = True)
 def DeleteRepo(repo):
 
-    if not isExcept(repo, CFGDATA["GithubExcepts"]):
+    if not isExcluded(repo, CFGDATA["GithubExcepts"]):
         p_DeleteRepoGithub.delay(repo)
 
-    if not isExcept(repo, CFGDATA["AnongitExcepts"]):
+    if not isExcluded(repo, CFGDATA["AnongitExcepts"]):
         for server in CFGDATA["AnongitServers"]:
             p_DeleteRepoAnongit.delay(repo, server)
 
@@ -142,7 +142,7 @@ def DeleteRepo(repo):
 def p_DeleteRepoGithub(repo):
 
     if repo.endswith(".git"):
-        repo = repo[:-4]
+        repo = repo.rstrip(".git")
     remote = GithubRemote(repo)
 
     if remote.repoExists():
@@ -171,7 +171,7 @@ def p_SyncRepo(repo, remote, restricted):
 def p_CreateRepoGithub(repo, desc):
 
     if repo.endswith(".git"):
-        repo = repo[:-4]
+        repo = repo.rstrip(".git")
     remote = GithubRemote(repo, desc)
 
     if not remote.repoExists():
@@ -188,9 +188,9 @@ def p_CreateRepoAnongit(repo, server, desc):
 def p_MoveRepoGithub(src, dest):
 
     if src.endswith(".git"):
-        src = src[:-4]
+        src = src.rstrip(".git")
     if dest.endswith(".git"):
-        dest = dest[:-4]
+        dest = dest.rstrip(".git")
     remote = GithubRemote(src)
 
     if remote.repoExists():
