@@ -778,10 +778,10 @@ class CiaNotifier(object):
         message = MIMEText( commit_xml, 'xml', 'utf-8' )
         message['Subject'] = "DeliverXML"
         message['From'] = "sysadmin@kde.org"
-        message['To'] = "commits@informant.kde.org"
+        message['To'] = "commits@spring.kde.org"
 
         # Send email...
-        self.smtp.sendmail("sysadmin@kde.org", ["commits@informant.kde.org"],
+        self.smtp.sendmail("sysadmin@kde.org", ["commits@spring.kde.org"],
                            message.as_string())
 
 class Commit(object):
