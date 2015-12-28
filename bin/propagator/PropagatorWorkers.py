@@ -111,12 +111,22 @@ def UpdateRepo(repo):
     if not os.path.exists(repoPath):
         return
 
+    # lift the repo description as we might need to create the repo first
+    repoDesc = "This repository has no description"
+    repoDescFile = os.path.join(repoPath, "description")
+    if os.path.exists(repoDescFile):
+        with open(repoDescFile) as f:
+            repoDesc = f.read().strip()
+
     # spawn push to github task first
     if not isExcluded(repo, CFGDATA["GithubExcepts"]):
         githubPrefix = CFGDATA["GithubPrefix"]
         githubUser = CFGDATA["GithubUser"]
         githubRemote = "%s@github.com:%s/%s" % (githubUser, githubPrefix, repo)
-        p_SyncRepo.delay(repoPath, githubRemote, True)
+
+        createTask = p_CreateRepoGithub.si(repo, repoDesc)
+        syncTask = p_SyncRepo.si(repoPath, githubRemote, True)
+        celery.chain(createTask, syncTask)()
 
     # now spawn all push to anongit tasks
     if not isExcluded(repo, CFGDATA["AnongitExcepts"]):
@@ -124,7 +134,10 @@ def UpdateRepo(repo):
         anonPrefix = CFGDATA["AnongitPrefix"]
         for server in CFGDATA["AnongitServers"]:
             anonRemote = "%s@%s:%s/%s" % (anonUser, server, anonPrefix, repo)
-            p_SyncRepo.delay(repoPath, anonRemote, False)
+
+            createTask = p_CreateRepoAnongit.si(repo, server, repoDesc)
+            syncTask = p_SyncRepo.si(repoPath, anonRemote, False)
+            celery.chain(createTask, syncTask)()
 
 @app.task(ignore_result = True)
 def DeleteRepo(repo):
