@@ -77,7 +77,7 @@ class AnongitRemote(object):
 
     def moveRepo(self, newname):
 
-        command = ("CREATE %s" % self.REPO_NAME)
+        command = ("MOVE %s %s" % (self.REPO_NAME), newname)
         ret = self.__runSshCommand(command)
 
         if ret:
