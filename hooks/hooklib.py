@@ -53,6 +53,11 @@ class Repository(object):
     "Represents a repository, and changes made to it"
     EmptyRef = "0000000000000000000000000000000000000000"
 
+    "Whitelist of names which will always be accepted"
+    FullNameWhitelist = [
+        'Chaitanya'
+    ]
+
     RepoManagementName = "repo-management"
     PullBaseUrlHttp = "http://anongit.kde.org/"
     PullBaseUrlGit = "git://anongit.kde.org/"
@@ -415,6 +420,10 @@ class CommitAuditor(object):
         disallowed_domains = ["localhost", "localhost.localdomain", "(none)"]
         for commit in self.repository.commits.values():
             for name in [ commit.committer_name, commit.author_name ]:
+                # Is the name whitelisted?
+                if name in self.FullNameWhitelist:
+                    continue
+
                 # Check to see if the name contains spaces - if not - it is probably misconfigured....
                 if " " not in name.strip():
                     self.__log_failure(commit.sha1, "Non-full name: " + name)
