@@ -53,11 +53,6 @@ class Repository(object):
     "Represents a repository, and changes made to it"
     EmptyRef = "0000000000000000000000000000000000000000"
 
-    "Whitelist of names which will always be accepted"
-    FullNameWhitelist = [
-        'Chaitanya'
-    ]
-
     RepoManagementName = "repo-management"
     PullBaseUrlHttp = "http://anongit.kde.org/"
     PullBaseUrlGit = "git://anongit.kde.org/"
@@ -290,6 +285,11 @@ class CommitAuditor(object):
 
     ALLOWED_EOL_MIMETYPES = set(("text/vcard", "text/x-vcard", "text/directory", "image/svg"))
     ALLOWED_EOL_EXTENSIONS = set(("vcf", "vcf.ref", "svg", "pdf"))
+ 
+    "Whitelist of names which will always be accepted"
+    FullNameWhitelist = [
+        'Chaitanya'
+    ]
 
     def __init__(self, repository):
         self.repository = repository
