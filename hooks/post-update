@@ -36,21 +36,21 @@ fi
 git update-server-info
 
 # Trigger Jenkins to build - wait 10s to ensure anongit is synced
-#jenkinsauth=`cat ${HOME}/jenkins-credentials`
-#sleep 10s && curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null &
+jenkinsauth=`cat ${HOME}/jenkins-credentials`
+sleep 10s && curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null &
 #sleep 10s && curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null &
 
 # Repository specific hooks - kde-build-metadata
-#if [[ "$urlpath" == "kde-build-metadata.git" ]]; then
-#    curl --connect-timeout 10 --max-time 10 "https://build.kde.org/job/dsl_seed_job/build?token=${jenkinsauth}-kde_seed_dsl&cause=Commit%20to%20kde-build-metadata" &> /dev/null
+if [[ "$urlpath" == "kde-build-metadata.git" ]]; then
+    curl --connect-timeout 10 --max-time 10 "https://build.kde.org/job/dsl_seed_job/build?token=${jenkinsauth}-kde_seed_dsl&cause=Commit%20to%20kde-build-metadata" &> /dev/null
 #    curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/job/dsl_seed_job/build?token=${jenkinsauth}-kde_seed_dsl&cause=Commit%20to%20kde-build-metadata" &> /dev/null
-#fi
+fi
 
 # Repository specific hooks - ci-builder-tools
-#if [[ "$urlpath" == "ci-builder-tools.git" ]]; then
-#    curl --connect-timeout 10 --max-time 10 "https://build.kde.org/job/update_nodes/build?token=${jenkinsauth}-update_nodes&cause=Commit%20to%20ci_builder_tools" &> /dev/null
+if [[ "$urlpath" == "ci-builder-tools.git" ]]; then
+    curl --connect-timeout 10 --max-time 10 "https://build.kde.org/job/update_nodes/build?token=${jenkinsauth}-update_nodes&cause=Commit%20to%20ci_builder_tools" &> /dev/null
 #    curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/job/update_nodes/build?token=${jenkinsauth}-update_nodes&cause=Commit%20to%20ci_builder_tools" &> /dev/null
-#fi
+fi
 
 # Repository specific hooks - Trojita
 if [[ "$urlpath" == "trojita.git" ]]; then
