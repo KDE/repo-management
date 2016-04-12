@@ -24,7 +24,7 @@ fi
 # Initiate Github update
 # Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
 if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
-    bash $mgmtdir/bin/sync-to-github.sh $reponame $urlpath &
+    bash $mgmtdir/bin/sync-to-github.sh "$reponame" "$urlpath" &
 fi
 
 # Update local information
