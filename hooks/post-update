@@ -24,12 +24,7 @@ fi
 # Initiate Github update
 # Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
 if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
-    # Build the remote URL up
-    remoteurl="git@github.com:kde/$reponame"
-    # Make sure the repo exists on Github
-    python $mgmtdir/bin/create-on-github.py "$reponame" "/srv/git/repositories/$urlpath"
-    # Now we push it up there
-    python $mgmtdir/bin/update-repo-mirror.py "$reponame" "$remoteurl"
+    bash $mgmtdir/bin/sync-to-github.sh $reponame $urlpath &
 fi
 
 # Update local information
