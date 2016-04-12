@@ -3,7 +3,7 @@ mgmtdir="/home/git/repo-management"
 
 # Grab our input
 reponame="$1"
-$urlpath="$2"
+urlpath="$2"
 
 # Build the remote URL up
 remoteurl="git@github.com:kde/$reponame"
