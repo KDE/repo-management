@@ -283,8 +283,8 @@ class CommitAuditor(object):
 
     """Performs all audits on commits"""
 
-    ALLOWED_EOL_MIMETYPES = set(("text/vcard", "text/x-vcard", "text/directory", "image/svg"))
-    ALLOWED_EOL_EXTENSIONS = set(("vcf", "vcf.ref", "svg", "pdf"))
+    ALLOWED_EOL_MIMETYPES = set(("text/vcard", "text/x-vcard", "text/directory", "image/svg", "image/x-portable-graymap"))
+    ALLOWED_EOL_EXTENSIONS = set(("vcf", "vcf.ref", "svg", "pdf", "pgm"))
  
     "Whitelist of names which will always be accepted"
     FullNameWhitelist = [
