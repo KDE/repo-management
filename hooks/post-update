@@ -37,7 +37,7 @@ sleep 10s && curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/
 
 # Repository specific hooks - kde-build-metadata
 if [[ "$urlpath" == "kde-build-metadata.git" ]]; then
-    curl --connect-timeout 10 --max-time 10 "https://build.kde.org/job/kde_project_dsl_orig/build?token=${jenkinsauth}-kde_seed_dsl&cause=Commit%20to%20kde-build-metadata" &> /dev/null
+    curl --connect-timeout 10 --max-time 10 "https://build.kde.org/job/kde_project_dsl_orig/build?token=${jenkinsauth}-kde_project_dsl_orig&cause=Commit%20to%20kde-build-metadata" &> /dev/null
 #    curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/job/dsl_seed_job/build?token=${jenkinsauth}-kde_seed_dsl&cause=Commit%20to%20kde-build-metadata" &> /dev/null
 fi
 
