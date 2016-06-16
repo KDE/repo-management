@@ -55,7 +55,6 @@ if [[ "$urlpath" == "ci-tools-experimental.git" ]]; then
 if [[ "$urlpath" == "android-builder.git" ]]; then
     curl --connect-timeout 10 --max-time 10 "https://build-sandbox.kde.org/job/create_android_node/build?token=${jenkinsauth}-create-android-node&cause=Commit%20to%20android-builder" &> /dev/null
 
-
 # Repository specific hooks - Trojita
 if [[ "$urlpath" == "trojita.git" ]]; then
     obsauth=`cat ${HOME}/trojita-obs-credentials`
