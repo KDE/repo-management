@@ -22,7 +22,7 @@ if [ -f $remote_update_url ]; then
 fi
 
 # Initiate propagator-agent equipped anongit updates
-#bash $mgmtdir/bin/sync-to-anongit.sh "$reponame" &
+bash $mgmtdir/bin/sync-to-anongit.sh "${reponame}.git" &
 
 # Initiate Github update
 # Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
