@@ -21,7 +21,7 @@ if [ -f $remote_update_url ]; then
     python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
 fi
 
-# Initiate propagator-agent equipped anongit updates
+# Initiate propagator-agent equipped anongit mirror updates
 bash $mgmtdir/bin/sync-to-anongit.sh "${reponame}.git" &
 
 # Initiate Github update
