@@ -21,6 +21,9 @@ if [ -f $remote_update_url ]; then
     python $mgmtdir/bin/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
 fi
 
+# Initiate propagator-agent equipped anongit updates
+#bash $mgmtdir/bin/sync-to-anongit.sh "$reponame" &
+
 # Initiate Github update
 # Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
 if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
@@ -62,4 +65,3 @@ if [[ "$urlpath" == "trojita.git" ]]; then
     obsauth=`cat ${HOME}/trojita-obs-credentials`
     curl --connect-timeout 10 --max-time 10 --user $obsauth -X POST -H 'Content-Length: 0' 'https://api.opensuse.org/source/home:jkt-gentoo:trojita/trojita-nightly/?cmd=runservice' &>/dev/null
 fi
-
