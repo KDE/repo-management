@@ -450,7 +450,7 @@ class CommitAuditor(object):
                         dns.resolver.query(domain, "A")
                     except (dns.resolver.NoAnswer, dns.exception.Timeout, dns.name.EmptyLabel):
                         self.__log_failure(commit.sha1, "Email address has an invalid domain : " + email_address)
-                except dns.resolver.NXDOMAIN:
+                except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers):
                     self.__log_failure(commit.sha1, "Email address has an invalid domain : " + email_address)
 
     def audit_hashes(self, blocked_list):
