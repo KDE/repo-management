@@ -8,6 +8,9 @@ currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
 reponame=${urlpath%.git}
 
+# Poke propagator to update the repository mirrors
+/home/git/.local/bin/propagator-mirrorsync ${reponame}.git
+
 # Poking anongit mirrors to cause immediate update
 for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
        mirror=$(dig +short $mirror)
@@ -23,12 +26,6 @@ fi
 
 # Initiate propagator-agent equipped anongit mirror updates and suppress output
 bash $mgmtdir/bin/sync-to-anongit.sh "${reponame}.git" &> /dev/null &
-
-# Initiate Github update
-# Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
-if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
-    bash $mgmtdir/bin/sync-to-github.sh "$reponame" "$urlpath" &
-fi
 
 # Update local information
 git update-server-info
