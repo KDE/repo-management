@@ -290,6 +290,14 @@ class CommitAuditor(object):
     FullNameWhitelist = [
         'Chaitanya'
     ]
+    """
+    List of repositories that use web merging on GitHub pull requests
+    and cause 'GitHub' usernames
+    """
+    GitHubPRWhitelist = [
+        'websites/inqlude',
+        'websites/inqlude-data'
+    ]
 
     def __init__(self, repository):
         self.repository = repository
@@ -427,7 +435,7 @@ class CommitAuditor(object):
                 # Is the name whitelisted?
                 if name in self.FullNameWhitelist:
                     continue
-                if name == 'GitHub' and self.repository.path == 'dummy':
+                if name == 'GitHub' and self.repository.path in self.GitHubPRWhitelist:
                     self.__log_warning(commit.sha1, "Commit has username 'GitHub'; allowing anyway")
                     self.__log_warning(commit.sha1, "(please don't use the GitHub web interface to merge pull requests)")
                     continue
