@@ -802,7 +802,7 @@ class Commit(object):
 
     """Represents a git commit"""
 
-    UrlPattern = "http://commits.kde.org/{0}/{1}"
+    UrlPattern = "https://commits.kde.org/{0}/{1}"
 
     def __init__(self, repository, commit_data):
         self.repository = repository
