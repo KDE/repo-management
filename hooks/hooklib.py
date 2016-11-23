@@ -298,7 +298,7 @@ class CommitAuditor(object):
         self.__logger = logging.getLogger("auditor")
         self.__logger.setLevel(logging.ERROR)
 
-        formatter = logging.Formatter("Audit failure - %(message)s")
+        formatter = logging.Formatter("%(message)s")
         handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         self.__logger.addHandler(handler)
@@ -306,9 +306,13 @@ class CommitAuditor(object):
         self.__setup_filenames()
 
     def __log_failure(self, commit, message):
-        log_message = unicode("Commit {0} - {1}", "utf-8").format(commit, message)
+        log_message = unicode("Audit failure - Commit {0} - {1}", "utf-8").format(commit, message)
         self.__logger.critical(log_message)
         self.__failed = True
+
+    def __log_warning(self, commit, message):
+        log_message = unicode("Audit warning - Commit {0} - {1}", "utf-8").format(commit, message)
+        self.__logger.warning(log_message)
 
     def __setup_filenames(self):
         self.filename_limits = []
