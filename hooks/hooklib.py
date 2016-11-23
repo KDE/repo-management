@@ -296,7 +296,7 @@ class CommitAuditor(object):
         self.__failed = False
 
         self.__logger = logging.getLogger("auditor")
-        self.__logger.setLevel(logging.ERROR)
+        self.__logger.setLevel(logging.WARNING)
 
         formatter = logging.Formatter("%(message)s")
         handler = logging.StreamHandler()
