@@ -428,8 +428,8 @@ class CommitAuditor(object):
                 if name in self.FullNameWhitelist:
                     continue
                 if name == 'GitHub' and self.repository.path == 'dummy':
-                    self.__log_warning("Commit has username 'GitHub'; allowing anyway")
-                    self.__log_warning("(please don't use the GitHub web interface to merge pull requests)")
+                    self.__log_warning(commit.sha1, "Commit has username 'GitHub'; allowing anyway")
+                    self.__log_warning(commit.sha1, "(please don't use the GitHub web interface to merge pull requests)")
                     continue
 
                 # Check to see if the name contains spaces - if not - it is probably misconfigured....
