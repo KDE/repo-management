@@ -93,13 +93,8 @@ for (commit, diff) in notifier.handler(repository):
     # Create the message builder in preperation to send notifications
     builder = MessageBuilder( repository, commit, None, False )
 
-    # Determine the address to send this private email to - if we can't send it to Sysadmin so it can be fixed
-    if repository.path in ["ev-board"]:
-        notify_address = "kde-ev-board@kde.org"
-    elif repository.path in ["kdeadmin", "relicensing", "gitolite-admin"]:
-        notify_address = "sysadmin@kde.org"
-    else:
-        notify_address = "sysadmin@kde.org"
+    # Notifications for sysadmin@git.kde.org repos always go to Sysadmin
+    notify_address = "sysadmin@kde.org"
 
     notifier.notify_email( builder, notify_address, diff )
 

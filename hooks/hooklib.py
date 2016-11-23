@@ -77,7 +77,6 @@ class Repository(object):
         # Set path and id....
         path_match = re.match("^"+Repository.BaseDir+"(.+).git$", os.getcwd())
         self.path = path_match.group(1)
-        self.uid = self.__get_repo_id()
         self.__write_metadata()
 
         # Determine types....
@@ -215,16 +214,6 @@ class Repository(object):
             metadata.write( "Pull (read-only): " + Repository.PullBaseUrlGit + self.path + "\n" )
             metadata.write( "Pull (read-only): " + Repository.PullBaseUrlHttp + self.path + "\n" )
             metadata.write( "Pull+Push (read+write): " + Repository.PushBaseUrl + self.path + "\n" )
-
-    def __get_repo_id(self):
-        nick_path = os.path.join(os.getenv('GIT_DIR'), "kde-repo-nick")
-
-        if not os.path.exists(nick_path):
-            with open(nick_path, "w") as rid_file:
-                rid_file.write(self.path + "\n")            
-
-        with open(nick_path, "r") as rid_file:
-            return rid_file.readline().strip()
 
     def __get_repo_type(self):
         sysadmin_repos = ["gitolite-admin"]
@@ -819,7 +808,7 @@ class Commit(object):
         self.repository = repository
         self._commit_data = commit_data
         self._raw_properties = ["files_changed", "datetime"]
-        self.url = Commit.UrlPattern.format( repository.uid, self.sha1 )
+        self.url = Commit.UrlPattern.format( repository.path, self.sha1 )
 
         # Convert the date into something usable...
         self._commit_data["datetime"] = datetime.fromtimestamp( float(self._commit_data["date"]) )

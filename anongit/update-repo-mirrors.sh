@@ -1,5 +1,6 @@
 #/bin/bash
 
+# Is an update in progress?
 if [ -e /tmp/update_repo.txt ]; then
   echo "Lock exists"
   exit 1;
@@ -7,9 +8,11 @@ else
   touch /tmp/update_repo.txt
 fi
 
-hostname=$(cat /home/git/thisanongithost)
+# Grab our hostname
+hostname=$(cat ~/thisanongithost)
 
-~/repo-management/bin/verify_new_projects_list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
+# Is the projects list usable?
+~/repo-management/helpers/validate-projects-list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
 if [ $? -ne 0 ]
 then
   echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin-systems@kde.org" -s "ERROR: projects.list problem on $hostname" sysadmin-systems@kde.org
@@ -42,19 +45,24 @@ cp /home/git/projects-to-anongit.list.new ~/projects-to-anongit.list
 # Go through each line and if the repo exists and isn't an empty folder,
 # do an update. Otherwise do a clone.
 for line in `cat ~/projects-to-anongit.list`; do
+    # Change into the repository
     cd /repositories
     dname=`dirname $line`
     gitname=".git"
     bname=`basename $line`
     mkdir -p $dname
     cd $dname
+
+    # Is the repository already populated?
     if [ -e $bname -a -e $bname/HEAD ]
       then
+        # It exists - refresh it appropriately
         cd $bname
         git config transfer.fsckObjects true
         git remote update -p
         git update-server-info
       else
+        # It doesn't exist, remove it and reclone
         rm -rf $bname
         git clone --mirror git://git.kde.org/$line $bname
         cd $bname

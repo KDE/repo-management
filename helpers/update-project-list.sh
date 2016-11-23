@@ -3,7 +3,7 @@ if [ ! -f /home/git/projects.list ]; then
   exit
 fi
 
-/home/git/repo-management/bin/verify_new_projects_list.pl /home/git/projects.list /home/git/projects-list/projects-to-anongit.list
+/home/git/repo-management/helpers/validate-projects-list.pl /home/git/projects.list /home/git/projects-list/projects-to-anongit.list
 
 if [ $? -ne 0 ]
 then
