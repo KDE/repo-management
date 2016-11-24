@@ -31,10 +31,6 @@ try:
 except IndexError:
     usage()
 
-gitlab = False
-if len(sys.argv) == 5 and sys.argv[4] == "gitlab":
-    gitlab = True
-
 # Read needed environment variables
 git_dir = os.getenv('GIT_DIR')
 push_user = os.getenv('GL_USER')
@@ -163,10 +159,7 @@ if repository.repo_type != RepoType.Sysadmin and repository.new_sha1 in reposito
     else:
         print "The last commit in this series is available for viewing at:"
 
-    if not gitlab:
-        print repository.commits[ repository.new_sha1 ].url
-    else:
-        print "https://git-next.kde.org/" + repository.path + "/commit/" + repository.new_sha1
+    print repository.commits[ repository.new_sha1 ].url
 
 # Are we allowed to send notifications on this repo?
 notify_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin, RepoType.Others]
