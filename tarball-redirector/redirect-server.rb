@@ -34,17 +34,6 @@ get %r{/updateRepo/(.*)} do |url|
   end
 end
 
-get %r{(.*)/([a-zA-Z0-9][a-zA-Z0-9_\.\-]+[a-zA-Z0-9])-latest\.tar\.gz} do |dir, name|
-  begin
-    path = "#{dir}/#{name}-latest.tar.gz"
-    newbasename = File.readlink("/repository-tarballs#{path}")
-    redirect "#{dir}/#{newbasename}"
-  rescue Exception
-    status 404
-    "Rescuing: Not found"
-  end
-end
-
 get '*' do
   status 404
   "Not found"
