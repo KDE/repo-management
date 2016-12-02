@@ -79,7 +79,7 @@ for line in `cat ~/projects-to-anongit.list`; do
 done
 
 # Update the repository metadata
-~/repo-management/anongit/update-repo-metadata.sh
+~/repo-management/anongit/update-repo-metadata.sh /repositories/
 
 # Unlock the process
 rm /tmp/update_repo.txt
