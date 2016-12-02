@@ -7,11 +7,8 @@ grep `cat ~/thisanongithost` ~/repo-management/config/enabled_anongits.cfg >/dev
 rsync -az git.kde.org::projects-list/projects-to-anongit.list ~/projects-to-anongit.list.new
 chmod 755 ~/projects-to-anongit.list.new
 
-# Update the metadata tree
-rsync -az --delete git.kde.org::metadata-tree/ ~/metadata-tree/
-
 # Update our copy of repo-management, just to be sure
-cd /home/git/repo-management; git pull
+cd ~/repo-management; git pull
 
 # Begin the update of the repositories
 anongit/update-repo-mirrors.sh
