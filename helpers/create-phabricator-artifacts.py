@@ -106,8 +106,11 @@ def create_or_get_project(phab, name):
         logging.debug('Error while creating project %s, checking for it' %
                       (name))
         found_prj = phab.project.search(constraints={'name': '%s' % (name)})
-        if found_prj['data']:
-            found_prj_phid = found_prj['data'][0]['phid']
+        if found_prj.get('data'):
+            # 'name' looks for substrings, so search for the exact match
+            for prj_data in found_prj['data']:
+                if prj_data['fields']['name'] == name:
+                    found_prj_phid = prj_data['phid']
     logging.info('Created or found project %s (%s)' % (name, found_prj_phid))
     return found_prj_phid
 
