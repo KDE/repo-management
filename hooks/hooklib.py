@@ -613,7 +613,7 @@ class MessageBuilder(object):
     def from_header(self):
         """Helper function to construct a From header for emails - as Python stuffs it up"""
         fixed_name = Header( self.commit.committer_name ).encode()
-        return unicode("{0} <{1}>").format(fixed_name, self.commit.committer_email)
+        return unicode("{0} <{1}>").format(fixed_name, "null@kde.org")
 
     @property
     def subject(self):
