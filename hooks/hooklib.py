@@ -512,11 +512,12 @@ class CommitNotifier(object):
 
         # Handle the normal mailing list mails....
         message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
-        message['Subject'] = Header( builder.subject, 'utf-8', 76, 'Subject' )
-        message['From']    = builder.from_header()
-        message['To']      = Header( notification_address )
+        message['Subject']  = Header( builder.subject, 'utf-8', 76, 'Subject' )
+        message['From']     = builder.address_header( builder.commit.committer_name, "null@kde.org" )
+        message['To']       = Header( notification_address )
+        message['Reply-To'] = builder.address_header( builder.commit.committer_name, builder.commit.committer_email )
         if cc_addresses:
-            message['Cc']  = Header( ','.join(cc_addresses) )
+            message['Cc']   = Header( ','.join(cc_addresses) )
         message['X-Commit-Ref']         = Header( builder.repository.ref_name )
         message['X-Commit-Project']     = Header( builder.repository.path )
         message['X-Commit-Folders']     = Header( ' '.join(builder.commit_directories) )
@@ -552,9 +553,9 @@ class CommitNotifier(object):
             body = unicode('\n', "utf-8").join( bug_body )
             message = MIMEText( body.encode("utf-8"), 'plain', 'utf-8' )
             message['Subject'] = Header( builder.subject, 'utf-8', 76, 'Subject' )
-            message['From']    = builder.from_header()
+            message['From']    = Header( builder.commit.committer_email )
             message['To']      = Header( "bug-control@bugs.kde.org" )
-            self.smtp.sendmail(builder.commit.author_email, ["bug-control@bugs.kde.org"],
+            self.smtp.sendmail(builder.commit.committer_email, ["bug-control@bugs.kde.org"],
                                message.as_string())
 
             if bug in builder.keywords['bug_fixed']:
@@ -610,10 +611,10 @@ class MessageBuilder(object):
         commit_directories = [os.path.dirname(filename) for filename in commit.files_changed]
         self.commit_directories = list( set(commit_directories) )
 
-    def from_header(self):
-        """Helper function to construct a From header for emails - as Python stuffs it up"""
-        fixed_name = Header( self.commit.committer_name ).encode()
-        return unicode("{0} <{1}>").format(fixed_name, "null@kde.org")
+    def address_header(self, name, email):
+        """Helper function to construct an address header for emails - as Python stuffs it up"""
+        fixed_name = Header( name ).encode()
+        return unicode("{0} <{1}>").format(fixed_name, email)
 
     @property
     def subject(self):
