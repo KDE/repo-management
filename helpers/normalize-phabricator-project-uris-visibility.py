@@ -60,7 +60,8 @@ def disable_repo_uris(phab, repo_ids):
             uri_name = uri['fields']['uri']['display']
             uri_expected_visibility = None
             current_uri_visibility = uri['fields']['display']['raw']
-            if uri_name.startswith('git://anongit.kde.org/'):
+            if (uri_name.startswith('git://anongit.kde.org/') or
+                    uri_name.startswith('https://anongit.kde.org/')):
                 # the real URI, set it to be visible
                 if current_uri_visibility != 'always':
                     uri_expected_visibility = 'always'
