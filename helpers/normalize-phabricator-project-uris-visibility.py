@@ -22,7 +22,7 @@ from collections import OrderedDict
 import logging
 
 from phabricator import Phabricator
-
+from phabricator import APIError
 
 class TransactionData(OrderedDict):
     def __repr__(self):
@@ -78,8 +78,11 @@ def disable_repo_uris(phab, repo_ids):
                                                              ['name']))
                 uri_t = TransactionData()
                 uri_t['display'] = uri_expected_visibility
-                phab.diffusion.uri.edit(objectIdentifier=uri['phid'],
-                                        transactions=uri_t.transaction())
+                try:
+                    phab.diffusion.uri.edit(objectIdentifier=uri['phid'],
+                                            transactions=uri_t.transaction())
+                except APIError as apierror:
+                    logging.error('Error: %s' % str(apierror))
             else:
                 logging.debug('Visibility "%s" unchanged for URI "%s"'
                               '(repository "%s")' % (current_uri_visibility,
