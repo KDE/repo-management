@@ -53,7 +53,22 @@ def disable_repo_uris(phab, repo_ids):
         logging.debug('No repository found or invalid data returned')
         return
 
-    for repo_data in found_data['data']:
+    while True:
+        # handle pagination
+        _analyze_data_block(phab, found_data['data'])
+        if found_data.get('cursor') and found_data['cursor'].get('after'):
+            after_cursor = found_data['cursor']['after']
+            logging.debug('New page: starting from %s' % (after_cursor))
+
+            found_data = phab.diffusion.repository.search(
+                    attachments={'uris': True}, after=after_cursor)
+        else:
+            # nothing else to do
+            break
+
+
+def _analyze_data_block(phab, repositories_data):
+    for repo_data in repositories_data:
         logging.debug('Found data: %s' % (repo_data['attachments']))
         uris = repo_data['attachments']['uris']['uris']
         for uri in uris:
