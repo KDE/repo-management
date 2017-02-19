@@ -2,7 +2,7 @@ repopath=$1
 mgmtdir="/home/git/repo-management/"
 
 cd $repopath
-for line in $( find -mindepth 1 -maxdepth 1 -type d -name "*.git" ); do
+for line in $( find repositories/ -maxdepth 1 -mindepth 1 -type d | grep ".git$" | sed -e "s/repositories\///g" ); do
     cd $repopath/$line/
 
     currpath=$(pwd)
