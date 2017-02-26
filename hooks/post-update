@@ -28,7 +28,7 @@ bash $mgmtdir/helpers/sync-to-elder.sh "${reponame}.git" &> /dev/null &
 git update-server-info
 
 # Trigger Phabricator to update
-curl https://phabricator.kde.org/api/diffusion.looksoon -d api.token=`cat ~/phabricator-apitoken` -d repositories[0]="${reponame}"
+curl https://phabricator.kde.org/api/diffusion.looksoon -d api.token=`cat ~/phabricator-apitoken` -d repositories[0]="${reponame}" -q -o /dev/null
 
 # Trigger Jenkins to build - wait 10s to ensure anongit is synced
 jenkinsauth=`cat ${HOME}/jenkins-credentials`
