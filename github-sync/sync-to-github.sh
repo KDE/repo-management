@@ -8,6 +8,6 @@ urlpath="$2"
 # Build the remote URL up
 remoteurl="git@github.com:kde/$reponame"
 # Make sure the repo exists on Github
-python $mgmtdir/github/create-on-github.py "$reponame" "/srv/git/repositories/$urlpath"
+python $mgmtdir/github-sync/create-on-github.py "$reponame" "/srv/git/repositories/$urlpath"
 # Now we push it up there
 python $mgmtdir/helpers/update-repo-mirror.py "$reponame" "$remoteurl"
