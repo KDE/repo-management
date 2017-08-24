@@ -453,7 +453,7 @@ class CommitAuditor(object):
                 except (dns.resolver.NoAnswer, dns.exception.Timeout, dns.name.EmptyLabel):
                     try:
                         dns.resolver.query(domain, "A")
-                    except (dns.resolver.NoAnswer, dns.exception.Timeout, dns.name.EmptyLabel):
+                    except (dns.resolver.NoAnswer, dns.exception.Timeout, dns.name.EmptyLabel, dns.resolver.NXDOMAIN):
                         self.__log_failure(commit.sha1, "Email address has an invalid domain : " + email_address)
                 except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers):
                     self.__log_failure(commit.sha1, "Email address has an invalid domain : " + email_address)
