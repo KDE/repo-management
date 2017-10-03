@@ -671,7 +671,7 @@ class MessageBuilder(object):
 
         if self.checker and self.checker.license_problem:
             summary.append( "\nThe files marked with a * at the end have a non valid "
-                "license. Please read: http://techbase.kde.org/Policies/Licensing_Policy "
+                "license. Please read: https://community.kde.org/Policies/Licensing_Policy "
                 "and use the headers which are listed at that page.\n")
         if self.checker and self.checker.commit_problem:
             summary.append( "\nThe files marked with ** at the end have a problem. "
