@@ -695,7 +695,7 @@ class MessageBuilder(object):
         numeric = dict()
         numeric['bug_fixed'] = re.compile("^\s*(?:BUGS?|FEATURE)[:=]\s*(.+)")
         numeric['bug_cc']    = re.compile("^\s*CCBUGS?[:=]\s*(.+)")
-        numeric['review']    = re.compile("^\s*REVIEWS?[:=]\s*(.+)")
+        numeric['review']    = re.compile("^\s*REVIEWS?[:=]\s*(?!D)(.+)")
 
         presence = dict()
         presence['email_gui'] = re.compile("^\s*GUI:")
