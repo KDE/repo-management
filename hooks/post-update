@@ -33,6 +33,9 @@ curl https://phabricator.kde.org/api/diffusion.looksoon -d api.token=`cat ~/phab
 # Trigger Jenkins to build - wait 10s to ensure anongit is synced
 sleep 10s && curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null &
 
+# Trigger external build system to run (contact santa_)
+sleep 10s && curl --connect-timeout 10 --max-time 10 "http://gpul.grupos.udc.es:8080/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null &
+
 # Repository specific hooks - Trojita
 if [[ "$urlpath" == "trojita.git" ]]; then
     obsauth=`cat ${HOME}/trojita-obs-credentials`
