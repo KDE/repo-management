@@ -12,7 +12,7 @@ fi
 sleep 10s
 
 # Tell the KDE CI system
-#curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
+curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
 
 # Trigger an external build system (contact santa_)
 curl --connect-timeout 10 --max-time 10 "http://gpul.grupos.udc.es:8080/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
