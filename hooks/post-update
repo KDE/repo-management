@@ -31,7 +31,7 @@ git update-server-info
 curl https://phabricator.kde.org/api/diffusion.looksoon -d api.token=`cat ~/phabricator-apitoken` -d repositories[0]="${reponame}" -s -o /dev/null
 
 # Trigger Jenkins to build
-nohup bash $mgmtdir/helpers/trigger-jenkins.sh "$urlpath" &!
+nohup bash $mgmtdir/helpers/trigger-jenkins.sh "$urlpath" < /dev/null &> /dev/null &!
 
 # Repository specific hooks - Trojita
 if [[ "$urlpath" == "trojita.git" ]]; then
