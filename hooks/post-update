@@ -11,6 +11,9 @@ for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
        curl --connect-timeout 1 --max-time 1 --resolve anongit.kde.org:80:$mirror http://anongit.kde.org/updateRepo/$urlpath &>/dev/null
 done
 
+# Initiate propagator-agent equipped anongit mirror updates and suppress output
+nohup bash $mgmtdir/helpers/sync-to-elder.sh "${reponame}.git" < /dev/null &> /dev/null &!
+
 # Trigger Github update
 # Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
 if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
@@ -23,9 +26,6 @@ if [ -f $remote_update_url ]; then
     remoteurl=`cat $remote_update_url`
     python $mgmtdir/helpers/update-repo-mirror.py $urlpath $remoteurl &> /dev/null &
 fi
-
-# Initiate propagator-agent equipped anongit mirror updates and suppress output
-nohup bash $mgmtdir/helpers/sync-to-elder.sh "${reponame}.git" < /dev/null &> /dev/null &!
 
 # Update local information
 git update-server-info
