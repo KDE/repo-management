@@ -25,7 +25,7 @@ if [ -f $remote_update_url ]; then
 fi
 
 # Initiate propagator-agent equipped anongit mirror updates and suppress output
-bash $mgmtdir/helpers/sync-to-elder.sh "${reponame}.git" &> /dev/null &
+nohup bash $mgmtdir/helpers/sync-to-elder.sh "${reponame}.git" < /dev/null &> /dev/null &!
 
 # Update local information
 git update-server-info
