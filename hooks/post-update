@@ -5,14 +5,17 @@ currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
 reponame=${urlpath%.git}
 
-# Poke propagator to update the repository mirrors
-/home/git/.local/bin/propagator-mirrorsync ${reponame}.git
-
 # Poking anongit mirrors to cause immediate update
 for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
        mirror=$(dig +short $mirror)
        curl --connect-timeout 1 --max-time 1 --resolve anongit.kde.org:80:$mirror http://anongit.kde.org/updateRepo/$urlpath &>/dev/null
 done
+
+# Trigger Github update
+# Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
+if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
+    nohup bash $mgmtdir/bin/sync-to-github.sh "$reponame" "$urlpath" < /dev/null &> /dev/null &!
+fi
 
 # Initiate remote server update
 remote_update_url=$mgmtdir/repo-configs/remote-update/$urlpath
