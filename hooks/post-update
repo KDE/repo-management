@@ -17,7 +17,7 @@ nohup bash $mgmtdir/helpers/sync-to-elder.sh "${reponame}.git" < /dev/null &> /d
 # Trigger Github update
 # Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
 if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
-    nohup bash $mgmtdir/bin/sync-to-github.sh "$reponame" "$urlpath" < /dev/null &> /dev/null &!
+    nohup bash $mgmtdir/github-sync/sync-to-github.sh "$reponame" "$urlpath" < /dev/null &> /dev/null &!
 fi
 
 # Initiate remote server update
