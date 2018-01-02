@@ -8,7 +8,7 @@ reponame=${urlpath%.git}
 # Poking anongit mirrors to cause immediate update
 for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
        mirror=$(dig +short $mirror)
-       nohup curl --resolve anongit.kde.org:80:$mirror http://anongit.kde.org/updateRepo/$urlpath < /dev/null &>/dev/null &1
+       nohup curl --resolve anongit.kde.org:80:$mirror http://anongit.kde.org/updateRepo/$urlpath < /dev/null &>/dev/null &!
 done
 
 # Initiate propagator-agent equipped anongit mirror updates and suppress output
