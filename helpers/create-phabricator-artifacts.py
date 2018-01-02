@@ -69,6 +69,7 @@ def create_repo_mirror(phab, repo_description, repo_name, projects):
             logging.debug('Disabling URI %s (%s) for repository %s (%s)' %
                           (uri['id'], uri['phid'], repo_name, new_repo_phid))
             disable_uri_t = TransactionData()
+            disable_uri_t['io'] = 'read'
             disable_uri_t['display'] = 'never'
             phab.diffusion.uri.edit(objectIdentifier=uri['phid'],
                                     transactions=disable_uri_t.transaction())
