@@ -4,7 +4,7 @@
 urlpath="$1"
 
 # Before we can proceed, is this a blacklisted repository?
-if [[ "$urlpath" = "sysadmin/ci-tooling.git" ]] || [[ "$urlpath" = "sysadmin/repo-metadata.git" ]] || [[ "$urlpath" = "kde-build-metadata.git" ]]; then
+if [[ "$urlpath" = "sysadmin/ci-tooling.git" ]] || [[ "$urlpath" = "sysadmin/repo-metadata.git" ]] || [[ "$urlpath" = "kde-build-metadata.git" ]] || [[ "$urlpath" = "kapidox.git" ]] || [[ "$urlpath" = "kde-dev-scripts.git" ]]; then
     exit
 fi
 
