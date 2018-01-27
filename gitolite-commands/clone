@@ -97,15 +97,11 @@ touch git-daemon-export-ok
 echo "$from" > kde-cloned-from
 echo "" > description
 
-currpath=$(pwd)
-urlpath=${currpath#/srv/kdegit/repositories/}
-urlpath=${urlpath%.git}
-cat > cloneurl << EOF
-Pull (read-only): git://anongit.kde.org/$urlpath
-Pull (read-only): http://anongit.kde.org/$urlpath
-Pull+Push (read+write): git@git.kde.org:$urlpath
-EOF
-
 # trigger post_create
 gitolite trigger POST_CREATE $to $GL_USER fork
 
+# Make sure hooks are propagated
+gitolite setup --hooks-only
+
+# Trigger an initial sync to the anongit system
+hooks/post-update
