@@ -3,6 +3,7 @@
 mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
+urlpath=${currpath#/home/git/repositories/}
 reponame=${urlpath%.git}
 
 # Poking anongit mirrors to cause immediate update
