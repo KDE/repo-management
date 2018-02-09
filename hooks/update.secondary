@@ -88,6 +88,13 @@ if repository.ref_type == RefType.Changes and push_user != "gerrit":
     print "Push declined - attempted repository integrity violation"
     exit(1)
 
+# Access Restrictions for specific users
+if repository.ref_type == RefType.Tag and push_user == 'rjvbb':
+    print "Pushing tags without the consent of the release managers for a repository is not permitted."
+    print "As a consequence of prior behaviour, your privileges to push tags has been globally restricted."
+    print "Push declined - please contact sysadmin@kde.org for further information"
+    exit(1)
+
 # New commits...
 notification_base = repository.management_directory + "/repo-configs/notifications/"
 if len(repository.commits) > 100 and not os.path.exists(notification_base + repository.path + ".git/skip-notifications") and not os.path.exists(git_dir + "/kde-hooks-off") and repository.repo_type in push_size_restricted:
