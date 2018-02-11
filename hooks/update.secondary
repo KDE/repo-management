@@ -116,8 +116,11 @@ if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-e
 if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-filename"):
     auditor.audit_filename()
 
-if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-author"):
-    auditor.audit_metadata()
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-author-names"):
+    auditor.audit_names_in_metadata()
+
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-author-emails"):
+    auditor.audit_emails_in_metadata()
 
 blocked_path = repository.management_directory + "/repo-configs/blocked/" + repository.path
 if auditedRef and os.path.exists(blocked_path):

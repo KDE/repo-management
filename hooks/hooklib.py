@@ -409,7 +409,34 @@ class CommitAuditor(object):
                     if re.search(restriction, filename):
                         self.__log_failure(commit.sha1, "Invalid filename: " + filename)
 
-    def audit_metadata(self):
+    def audit_names_in_metadata(self):
+
+        """Audit names in commit metadata.
+
+        Names which do not have a first name and a surname are extremely uncommon
+        and when present are therefore generally invalid. As we want people to 
+        use their actual name when committing we do some checks to make sure
+        that what looks like an actual name is present."""
+
+        # Iterate over commits....
+        disallowed_domains = ["localhost", "localhost.localdomain", "(none)"]
+        for commit in self.repository.commits.values():
+            for name in [ commit.committer_name, commit.author_name ]:
+                # Is the name whitelisted?
+                if name in self.FullNameWhitelist:
+                    continue
+
+                # As a special case, allow the name 'GitHub' for certain repositories
+                if name == 'GitHub' and self.repository.path in self.GitHubPRWhitelist:
+                    self.__log_warning(commit.sha1, "Commit has username 'GitHub' (web merge of PR); allowing anyway")
+                    continue
+
+                # Check to see if the name contains spaces - if not - it is probably misconfigured....
+                if " " not in name.strip():
+                    self.__log_failure(commit.sha1, "Non-full name: " + name)
+                    continue
+
+    def audit_emails_in_metadata(self):
 
         """Audit commit metadata.
 
@@ -420,20 +447,6 @@ class CommitAuditor(object):
         # Iterate over commits....
         disallowed_domains = ["localhost", "localhost.localdomain", "(none)"]
         for commit in self.repository.commits.values():
-            for name in [ commit.committer_name, commit.author_name ]:
-                # Is the name whitelisted?
-                if name in self.FullNameWhitelist:
-                    continue
-                if name == 'GitHub' and self.repository.path in self.GitHubPRWhitelist:
-                    self.__log_warning(commit.sha1, "Commit has username 'GitHub' (web merge of PR); allowing anyway")
-                    #self.__log_warning(commit.sha1, "(please don't use the GitHub web interface to merge pull requests)")
-                    continue
-
-                # Check to see if the name contains spaces - if not - it is probably misconfigured....
-                if " " not in name.strip():
-                    self.__log_failure(commit.sha1, "Non-full name: " + name)
-                    continue
-
             for email_address in [ commit.committer_email, commit.author_email ]:
                 # Extract the email address, and reject them if extraction fails....
                 extraction = re.match("^(\S+)@(\S+)$", email_address)
