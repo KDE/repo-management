@@ -717,6 +717,11 @@ class MessageBuilder(object):
 
         results = defaultdict(list)
         for line in self.commit.message.split("\n"):
+            # If our line starts with Summary: (as it does when using Arcanist's default template) then strip this off
+            # This allows for people to fill keywords in the Differential Summary and have this work smoothly for them
+            line = re.sub("^Summary: (.+)", "\g<1>", line)
+
+            # Start processing our keywords...
             for (name, regex) in split.iteritems():
                 match = re.match( regex, line )
                 if match:
