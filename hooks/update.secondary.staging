@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+
+# Load dependencies
+import os
+import re
+import sys
+import subprocess
+from hooklib import Repository, Commit, CommitAuditor, CommitNotifier, MessageBuilder, CommitChecker, CiaNotifier, RepoType, ChangeType, RefType
+
+def usage():
+    print "Information needed to run could not be gathered successfully."
+    print "Required environment variables: GIT_DIR, GL_USER, HOME"
+    print "Syntax: update.secondary <refname> <oldsha> <newsha>"
+    exit(1)
+
+def maintenance():
+    print "Sorry, but the repository you are trying to access is currently unavailable."
+    print "This is to allow for maintenance, we apologise for any inconvience caused."
+    print "If you believe this not to be the case, please contact sysadmin@kde.org."
+    exit(1)
+
+#####
+# Initialisation
+#####
+
+# Read arguments...
+try:
+    ref_name = sys.argv[1]
+    old_sha1 = sys.argv[2]
+    new_sha1 = sys.argv[3]
+except IndexError:
+    usage()
+
+# Read needed environment variables
+git_dir = os.getenv('GIT_DIR')
+push_user = os.getenv('GL_USER')
+user_home = os.getenv('HOME')
+
+# Check for maintenance mode...
+if os.path.exists(user_home + "/.gitolite.down") or os.path.exists(git_dir + "/.gitolite.down"):
+    maintenance()
+
+# Initialise the repository
+Repository.BaseDir = "/srv/staging/repositories/"
+
+repository = Repository( ref_name, old_sha1, new_sha1, push_user )
+
+#####
+# Auditing
+#####
+
+# Repository change checks...
+if push_user != 'scmsync' and re.match("^tags/phabricator/(.+)/(.+)", repository.ref_name):
+    print "Pushing to staging repository manually is disabled"
+    print "Push declined"
+    exit(1)
+
+# should we do audit in staging repos? I'd say yes because it makes automatic landing not fail
+auditor = CommitAuditor( repository )
+audit_base = repository.management_directory + "/repo-configs/audit/"
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-eol"):
+    auditor.audit_eol()
+
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-filename"):
+    auditor.audit_filename()
+
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-author-names"):
+    auditor.audit_names_in_metadata()
+
+if auditedRef and not os.path.exists(audit_base + repository.path + ".git/skip-author-emails"):
+    auditor.audit_emails_in_metadata()
+
+blocked_path = repository.management_directory + "/repo-configs/blocked/" + repository.path
+if auditedRef and os.path.exists(blocked_path):
+    auditor.audit_hashes(blocked_path)
+
+# Did we have any commit audit failures?
+if auditor.audit_failed:
+    print "Push declined - commits failed audit"
+    exit(1)
+
+# Everything is done....
+exit(0)

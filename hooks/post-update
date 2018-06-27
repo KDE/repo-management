@@ -15,6 +15,9 @@ done
 # Initiate propagator-agent equipped anongit mirror updates and suppress output
 nohup bash $mgmtdir/helpers/sync-to-elder.sh "${reponame}.git" < /dev/null &> /dev/null &!
 
+# Trigger staging update
+nohup bash $mgmtdir/helpers/sync-staging.sh "${reponame}.git" < /dev/null &> /dev/null &!
+
 # Trigger Github update
 # Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
 if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
