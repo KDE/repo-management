@@ -8,5 +8,4 @@ reponame="$1"
 remoteurl="staging@code.kde.org:$reponame"
 # Now we push it up there
 cd "/srv/git/repositories/$reponame"
-git push --mirror "$remoteurl"
-
+python $mgmtdir/helpers/update-repo-mirror.py "$reponame" "$remoteurl"
