@@ -87,6 +87,10 @@ if repository.ref_type == RefType.Changes and push_user != "gerrit":
     print "Pushes to changes refs is only permitted by the Gerrit instance"
     print "Push declined - attempted repository integrity violation"
     exit(1)
+if repository.ref_type is RefType.Tag and re.match("^phabricator/(.+)/(.+)", repository.ref_name):
+    print "Pushes to phabricator refs is only permitted to staging instance"
+    print "Push declined - attempted repository integrity violation"
+    exit(1)
 
 # Access Restrictions for specific users
 if repository.ref_type == RefType.Tag and push_user == 'rjvbb':
