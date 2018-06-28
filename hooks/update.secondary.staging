@@ -58,6 +58,8 @@ elif repository.ref_type != RefType.Tag and not re.match("^phabricator/(.+)/(.+)
     print "Push declined"
     exit(1)
 
+auditedRef = True
+
 # should we do audit in staging repos? I'd say yes because it makes automatic landing not fail
 auditor = CommitAuditor( repository )
 audit_base = repository.management_directory + "/repo-configs/audit/"
