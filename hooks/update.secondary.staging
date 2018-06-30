@@ -51,7 +51,7 @@ repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 
 # Repository change checks...
 # Absolute trust over scmsync user
-if push_user == 'scmsync':
+if push_user == 'scmsync' or repositor.path == 'gitolite-admin'
     exit(0)
 elif repository.ref_type != RefType.Tag and not re.match("^phabricator/(.+)/(.+)", repository.ref_name):
     print "Pushing to staging repository manually is disabled"
