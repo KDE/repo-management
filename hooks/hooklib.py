@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import time
+import yaml
 import subprocess
 import dns.resolver
 import smtplib
@@ -76,7 +77,7 @@ class Repository(object):
 
         # Set path and id....
         path_match = re.match("^"+Repository.BaseDir+"(.+).git$", os.getcwd())
-        self.path = path_match.group(1)
+        self.path = self.virtual_path = path_match.group(1)
         self.__write_metadata()
 
         # Determine types....
@@ -267,6 +268,45 @@ class Repository(object):
             return ChangeType.Forced
         else:
             return ChangeType.Update
+
+class RepositoryMetadataLoader(object):
+    # Store of repositories we know about
+    KnownRepos = {}
+
+    # Load the projects from the YAML file
+    def loadProjectsFromTree( self, directoryPath ):
+        # Get a listing of everything in this directory
+        filesPresent = os.scandir(directoryPath)
+        # We will recurse into directories beneath this one
+        # If there is a metadata.yaml file present, we will parse it to determine if this is a repository we need to register
+        for entry in filesPresent:
+            # Is it a symlink? We always ignore these
+            if entry.is_symlink():
+                continue
+
+            # Is it a directory we need to recurse into?
+            if entry.is_dir():
+                self.loadProjectsFromTree(entry.path)
+                continue
+
+            # If the filename isn't metadata.yaml, ignore it
+            if entry.name != 'metadata.yaml':
+                continue
+
+            # Load the metadata.yaml file and create a project from it
+            projectMetadataFile = open(entry.path, 'r', encoding='utf-8')
+            # Parse the YAML file
+            projectMetadata = yaml.load(projectMetadataFile)
+            # Is it a repository - ie. something we need to know about?
+            if not projectMetadata['hasrepo'] or not projectMetadata['repoactive']:
+                continue
+
+            # Split the repository name out
+            splitPath = projectMetadata['projectpath'].split('/')
+            projectName = splitPath[-1]
+
+            # Now that we have everything we need add it to our list of repos
+            self.KnownRepos[ projectName ] = projectMetadata
 
 class CommitAuditor(object):
 
@@ -535,6 +575,7 @@ class CommitNotifier(object):
         message['X-Commit-Project']     = Header( builder.repository.path )
         message['X-Commit-Folders']     = Header( ' '.join(builder.commit_directories) )
         message['X-Commit-Directories'] = Header( "(0) " + ' '.join(full_commit_dirs) )
+        message['X-Commit-ProjectPath'] = Header( builder.repository.virtual_path )
 
         # Send email...
         to_addresses = cc_addresses + bcc_addresses + [notification_address]
