@@ -4,11 +4,13 @@ import itertools
 import logging
 import os
 import re
+import io
 import time
 import yaml
 import subprocess
 import dns.resolver
 import smtplib
+import scandir
 import operator
 from datetime import datetime
 from collections import defaultdict
@@ -276,7 +278,7 @@ class RepositoryMetadataLoader(object):
     # Load the projects from the YAML file
     def loadProjectsFromTree( self, directoryPath ):
         # Get a listing of everything in this directory
-        filesPresent = os.scandir(directoryPath)
+        filesPresent = scandir.scandir(directoryPath)
         # We will recurse into directories beneath this one
         # If there is a metadata.yaml file present, we will parse it to determine if this is a repository we need to register
         for entry in filesPresent:
@@ -294,7 +296,7 @@ class RepositoryMetadataLoader(object):
                 continue
 
             # Load the metadata.yaml file and create a project from it
-            projectMetadataFile = open(entry.path, 'r', encoding='utf-8')
+            projectMetadataFile = io.open(entry.path, 'r', encoding='utf-8')
             # Parse the YAML file
             projectMetadata = yaml.load(projectMetadataFile)
             # Is it a repository - ie. something we need to know about?
