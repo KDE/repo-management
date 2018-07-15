@@ -107,11 +107,12 @@ if repository.ref_type is RefType.Tag and re.match("^phabricator/(.+)/(.+)", rep
     print "Push declined - attempted repository integrity violation"
     exit(1)
 
-# Access Restrictions for specific users
-if repository.ref_type == RefType.Tag and push_user == 'rjvbb':
-    print "Pushing tags without the consent of the release managers for a repository is not permitted."
-    print "As a consequence of prior behaviour, your privileges to push tags has been globally restricted."
-    print "Push declined - please contact sysadmin@kde.org for further information"
+# Access Restrictions for repositories which are part of modules
+ModuleReleaseManagers = ['aacid', 'cfeck', 'dfaure', 'jriddell', 'davidedmundson', 'bshah']
+if repository.ref_type == RefType.Tag and re.match("^v[0-9]\.", repository.ref_name) and re.match("^(kde|frameworks)/.*", repository.virtual_path) and push_user not in ModuleReleaseManagers:
+    print "Pushing tags to repositories which are part of modules is restricted to the release managers of those modules."
+    print "Please contact the release manager for your module for further assistance."
+    print "Push declined - attempted release procedure violation"
     exit(1)
 
 # New commits...
