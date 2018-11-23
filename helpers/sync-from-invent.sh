@@ -12,5 +12,5 @@ remoterepository=${localrepository#kde/}
 remoteurl="git@git.kde.org:$remoterepository"
 
 # Now we push it up there
-cd "/srv/gitlab/repositories/$reponame"
+cd "/srv/gitlab/repositories/$localrepository"
 git push --mirror "$remoteurl"
