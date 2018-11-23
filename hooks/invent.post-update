@@ -11,6 +11,6 @@ echo "Syncing $reponame" >> $HOME/post-update-sync
 # Trigger sync to git.kde.org for mainline repositories
 # This covers the kde/, websites/ and sysadmin/ namespaces
 # Personal repositories won't be mirrored across to git.kde.org
-if [[ $urlpath == "kde/"* ]] && [[ $urlpath == "websites/"* ]] && [[ $urlpath == "sysadmin/"* ]]; then
+if [[ $urlpath == "kde/"* ]] || [[ $urlpath == "websites/"* ]] || [[ $urlpath == "sysadmin/"* ]]; then
     nohup bash $mgmtdir/helpers/sync-from-invent.sh "${reponame}.git" < /dev/null &> /dev/null &!
 fi
