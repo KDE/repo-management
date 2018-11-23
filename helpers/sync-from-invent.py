@@ -54,4 +54,8 @@ if changes == []:
 # Commence the mirror updating!
 updating_refs = ' '.join(changes)
 command = "git push '{0}' {1}".format( remoteRepository, updating_refs )
-process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+process = subprocess.Popen(command, shell=True)
+process.wait()
+
+# We succeeded!
+sys.exit(0)
