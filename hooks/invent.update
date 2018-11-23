@@ -53,19 +53,19 @@ repository = Repository( ref_name, old_sha1, new_sha1, push_user )
 # Starting position is that repositories should be treated as if they are scratch (personal) repositories
 repository.repo_type = RepoType.Scratch
 
+# Is this potentially a mainline (kde/) repository?
+mainlineRepository = re.match("^kde/(.+)$", repository.path)
+if mainlineRepository:
+    repository.repo_type = RepoType.Normal
+    repository.path = mainlineRepository.group(1)
+
 # Website live in the websites/ namespace
-if re.match("^websites/(.+)$", repository.path):
+elif re.match("^websites/(.+)$", repository.path):
     repository.repo_type = RepoType.Website
 
 # Sysadmin repositories live in the sysadmin/ namespace
 elif re.match("^sysadmin/(.+)$", repository.path):
     repository.repo_type = RepoType.Sysadmin
-
-# All other official KDE repositories live in the kde/ namespace
-mainlineRepository = re.match("^kde/(.+)$", repository.path)
-elif mainlineRepository:
-    repository.repo_type = RepoType.Normal
-    repository.path = mainlineRepository.group(1)
 
 #####
 # Auditing
