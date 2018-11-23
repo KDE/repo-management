@@ -5,9 +5,6 @@ currpath=$(pwd)
 urlpath=${currpath#/srv/gitlab/repositories/}
 reponame=${urlpath%.git}
 
-echo "Sync initiated"
-echo "Syncing $reponame" >> $HOME/post-update-sync
-
 # Trigger sync to git.kde.org for mainline repositories
 # This covers the kde/, websites/ and sysadmin/ namespaces
 # Personal repositories won't be mirrored across to git.kde.org
