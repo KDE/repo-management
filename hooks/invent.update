@@ -62,8 +62,10 @@ elif re.match("^sysadmin/(.+)$", repository.path):
     repository.repo_type = RepoType.Sysadmin
 
 # All other official KDE repositories live in the kde/ namespace
-elif re.match("^kde/(.+)$", repository.path):
+mainlineRepository = re.match("^kde/(.+)$", repository.path)
+elif mainlineRepository:
     repository.repo_type = RepoType.Normal
+    repository.path = mainlineRepository.group(1)
 
 #####
 # Auditing
