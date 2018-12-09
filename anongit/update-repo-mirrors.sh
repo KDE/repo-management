@@ -27,7 +27,7 @@ diff ~/projects-to-anongit.list ~/projects-to-anongit.list.new | grep "<" | cut 
 # Is it not empty?
 if [ -s ~/diffout ]
   then
-    cd /repositories
+    cd ~/repositories
     # Remove each of the specified repos
     for line in `cat ~/diffout`; do
         echo "Removing repository $line"
@@ -46,7 +46,7 @@ cp ~/projects-to-anongit.list.new ~/projects-to-anongit.list
 # do an update. Otherwise do a clone.
 for line in `cat ~/projects-to-anongit.list`; do
     # Change into the repository
-    cd /repositories
+    cd ~/repositories
     dname=`dirname $line`
     gitname=".git"
     bname=`basename $line`
@@ -79,7 +79,7 @@ for line in `cat ~/projects-to-anongit.list`; do
 done
 
 # Update the repository metadata
-~/repo-management/anongit/update-repo-metadata.sh /repositories/
+~/repo-management/anongit/update-repo-metadata.sh ~/repositories/
 
 # Unlock the process
 rm /tmp/update_repo.txt
