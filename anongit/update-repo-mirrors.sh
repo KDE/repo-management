@@ -32,7 +32,7 @@ if [ -s ~/diffout ]
     for line in `cat ~/diffout`; do
         echo "Removing repository $line"
         suffix=$(mktemp -u XXXXXXX)
-        newpath="/deleted-repos/$(date +%Y-%m-%d)_$(basename $line)_$suffix"
+        newpath="~/deleted-repos/$(date +%Y-%m-%d)_$(basename $line)_$suffix"
         mv $line $newpath
         echo "Repository $line moved to $newpath on $hostname" | mail -r "sysadmin-systems@kde.org" -s "REPO DELETION: $line" sysadmin-systems@kde.org
     done
