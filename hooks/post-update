@@ -9,7 +9,7 @@ reponame=${urlpath%.git}
 # Poking anongit mirrors to cause immediate update
 for mirror in `cat $mgmtdir/config/enabled_anongits.cfg`; do
        mirror=$(dig +short $mirror)
-       nohup curl --resolve anongit.kde.org:80:$mirror https://anongit.kde.org/updateRepo/$urlpath < /dev/null &>/dev/null &!
+       nohup curl --resolve anongit.kde.org:443:$mirror https://anongit.kde.org/updateRepo/$urlpath < /dev/null &>/dev/null &!
 done
 
 # Trigger staging update
