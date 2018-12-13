@@ -20,7 +20,7 @@
 require 'sinatra'
 
 get %r{/updateRepo/(.*)} do |url|
-  path = '/home/git/repositories/' + url
+  path = ENV['HOME'] + '/repositories/' + url
   if not File.exists?(path) or not File.directory?(path)
     return 'FAIL'
   end
