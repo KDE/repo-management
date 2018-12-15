@@ -16,6 +16,10 @@ except IndexError:
 if not localRepository.startswith("kde/") or localRepository.startswith("websites/") or localRepository.startswith("sysadmin/"):
     sys.exit(0)
 
+# Make sure this isn't a wiki repository - as those don't exist on git.kde.org
+if localRepository.endswith(".wiki.git"):
+    sys.exit(0)
+
 # If this is a mainline repository we need to fix the path to match git.kde.org
 if localRepository.startswith("kde/"):
     localRepository = localRepository[4:]
