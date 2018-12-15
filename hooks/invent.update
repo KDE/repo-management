@@ -38,7 +38,7 @@ user_home = os.getenv('HOME')
 
 # Make sure we have a git_dir
 # Gitaly doesn't always set this so we should use PWD in that case
-if len(git_dir) == 0:
+if git_dir is None:
     git_dir = os.getenv('PWD')
 
 # Initialise the repository
