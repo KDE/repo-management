@@ -12,7 +12,7 @@ for repo in $(find -maxdepth 2 -name "*.git" -type d); do
         repofilled=1
     fi
 
-    if [ ! -f $repo/gl-creator -a -f $repo/kde-hooks-off ]; then
+    if [ ! -f $repo/gl-creator -a -f $repo/kde-hooks-off -a ! -f $repo/invent-moved ]; then
         # Hooks are off in these tests....
         if [ $repofilled != 0 ]; then
             # Forgot to switch off after filling...
