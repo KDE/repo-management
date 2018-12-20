@@ -13,7 +13,7 @@ except IndexError:
 
 # Make sure we have a mainline repository
 # If this isn't a mainline/website/sysadmin repository - bail
-if not localRepository.startswith("kde/") or localRepository.startswith("websites/") or localRepository.startswith("sysadmin/"):
+if not localRepository.startswith("kde/") and not localRepository.startswith("websites/") and not localRepository.startswith("sysadmin/"):
     sys.exit(0)
 
 # Make sure this isn't a wiki repository - as those don't exist on git.kde.org
