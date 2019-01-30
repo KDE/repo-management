@@ -9,5 +9,5 @@ reponame=${urlpath%.git}
 # This covers the kde/, websites/ and sysadmin/ namespaces
 # Personal repositories won't be mirrored across to git.kde.org
 if [[ $urlpath == "kde/"* ]] || [[ $urlpath == "websites/"* ]] || [[ $urlpath == "sysadmin/"* ]]; then
-    nohup python $mgmtdir/helpers/sync-from-invent.py "${urlpath}" &>> ~/kde-post-update-hooks-log
+    nohup python $mgmtdir/helpers/sync-from-invent.py "${urlpath}" &>> ~/kde-post-receive-hooks-log
 fi
