@@ -106,13 +106,6 @@ if repository.ref_type == RefType.Tag and repository.change_type != ChangeType.D
     print "Push declined - attempted repository integrity violation"
     exit(1)
 
-# Force pushes must be specially allowed
-force_push_base = repository.management_directory + "/repo-configs/force-push/"
-if repository.change_type == ChangeType.Forced and repository.repo_type in push_size_restricted and not os.path.exists(force_push_base + repository.path):
-    print "Force pushes to mainline KDE repositories is only permitted for specific situations."
-    print "Please contact the KDE Sysadmin team for further assistance"
-    exit(1)
-
 # New commits...
 notification_base = repository.management_directory + "/repo-configs/notifications/"
 if len(repository.commits) > 100 and not os.path.exists(notification_base + repository.path + ".git/skip-notifications") and repository.repo_type in push_size_restricted:
