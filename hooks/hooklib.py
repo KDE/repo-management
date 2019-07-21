@@ -80,7 +80,6 @@ class Repository(object):
         # Set path and id....
         path_match = re.match("^"+Repository.BaseDir+"(.+).git$", os.getcwd())
         self.path = self.virtual_path = path_match.group(1)
-        self.__write_metadata()
 
         # Determine types....
         self.repo_type = self.__get_repo_type()
@@ -206,17 +205,6 @@ class Repository(object):
             # Remove items with invalid data (ie. number of changed lines but no status)
             data = OrderedDict((unicode(filename, "utf-8", "replace"), data) for filename, data in sorted(stats.items(), key=operator.itemgetter(0)) if "change" in data and "added" in data)
             self.commits[sha1].files_changed = data
-
-    def __write_metadata(self):
-
-        """Write repository metatdata."""
-
-        clone_url = os.path.join(os.getenv('GIT_DIR'), 'cloneurl')
-
-        with open(clone_url, "w") as metadata:
-            metadata.write( "Pull (read-only): " + Repository.PullBaseUrlGit + self.path + "\n" )
-            metadata.write( "Pull (read-only): " + Repository.PullBaseUrlHttp + self.path + "\n" )
-            metadata.write( "Pull+Push (read+write): " + Repository.PushBaseUrl + self.path + "\n" )
 
     def __get_repo_type(self):
         sysadmin_repos = ["gitolite-admin"]
