@@ -77,9 +77,17 @@ class Repository(object):
         else:
             self.management_directory = os.getenv('HOME') + "/" + Repository.RepoManagementName
 
-        # Set path and id....
+        # Set the repository path...
         path_match = re.match("^"+Repository.BaseDir+"(.+).git$", os.getcwd())
         self.path = self.virtual_path = path_match.group(1)
+
+        # Determine if this repository uses Gitlab hashed storage
+        # If it is, then some adjustment to the above is required
+        if '@hashed/' in self.path:
+            # Retrieve the human usable path from Gitlab
+            command = ["git", "config", "--local", '--get', 'gitlab.fullpath']
+            process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            self.path = self.virtual_path = process.stdout.readline().strip()
 
         # Determine types....
         self.repo_type = self.__get_repo_type()
