@@ -16,7 +16,7 @@ curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?
 
 # If it is a website then we should tell the Binary Factory as well
 # We also cover cutehmi-doxygen as that repository is incorporated into the cutehmi.kde.org website by it's template
-if [[ "$urlpath" = "websites/"* ]] || [[ "$urlpath" = "cutehmi-doxygen" ]]; then
+if [[ "$urlpath" = "websites/"* ]] || [[ "$urlpath" = "cutehmi-doxygen.git" ]]; then
     curl --connect-timeout 10 --max-time 10 "https://binary-factory.kde.org/git/notifyCommit?url=https://anongit.kde.org/$urlpath" &> /dev/null
 fi
 
