@@ -457,7 +457,6 @@ class CommitAuditor(object):
         that what looks like an actual name is present."""
 
         # Iterate over commits....
-        disallowed_domains = ["localhost", "localhost.localdomain", "(none)"]
         for commit in self.repository.commits.values():
             for name in [ commit.committer_name, commit.author_name ]:
                 # Is the name whitelisted?
