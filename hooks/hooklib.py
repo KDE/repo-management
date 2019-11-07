@@ -482,7 +482,7 @@ class CommitAuditor(object):
         show up in commits."""
 
         # Iterate over commits....
-        disallowed_domains = ["localhost", "localhost.localdomain", "(none)"]
+        disallowed_domains = ["localhost", "localhost.localdomain", "(none)", "bombardier.com", "rail.bombardier.com"]
         for commit in self.repository.commits.values():
             for email_address in [ commit.committer_email, commit.author_email ]:
                 # Extract the email address, and reject them if extraction fails....
