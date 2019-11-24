@@ -42,8 +42,8 @@ push_user = os.getenv('GL_USERNAME')
 user_home = os.getenv('HOME')
 
 # Initialise the repository
-if os.path.exists("/srv/gitlab/repositories"):
-    Repository.BaseDir = "/srv/gitlab/repositories/"
+if os.path.exists("/srv/git/repositories"):
+    Repository.BaseDir = "/srv/git/repositories/"
     Commit.UrlPattern = "https://invent.kde.org/{0}/commit/{1}"
 else:
     print "Base directory could not be found"
