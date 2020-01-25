@@ -124,16 +124,16 @@ if len(repository.commits) > 100 and not os.path.exists(notification_base + repo
 # Lets check the commits themselves now
 auditor = CommitAuditor( repository )
 audit_base = repository.management_directory + "/repo-configs/audit/"
-if not os.path.exists(audit_base + repository.path + ".git/skip-eol"):
+if not os.path.exists(audit_base + repository.path + ".git/skip-eol") and not re.match("^qt/(.+)$", repository.path):
     auditor.audit_eol()
 
-if not os.path.exists(audit_base + repository.path + ".git/skip-filename"):
+if not os.path.exists(audit_base + repository.path + ".git/skip-filename") and not re.match("^qt/(.+)$", repository.path):
     auditor.audit_filename()
 
-if not os.path.exists(audit_base + repository.path + ".git/skip-author-names"):
+if not os.path.exists(audit_base + repository.path + ".git/skip-author-names") and not re.match("^qt/(.+)$", repository.path):
     auditor.audit_names_in_metadata()
 
-if not os.path.exists(audit_base + repository.path + ".git/skip-author-emails"):
+if not os.path.exists(audit_base + repository.path + ".git/skip-author-emails") and not re.match("^qt/(.+)$", repository.path):
     auditor.audit_emails_in_metadata()
 
 blocked_path = repository.management_directory + "/repo-configs/blocked/" + repository.path
