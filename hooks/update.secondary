@@ -108,7 +108,7 @@ if repository.ref_type is RefType.Tag and re.match("^phabricator/(.+)/(.+)", rep
     exit(1)
 
 # Access Restrictions for repositories which are part of modules
-ModuleReleaseManagers = ['aacid', 'cfeck', 'dfaure', 'jriddell', 'davidedmundson', 'bshah']
+ModuleReleaseManagers = ['aacid', 'cfeck', 'dfaure', 'jriddell', 'davidedmundson', 'bshah', 'scmsync']
 if repository.ref_type == RefType.Tag and re.match("^v[0-9]\.", repository.ref_name) and re.match("^(kde|frameworks)/.*", repository.virtual_path) and push_user not in ModuleReleaseManagers:
     print "Pushing tags to repositories which are part of modules is restricted to the release managers of those modules."
     print "Please contact the release manager for your module for further assistance."
