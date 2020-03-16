@@ -954,7 +954,7 @@ class CommitChecker(object):
             self._license_problem = True
             problemfile = True
 
-        # LGPL or GPL
+        # traditional license header LGPL or GPL
         if re.search("under (the (terms|conditions) of )?the GNU (Library|Lesser) General Public License", text):
             license = "LGPL" + gl + wrong + " " + license
 
@@ -973,6 +973,31 @@ class CommitChecker(object):
         if re.search("under (the terms of )?(version 2 of )?the GNU (General Public License|GENERAL PUBLIC LICENSE)", text):
             license = "GPL" + gl + qte + wrong + " " + license
 
+        # SPDX based LGPL or GPL
+        # TODO first version for SPDX based license hooks: this only detects simple statements, shall be extended for full SPDX expressions
+        if re.search("SPDX-License-Identifier: LGPL-2.0-only", text):
+            license = "LGPL(v2.0) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: LGPL-2.1-only", text):
+            license = "LGPL(v2.1) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: LGPL-2.1-or-later", text):
+            license = "LGPL(v2.1+) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: LGPL-3.0-only", text):
+            license = "LGPL(v3.0) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: LGPL-3.0-or-later", text):
+            license = "LGPL(v3.0+) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: LGPL-2.1-only OR LGPL-3.0-only OR LicenseRef-KDE-Accepted-LGPL", text):
+            license = "LGPL(v2/3+eV) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: GPL-2.0-only", text):
+            license = "GPL(v2.0) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: GPL-2.0-or-later", text):
+            license = "GPL(v2.0+) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: GPL-3.0-only", text):
+            license = "GPL(v3.0) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only", text):
+            license = "GPL(v2/3) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL", text):
+            license = "GPL(v2/3+eV) " + wrong + " " + license
+
         # QPL
         if re.search("may be distributed under the terms of the Q Public License as defined by Trolltech AS", text):
             license = "QPL " + license
@@ -984,10 +1009,14 @@ class CommitChecker(object):
         # MIT license
         if re.search("Permission to use copy modify (and )?distribute(and sell)? this software and its documentation for any purpose", text):
             license = "MIT " + license
+        if re.search("SPDX-License-Identifier: MIT", text):
+            license = "MIT " + wrong + " " + license
 
         # BSD
         if re.search("MERCHANTABILITY( AND|| or) FITNESS FOR A PARTICULAR PURPOSE", text) and not re.search("GPL", license):
             license = "BSD " + license
+        if re.search("SPDX-License-Identifier: BSD-2-Clause", text) or re.search("SPDX-License-Identifier: BSD-3-Clause", text):
+            license = "BSD " + wrong + " " + license
 
         # MPL
         if re.search("subject to the Mozilla Public License Version 1.1", text):
