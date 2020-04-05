@@ -323,7 +323,8 @@ class CommitAuditor(object):
     """
     GitHubPRWhitelist = [
         'websites/inqlude',
-        'websites/inqlude-data'
+        'websites/inqlude-data',
+        'heaptrack'
     ]
 
     def __init__(self, repository):
