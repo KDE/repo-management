@@ -978,6 +978,8 @@ class CommitChecker(object):
         # TODO first version for SPDX based license hooks: this only detects simple statements, shall be extended for full SPDX expressions
         if re.search("SPDX-License-Identifier: LGPL-2.0-only", text):
             license = "LGPL(v2.0) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: LGPL-2.0-or-later", text):
+            license = "LGPL(v2.0+) " + wrong + " " + license
         if re.search("SPDX-License-Identifier: LGPL-2.1-only", text):
             license = "LGPL(v2.1) " + wrong + " " + license
         if re.search("SPDX-License-Identifier: LGPL-2.1-or-later", text):
@@ -986,8 +988,10 @@ class CommitChecker(object):
             license = "LGPL(v3.0) " + wrong + " " + license
         if re.search("SPDX-License-Identifier: LGPL-3.0-or-later", text):
             license = "LGPL(v3.0+) " + wrong + " " + license
+        if re.search("SPDX-License-Identifier: LGPL-2.0-only OR LGPL-3.0-only OR LicenseRef-KDE-Accepted-LGPL", text):
+            license = "LGPL(v2.0/3+eV) " + wrong + " " + license
         if re.search("SPDX-License-Identifier: LGPL-2.1-only OR LGPL-3.0-only OR LicenseRef-KDE-Accepted-LGPL", text):
-            license = "LGPL(v2/3+eV) " + wrong + " " + license
+            license = "LGPL(v2.1/3+eV) " + wrong + " " + license
         if re.search("SPDX-License-Identifier: GPL-2.0-only", text):
             license = "GPL(v2.0) " + wrong + " " + license
         if re.search("SPDX-License-Identifier: GPL-2.0-or-later", text):
