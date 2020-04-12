@@ -1,0 +1,8 @@
+Gitlab:
+  instance: https://yourgitlabinstance.example.com/
+  token: yourtokenhere
+  group-path: yourgroup
+
+SSH:
+  member-whitelist: /home/svn/repo-management/svn-ssh-keys/users-list
+  key-restrictions: 'no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty,command="/usr/bin/svnserve -t --tunnel-user={username} -r /srv/svn"'
