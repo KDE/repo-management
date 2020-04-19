@@ -18,7 +18,7 @@ if not os.path.exists( args.config ):
 
 # Read in our configuration
 configFile = open( args.config, 'r' )
-configuration = yaml.load( configFile )
+configuration = yaml.load( configFile, Loader=yaml.FullLoader )
 
 # Connect to the upstream Gitlab server we will be working with
 # To do this, we need to get our credentials and hostname first
