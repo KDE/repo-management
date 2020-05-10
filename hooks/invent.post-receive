@@ -5,6 +5,13 @@ currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
 reponame=${urlpath%.git}
 
+# Detect if we have a Gitlab repository stored using Hashed Storage
+# Gitlab stores these in a special @hashed/ folder
+if [[ $urlpath == "@hashed/"* ]]; then
+    # Then we need to grab the repository path from the Git configuration for the repository
+    urlpath=`git config --local --get gitlab.fullpath`
+fi
+
 # Trigger sync to git.kde.org for mainline repositories
 # This covers the kde/, websites/ and sysadmin/ namespaces
 # Personal repositories won't be mirrored across to git.kde.org
