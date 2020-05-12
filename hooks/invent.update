@@ -78,7 +78,6 @@ elif re.match("^sysadmin/(.+)$", repository.path):
 #####
 
 # Repository change checks...
-push_size_restricted = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
 if repository.ref_type == RefType.Backup:
     print "Pushing to backup refs is not supported for security reasons"
     print "Push declined - attempted repository integrity violation"
@@ -106,16 +105,19 @@ if repository.ref_type == RefType.Tag and repository.change_type != ChangeType.D
     print "Push declined - attempted repository integrity violation"
     exit(1)
 
+# For the next set of checks, these only apply if the change is to a mainline repository, which is one of these types...
+push_size_restricted = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]
+
 # Force pushes must be specially allowed
 force_push_base = repository.management_directory + "/repo-configs/force-push/"
-if repository.change_type == ChangeType.Forced and repository.repo_type in push_size_restricted and not os.path.exists(force_push_base + repository.path):
+if repository.change_type == ChangeType.Forced and repository.repo_type in push_size_restricted and repository.ref_type is not RefType.WorkBranch and not os.path.exists(force_push_base + repository.path):
     print "Force pushes to mainline KDE repositories is only permitted for specific situations."
     print "Please contact the KDE Sysadmin team for further assistance"
     exit(1)
 
 # New commits...
 notification_base = repository.management_directory + "/repo-configs/notifications/"
-if len(repository.commits) > 100 and not os.path.exists(notification_base + repository.path + ".git/skip-notifications") and repository.repo_type in push_size_restricted:
+if len(repository.commits) > 100 and not os.path.exists(notification_base + repository.path) and repository.repo_type in push_size_restricted:
     print "More than 100 commits are being pushed"
     print "Push declined - excessive notifications would be sent"
     print "Please file a KDE Sysadmin ticket to continue"
@@ -175,6 +177,11 @@ if repository.new_sha1 in repository.commits:
         print "The last commit in this series is available for viewing at:"
 
     print repository.commits[ repository.new_sha1 ].url
+
+# Is this change to a work branch?
+if repository.ref_type is RefType.WorkBranch:
+    print "Not processing commit hooks - this is a work branch"
+    exit(0)
 
 # Are we allowed to send notifications on this repo?
 notify_allowed = [RepoType.Normal, RepoType.Website, RepoType.Sysadmin]

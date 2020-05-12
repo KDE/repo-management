@@ -43,6 +43,7 @@ class ChangeType(object):
 class RefType(object):
     "Enum type - indicates the type of ref in the repository"
     Branch = "branch"
+    WorkBranch = "work-branch"
     Tag = "tag"
     Backup = "backup"
     NotesReview = "gerrit-review"
@@ -130,9 +131,16 @@ class Repository(object):
             merge_base = read_command(('git', 'merge-base', self.new_sha1, self.old_sha1))
             revision_span = "{0}..{1}".format(merge_base, self.new_sha1)
 
-        # Get the list of revisions
-        command = "git for-each-ref --format='%(refname) ^%(objectname)' | grep -v '^refs/changes/' | grep -v '^refs/merge-requests/' | grep -v '^refs/keep-around/' | cut -d ' ' -f 2 | sort -u | grep -v {0} | git rev-list --reverse --stdin {1}"
-        command = command.format(self.old_sha1, revision_span)
+        # Determine what command we need to use to fetch the list of revisions
+        #
+        # To start, the merge request refs, along with the keep-around refs used by Gitlab for it's operations are both ignored and not considered to be already in the repository
+        # We also ignore work branches, as these are subject to force pushes and are considered to be a work in progress and not yet part of a release
+        #
+        # This is necessary to ensure hooks fire when these changes are merged into the repository and become part of a release branch
+        revisionsCommand = "git for-each-ref --format='%(refname) ^%(objectname)' | grep -v -E '^refs/(merge-requests|keep-around)/' | grep -v '^refs/heads/work/' | cut -d ' ' -f 2 | sort -u | grep -v {0} | git rev-list --reverse --stdin {1}"
+
+        # Now we have the command, actually get the list of revisions we are to be working on!
+        command = revisionsCommand.format(self.old_sha1, revision_span)
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         revisions = process.stdout.readlines()
@@ -233,6 +241,8 @@ class Repository(object):
 
     def __get_ref_type(self):
         # What type is the ref being changed?
+        if re.match("^refs/heads/work/(.+)$", self.ref):
+            return RefType.WorkBranch
         if re.match("^refs/heads/(.+)$", self.ref):
             return RefType.Branch
         elif re.match("^refs/tags/(.+)$", self.ref):
