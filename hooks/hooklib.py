@@ -46,11 +46,9 @@ class RefType(object):
     WorkBranch = "work-branch"
     Tag = "tag"
     Backup = "backup"
-    NotesReview = "gerrit-review"
     Notes = "notes"
-    Upstream = "upstream"
-    Changes = "changes"
-    Meta = "meta"
+    MergeRequest = "merge-requests"
+    Internal = "internal"
     Unknown = 0
 
 class Repository(object):
@@ -249,16 +247,12 @@ class Repository(object):
             return RefType.Tag
         elif re.match("^refs/backups/(.+)$", self.ref):
             return RefType.Backup
-        elif self.ref == "refs/notes/review":
-            return RefType.NotesReview
         elif re.match("^refs/notes/(.+)$", self.ref):
             return RefType.Notes
-        elif re.match("^refs/upstream/(.+)$", self.ref):
-            return RefType.Upstream
-        elif re.match("^refs/changes/(.+)$", self.ref):
-            return RefType.Changes
-        elif re.match("^refs/meta/(.+)$", self.ref):
-            return RefType.Meta
+        elif re.match("^refs/merge-requests/(.+)$", self.ref):
+            return RefType.MergeRequest
+        elif re.match("^refs/keep-around/(.+)$", self.ref):
+            return RefType.Internal
         else:
             return RefType.Unknown
 
