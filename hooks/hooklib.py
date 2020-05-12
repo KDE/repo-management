@@ -625,16 +625,6 @@ class CommitNotifier(object):
             else:
                 print "Posting comment to bug " + bug
 
-    def notify_reviewboard(self, builder):
-        for review in builder.keywords['review']:
-            # Call the helper program
-            ref_changed = builder.repository.ref_type + " " + builder.repository.ref_name
-            review_updater = builder.repository.management_directory + "/hooks/update_review.py"
-            cmdline = (review_updater, review, builder.commit.sha1, builder.commit.committer_name.encode('utf8'),
-                        builder.commit.author_name.encode('utf8'), ref_changed)
-            # Fork into the background - we don't want it to block the hook
-            subprocess.Popen(cmdline, shell=False)
-
     def handler(self, repository):
         # If there are no commits -> nothing to notify on :)
         if len(repository.commits) == 0:
@@ -757,7 +747,6 @@ class MessageBuilder(object):
         numeric = dict()
         numeric['bug_fixed'] = re.compile("^\s*(?:BUGS?|FEATURE)[:=]\s*(.+)")
         numeric['bug_cc']    = re.compile("^\s*CCBUGS?[:=]\s*(.+)")
-        numeric['review']    = re.compile("^\s*REVIEWS?[:=]\s*(?!D)(.+)")
 
         presence = dict()
         presence['email_gui'] = re.compile("^\s*GUI:")
