@@ -358,7 +358,7 @@ class CommitAuditor(object):
         self.filename_limits = []
 
         configuration_file = os.path.join(self.repository.management_directory,
-                                          "config", "blockedfiles.cfg")
+                                          "hooks", "blockedfiles.cfg")
 
         with open(configuration_file) as configuration:
             for line in configuration:
