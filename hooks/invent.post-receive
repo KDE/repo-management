@@ -3,7 +3,7 @@
 mgmtdir="/home/git/repo-management"
 currpath=$(pwd)
 urlpath=${currpath#/srv/git/repositories/}
-reponame=${urlpath%.git}
+urlpath=${urlpath%.git}
 
 # Detect if we have a Gitlab repository stored using Hashed Storage
 # Gitlab stores these in a special @hashed/ folder
@@ -12,10 +12,20 @@ if [[ $urlpath == "@hashed/"* ]]; then
     urlpath=`git config --local --get gitlab.fullpath`
 fi
 
+# Log which repository we are working on
+echo "*** $urlpath" >> /srv/git/logs/kde-post-receive-hooks.log
+
+# Inform Jenkins that it needs to start a build
+nohup bash $mgmtdir/helpers/trigger-jenkins.sh "$urlpath" < /dev/null &>> /srv/git/logs/kde-post-receive-hooks.log &!
+
 # Trigger sync to git.kde.org for mainline repositories
 # This covers the kde/, websites/ and sysadmin/ namespaces
 # Personal repositories won't be mirrored across to git.kde.org
-if [[ $urlpath == "kde/"* ]] || [[ $urlpath == "websites/"* ]] || [[ $urlpath == "sysadmin/"* ]]; then
-    echo "*** $urlpath" >> /srv/git/logs/kde-post-receive-hooks.log
-    nohup python $mgmtdir/helpers/sync-from-invent.py "${urlpath}" &>> /srv/git/logs/kde-post-receive-hooks.log
-fi
+nohup python $mgmtdir/helpers/sync-to-git-kde-org.py "${urlpath}" &>> /srv/git/logs/kde-post-receive-hooks.log &!
+
+## TO PORT LATER
+# Trigger Github update
+# Only mainline repositories are to be mirrored - no scratch, clones, websites or sysadmin repos
+#if [[ $urlpath != *"/"* ]] && [[ $urlpath != "gitolite-admin.git" ]]; then
+#    nohup bash $mgmtdir/github-sync/sync-to-github.sh "$reponame" "$urlpath" < /dev/null &> /dev/null &!
+#fi

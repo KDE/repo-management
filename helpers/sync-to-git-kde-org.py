@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Repository mirror updater. Invokes git in a custom manner and transfers across only branch and tag changes. For use with services such as Github/Gitorious
+# Repository mirror updater. Invokes git in a custom manner and transfers across only branch and tag changes.
 
 import re
 import sys
@@ -12,8 +12,41 @@ except IndexError:
     usage()
 
 # Make sure we have a mainline repository
+# To do so we need a list of mainline groups which are as follows...
+# Note: Because sysadmin/ and websites/ sit in their own namespaces on git.kde.org, they are handled separately
+mainlineGroups = [
+    'accessibility',
+    'documentation',
+    'education',
+    'frameworks',
+    'games',
+    'graphics',
+    'historical',
+    'kdevelop',
+    'libraries',
+    'maui',
+    'multimedia',
+    'network',
+    'office',
+    'packaging',
+    'pim',
+    'plasma',
+    'plasma-mobile',
+    'rolisteam',
+    'sdk',
+    'system',
+    'unmaintained'
+    'utilities',
+    'webapps',
+    'wikitolearn'
+]
+
+# Create the regexp to convert the above mentioned repository namespaces to match the flat namespace used by git.kde.org
+mainlineRegex = "^({})/(.*)".format( '|'.join(mainlineGroups) )
+mainlineMatch = re.match(mainlineRegex, localRepository)
+
 # If this isn't a mainline/website/sysadmin repository - bail
-if not localRepository.startswith("kde/") and not localRepository.startswith("websites/") and not localRepository.startswith("sysadmin/"):
+if not mainlineMatch and not localRepository.startswith("websites/") and not localRepository.startswith("sysadmin/"):
     sys.exit(0)
 
 # Make sure this isn't a wiki repository - as those don't exist on git.kde.org
@@ -21,8 +54,8 @@ if localRepository.endswith(".wiki.git"):
     sys.exit(0)
 
 # If this is a mainline repository we need to fix the path to match git.kde.org
-if localRepository.startswith("kde/"):
-    localRepository = localRepository[4:]
+if mainlineMatch:
+    localRepository = mainlineMatch.group(2)
 
 # Determine the URL of the repository on git.kde.org
 remoteRepository = "git@git.kde.org:{}".format( localRepository )

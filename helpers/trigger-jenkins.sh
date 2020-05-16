@@ -4,22 +4,15 @@
 urlpath="$1"
 
 # Before we can proceed, is this a blacklisted repository?
-if [[ "$urlpath" = "sysadmin/ci-tooling.git" ]] || [[ "$urlpath" = "sysadmin/repo-metadata.git" ]] || [[ "$urlpath" = "kde-build-metadata.git" ]] || [[ "$urlpath" = "kapidox.git" ]] || [[ "$urlpath" = "kde-dev-scripts.git" ]]; then
-    exit
+# We blacklist them as these repositories are used by all builds, and Jenkins is incapable of ignoring a repository for polling (bug in Jenkins)
+if [[ "$urlpath" = "sysadmin/ci-tooling" ]] || [[ "$urlpath" = "sysadmin/repo-metadata" ]] || [[ "$urlpath" = "sysadmin/kde-build-metadata" ]] || [[ "$urlpath" = "frameworks/kapidox" ]] || [[ "$urlpath" = "sdk/kde-dev-scripts" ]]; then
+    exit 0
 fi
 
-# Now we wait 10 seconds - this allows the anongit network to sync
+# Now we wait 10 seconds to let systems settle
 sleep 10s
 
 # Tell the KDE CI system
-curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
-
-# If it is a website then we should tell the Binary Factory as well
-# We also cover cutehmi-doxygen as that repository is incorporated into the cutehmi.kde.org website by it's template
-if [[ "$urlpath" = "websites/"* ]]; then
-    curl --connect-timeout 10 --max-time 10 "https://binary-factory.kde.org/git/notifyCommit?url=https://anongit.kde.org/$urlpath" &> /dev/null
-fi
-
-# Trigger an external build system (contact santa_)
-curl --connect-timeout 10 --max-time 10 "http://gpul.grupos.udc.es:8080/git/notifyCommit?url=git://anongit.kde.org/$urlpath" &> /dev/null
-
+curl --connect-timeout 10 --max-time 10 "https://build.kde.org/git/notifyCommit?url=https://invent.kde.org/$urlpath" &> /dev/null
+# Also tell the Binary Factory
+curl --connect-timeout 10 --max-time 10 "https://binary-factory.kde.org/git/notifyCommit?url=https://invent.kde.org/$urlpath" &> /dev/null
