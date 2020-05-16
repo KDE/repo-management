@@ -12,7 +12,7 @@ fi
 hostname=$(cat ~/thisanongithost)
 
 # Is the projects list usable?
-~/repo-management/helpers/validate-projects-list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
+~/repo-management/neon-anongit/validate-projects-list.pl ~/projects-to-anongit.list ~/projects-to-anongit.list.new
 if [ $? -ne 0 ]
 then
   echo "Projects list file may have changed too much; not replacing current list and not continuing" | mail -r "sysadmin-systems@kde.org" -s "ERROR: projects.list problem on $hostname" sysadmin-systems@kde.org
